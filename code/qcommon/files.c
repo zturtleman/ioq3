@@ -2023,6 +2023,57 @@ static pack_t *FS_LoadZipFile(const char *zipfile, const char *basename)
 	if (err != UNZ_OK)
 		return NULL;
 
+#if 1
+	{
+		void *buffer;
+		unsigned long crc;
+		int rtn;
+		int startTime = Sys_Milliseconds();
+
+		unzGoToFirstFile(uf);
+		for (i = 0; i < gi.number_entry; i++)
+		{
+			err = unzGetCurrentFileInfo(uf, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
+			if (err != UNZ_OK) {
+				break;
+			}
+
+			// Don't check music and videos (for speed)
+			if (file_info.uncompressed_size > 0
+				&& Q_stricmpn(filename_inzip, "music", 5)
+				&& Q_stricmpn(filename_inzip, "video", 5))
+			{
+				buffer = Z_Malloc( file_info.uncompressed_size );
+				unzOpenCurrentFile(uf);
+				rtn = unzReadCurrentFile(uf, buffer, file_info.uncompressed_size);
+				unzCloseCurrentFile(uf);
+
+				if (rtn < 0)
+				{
+					Z_Free(buffer);
+					unzGoToNextFile(uf);
+					fs_checksumFeed = 0;
+					Com_Printf(S_COLOR_YELLOW "WARNING: Failed to read pk3 data, error %d.\n", rtn);
+					continue;
+				}
+
+				crc = crc32(0, buffer, file_info.uncompressed_size);
+				Z_Free(buffer);
+
+				if (LittleLong(file_info.crc) != crc) {
+					fs_checksumFeed = 0;
+					Com_Printf(S_COLOR_YELLOW "WARNING: Invalid pk3 data checksum.\n");
+					break;
+				}
+			}
+
+			unzGoToNextFile(uf);
+		}
+
+		Com_Printf("Validating pk3 CRCs took %d msec (%s)\n", Sys_Milliseconds() - startTime, zipfile);
+	}
+#endif
+
 	len = 0;
 	unzGoToFirstFile(uf);
 	for (i = 0; i < gi.number_entry; i++)
