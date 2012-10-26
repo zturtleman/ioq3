@@ -591,8 +591,6 @@ static src_t srcList[MAX_SRC];
 static int srcCount = 0;
 static int srcActiveCnt = 0;
 static qboolean alSourcesInitialised = qfalse;
-static int lastListenerNumber = -1;
-static vec3_t lastListenerOrigin = { 0.0f, 0.0f, 0.0f };
 
 typedef struct sentity_s
 {
@@ -652,7 +650,7 @@ static void S_AL_ScaleGain(src_t *chksrc, vec3_t origin)
 	float distance;
 	
 	if(!chksrc->local)
-		distance = Distance(origin, lastListenerOrigin);
+		distance = Distance(origin, listener.origin);
 		
 	// If we exceed a certain distance, scale the gain linearly until the sound
 	// vanishes into nothingness.
@@ -678,38 +676,6 @@ static void S_AL_ScaleGain(src_t *chksrc, vec3_t origin)
 		chksrc->scaleGain = chksrc->curGain;
 		S_AL_Gain(chksrc->alSource, chksrc->scaleGain);
 	}
-}
-
-/*
-=================
-S_AL_HearingThroughEntity
-
-Also see S_Base_HearingThroughEntity
-=================
-*/
-static qboolean S_AL_HearingThroughEntity( int entityNum )
-{
-	float	distanceSq;
-
-	if( lastListenerNumber == entityNum )
-	{
-		// This is an outrageous hack to detect
-		// whether or not the player is rendering in third person or not. We can't
-		// ask the renderer because the renderer has no notion of entities and we
-		// can't ask cgame since that would involve changing the API and hence mod
-		// compatibility. I don't think there is any way around this, but I'll leave
-		// the FIXME just in case anyone has a bright idea.
-		distanceSq = DistanceSquared(
-				entityList[ entityNum ].origin,
-				lastListenerOrigin );
-
-		if( distanceSq > THIRD_PERSON_THRESHOLD_SQ )
-			return qfalse; //we're the player, but third person
-		else
-			return qtrue;  //we're the player
-	}
-	else
-		return qfalse; //not the player
 }
 
 /*
@@ -1252,7 +1218,7 @@ static void S_AL_StartSound( vec3_t origin, int entnum, int entchannel, sfxHandl
 		if(S_AL_CheckInput(entnum, sfx))
 			return;
 
-		if(S_AL_HearingThroughEntity(entnum))
+		if(S_HearingThroughEntity(entnum))
 		{
 			S_AL_StartLocalSound(sfx, entchannel);
 			return;
@@ -1264,7 +1230,7 @@ static void S_AL_StartSound( vec3_t origin, int entnum, int entchannel, sfxHandl
 	S_AL_SanitiseVector(sorigin);
 	
 	if((srcActiveCnt > 5 * srcCount / 3) &&
-		(DistanceSquared(sorigin, lastListenerOrigin) >=
+		(DistanceSquared(sorigin, listener.origin) >=
 		(s_alMaxDistance->value + s_alGraceDistance->value) * (s_alMaxDistance->value + s_alGraceDistance->value)))
 	{
 		// We're getting tight on sources and source is not within hearing distance so don't add it
@@ -1364,7 +1330,7 @@ static void S_AL_SrcLoop( alSrcPriority_t priority, sfxHandle_t sfx,
 	curSource->entity = entityNum;
 	curSource->isLooping = qtrue;
 
-	if( S_AL_HearingThroughEntity( entityNum ) )
+	if( S_HearingThroughEntity( entityNum ) )
 	{
 		curSource->local = qtrue;
 
@@ -2249,11 +2215,10 @@ void S_AL_Respatialize( int entityNum, const vec3_t origin, vec3_t axis[3], int 
 	S_AL_SanitiseVector( axis[ 1 ] );
 	S_AL_SanitiseVector( axis[ 2 ] );
 
+	S_UpdateListener(entityNum, origin, axis, inwater, entityList[entityNum].origin);
+
 	orientation[0] = axis[0][0]; orientation[1] = axis[0][1]; orientation[2] = axis[0][2];
 	orientation[3] = axis[2][0]; orientation[4] = axis[2][1]; orientation[5] = axis[2][2];
-
-	lastListenerNumber = entityNum;
-	VectorCopy( sorigin, lastListenerOrigin );
 
 	// Set OpenAL listener paramaters
 	qalListenerfv(AL_POSITION, (ALfloat *)sorigin);

@@ -153,6 +153,21 @@ typedef struct
 #endif
 } soundInterface_t;
 
+// Listener data
+typedef struct
+{
+	int			number; // entity number
+	vec3_t		origin;
+	vec3_t		axis[3];
+	int			inwater;
+	qboolean	firstPerson;
+} listener_t;
+
+extern listener_t listener;
+
+qboolean S_HearingThroughEntity( int entityNum );
+qboolean S_EntityIsListener(int entityNum);
+void S_UpdateListener(int entityNum, const vec3_t origin, const vec3_t axis[3], int inwater, qboolean firstPerson);
 
 /*
 ====================================================================

@@ -60,10 +60,6 @@ static		qboolean	s_soundMuted;
 
 dma_t		dma;
 
-static int			listener_number;
-static vec3_t		listener_origin;
-static vec3_t		listener_axis[3];
-
 int			s_soundtime;		// sample PAIRS
 int   		s_paintedtime; 		// sample PAIRS
 
@@ -441,7 +437,7 @@ void S_SpatializeOrigin (vec3_t origin, int master_vol, int *left_vol, int *righ
 		dist = 0;			// close enough to be at full volume
 	dist *= dist_mult;		// different attenuation levels
 	
-	VectorRotate( source_vec, listener_axis, vec );
+	VectorRotate( source_vec, listener.axis, vec );
 
 	dot = -vec[1];
 
@@ -477,44 +473,6 @@ void S_SpatializeOrigin (vec3_t origin, int master_vol, int *left_vol, int *righ
 // =======================================================================
 // Start a sound effect
 // =======================================================================
-
-/*
-=================
-S_Base_HearingThroughEntity
-
-Also see S_AL_HearingThroughEntity
-=================
-*/
-static qboolean S_Base_HearingThroughEntity( int entityNum, vec3_t origin )
-{
-	float	distanceSq;
-	vec3_t	sorigin;
-
-	if (origin)
-		VectorCopy(origin, sorigin);
-	else
-		VectorCopy(loopSounds[entityNum].origin, sorigin);
-
-	if( listener_number == entityNum )
-	{
-		// This is an outrageous hack to detect
-		// whether or not the player is rendering in third person or not. We can't
-		// ask the renderer because the renderer has no notion of entities and we
-		// can't ask cgame since that would involve changing the API and hence mod
-		// compatibility. I don't think there is any way around this, but I'll leave
-		// the FIXME just in case anyone has a bright idea.
-		distanceSq = DistanceSquared(
-				sorigin,
-				listener_origin );
-
-		if( distanceSq > THIRD_PERSON_THRESHOLD_SQ )
-			return qfalse; //we're the player, but third person
-		else
-			return qtrue;  //we're the player
-	}
-	else
-		return qfalse; //not the player
-}
 
 /*
 ====================
@@ -561,12 +519,12 @@ static void S_Base_StartSoundEx( vec3_t origin, int entityNum, int entchannel, s
 	// pick a channel to play on
 
 	allowed = 4;
-	if (entityNum == listener_number) {
+	if (S_EntityIsListener(entityNum)) {
 		allowed = 8;
 	}
 
 	fullVolume = qfalse;
-	if (localSound || S_Base_HearingThroughEntity(entityNum, origin)) {
+	if (localSound || (!origin && S_HearingThroughEntity(entityNum))) {
 		fullVolume = qtrue;
 	}
 
@@ -597,7 +555,7 @@ static void S_Base_StartSoundEx( vec3_t origin, int entityNum, int entchannel, s
 		oldest = sfx->lastTimeUsed;
 		chosen = -1;
 		for ( i = 0 ; i < MAX_CHANNELS ; i++, ch++ ) {
-			if (ch->entnum != listener_number && ch->entnum == entityNum && ch->allocTime<oldest && ch->entchannel != CHAN_ANNOUNCER) {
+			if (!S_EntityIsListener(ch->entnum) && ch->entnum == entityNum && ch->allocTime<oldest && ch->entchannel != CHAN_ANNOUNCER) {
 				oldest = ch->allocTime;
 				chosen = i;
 			}
@@ -605,14 +563,14 @@ static void S_Base_StartSoundEx( vec3_t origin, int entityNum, int entchannel, s
 		if (chosen == -1) {
 			ch = s_channels;
 			for ( i = 0 ; i < MAX_CHANNELS ; i++, ch++ ) {
-				if (ch->entnum != listener_number && ch->allocTime<oldest && ch->entchannel != CHAN_ANNOUNCER) {
+				if (!S_EntityIsListener(ch->entnum) && ch->allocTime<oldest && ch->entchannel != CHAN_ANNOUNCER) {
 					oldest = ch->allocTime;
 					chosen = i;
 				}
 			}
 			if (chosen == -1) {
 				ch = s_channels;
-				if (ch->entnum == listener_number) {
+				if (S_EntityIsListener(ch->entnum)) {
 					for ( i = 0 ; i < MAX_CHANNELS ; i++, ch++ ) {
 						if (ch->allocTime<oldest) {
 							oldest = ch->allocTime;
@@ -802,9 +760,9 @@ void S_Base_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t ve
 		float	lena, lenb;
 
 		loopSounds[entityNum].doppler = qtrue;
-		lena = DistanceSquared(loopSounds[listener_number].origin, loopSounds[entityNum].origin);
+		lena = DistanceSquared(loopSounds[listener.number].origin, loopSounds[entityNum].origin);
 		VectorAdd(loopSounds[entityNum].origin, loopSounds[entityNum].velocity, out);
-		lenb = DistanceSquared(loopSounds[listener_number].origin, out);
+		lenb = DistanceSquared(loopSounds[listener.number].origin, out);
 		if ((loopSounds[entityNum].framenum+1) != cls.framecount) {
 			loopSounds[entityNum].oldDopplerScale = 1.0;
 		} else {
@@ -1129,11 +1087,7 @@ void S_Base_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], int 
 		return;
 	}
 
-	listener_number = entityNum;
-	VectorCopy(head, listener_origin);
-	VectorCopy(axis[0], listener_axis[0]);
-	VectorCopy(axis[1], listener_axis[1]);
-	VectorCopy(axis[2], listener_axis[2]);
+	S_UpdateListener(entityNum, head, axis, inwater, loopSounds[entityNum].origin);
 
 	// update spatialization for dynamic sounds	
 	ch = s_channels;

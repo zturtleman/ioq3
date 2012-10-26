@@ -36,6 +36,52 @@ cvar_t *s_muteWhenUnfocused;
 
 static soundInterface_t si;
 
+listener_t listener;
+
+/*
+=================
+S_HearingThroughEntity
+=================
+*/
+qboolean S_HearingThroughEntity( int entityNum )
+{
+	return (listener.number == entityNum && listener.firstPerson);
+}
+
+/*
+====================
+S_EntityIsListener
+====================
+*/
+qboolean S_EntityIsListener(int entityNum)
+{
+	return (listener.number == entityNum);
+}
+
+/*
+=================
+S_UpdateListener
+=================
+*/
+void S_UpdateListener(int entityNum, const vec3_t listenerOrigin, const vec3_t axis[3], int inwater, const vec3_t entityOrigin)
+{
+	listener.number = entityNum;
+	VectorCopy(listenerOrigin, listener.origin);
+	VectorCopy(axis[0], listener.axis[0]);
+	VectorCopy(axis[1], listener.axis[1]);
+	VectorCopy(axis[2], listener.axis[2]);
+	listener.inwater = inwater;
+
+	// This is an outrageous hack to detect
+	// whether or not the player is rendering in third person or not. We can't
+	// ask the renderer because the renderer has no notion of entities and we
+	// can't ask cgame since that would involve changing the API and hence mod
+	// compatibility. I don't think there is any way around this, but I'll leave
+	// the FIXME just in case anyone has a bright idea.
+
+	listener.firstPerson = ( DistanceSquared( entityOrigin, listener.origin ) <= THIRD_PERSON_THRESHOLD_SQ );
+}
+
 /*
 =================
 S_ValidateInterface
