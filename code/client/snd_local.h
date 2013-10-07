@@ -193,6 +193,8 @@ extern	dma_t	dma;
 #define MAX_RAW_STREAMS (MAX_CLIENTS * 2 + 1)
 extern	portable_samplepair_t s_rawsamples[MAX_RAW_STREAMS][MAX_RAW_SAMPLES];
 extern	int		s_rawend[MAX_RAW_STREAMS];
+extern	int		s_rawLeftVol[MAX_RAW_STREAMS];
+extern	int		s_rawRightVol[MAX_RAW_STREAMS];
 
 extern cvar_t *s_volume;
 extern cvar_t *s_musicVolume;

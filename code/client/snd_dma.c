@@ -86,6 +86,10 @@ static	channel_t		*freelist = NULL;
 
 int						s_rawend[MAX_RAW_STREAMS];
 portable_samplepair_t s_rawsamples[MAX_RAW_STREAMS][MAX_RAW_SAMPLES];
+int						s_rawEntityNum[MAX_RAW_STREAMS];
+int						s_rawMasterVol[MAX_RAW_STREAMS];
+int						s_rawRightVol[MAX_RAW_STREAMS];
+int						s_rawLeftVol[MAX_RAW_STREAMS];
 
 
 // ====================================================================
@@ -688,6 +692,7 @@ so sound doesn't stutter.
 */
 void S_Base_ClearSoundBuffer( void ) {
 	int		clear;
+	int		i;
 		
 	if (!s_soundStarted)
 		return;
@@ -699,7 +704,14 @@ void S_Base_ClearSoundBuffer( void ) {
 
 	S_ChannelSetup();
 
-	Com_Memset(s_rawend, '\0', sizeof (s_rawend));
+	Com_Memset(s_rawend, 0, sizeof (s_rawend));
+	Com_Memset(s_rawMasterVol, 0, sizeof (s_rawMasterVol));
+	Com_Memset(s_rawRightVol, 0, sizeof (s_rawRightVol));
+	Com_Memset(s_rawLeftVol, 0, sizeof (s_rawLeftVol));
+
+	for ( i = 0; i < MAX_RAW_STREAMS; i++ ) {
+		s_rawEntityNum[ i ] = -1;
+	}
 
 	if (dma.samplebits == 8)
 		clear = 0x80;
@@ -972,6 +984,24 @@ void S_ByteSwapRawSamples( int samples, int width, int s_channels, const byte *d
 
 /*
 ============
+S_SpatializeRawStream
+============
+*/
+void S_SpatializeRawStream( int stream ) {
+	int entityNum;
+
+	entityNum = s_rawEntityNum[ stream ];
+
+	if ( entityNum >= 0 && entityNum < MAX_GENTITIES ) {
+		S_SpatializeOrigin( loopSounds[ entityNum ].origin, s_rawMasterVol[ stream ], &s_rawLeftVol[ stream ], &s_rawRightVol[ stream ] );
+	} else {
+		s_rawLeftVol[ stream ] = s_rawMasterVol[ stream ];
+		s_rawRightVol[ stream ] = s_rawMasterVol[ stream ];
+	}
+}
+
+/*
+============
 S_Base_RawSamples
 
 Music streaming
@@ -982,7 +1012,6 @@ void S_Base_RawSamples( int stream, int samples, int rate, int width, int s_chan
 	int		i;
 	int		src, dst;
 	float	scale;
-	int		intVolumeLeft, intVolumeRight;
 	portable_samplepair_t *rawsamples;
 
 	if ( !s_soundStarted || s_soundMuted ) {
@@ -993,23 +1022,10 @@ void S_Base_RawSamples( int stream, int samples, int rate, int width, int s_chan
 		return;
 	}
 
+	s_rawEntityNum[stream] = entityNum;
+	s_rawMasterVol[stream] = 256 * volume;
+
 	rawsamples = s_rawsamples[stream];
-
-	if ( s_muted->integer ) {
-		intVolumeLeft = intVolumeRight = 0;
-	} else {
-		int leftvol, rightvol;
-
-		if ( entityNum >= 0 && entityNum < MAX_GENTITIES ) {
-			// support spatialized raw streams, e.g. for VoIP
-			S_SpatializeOrigin( loopSounds[ entityNum ].origin, 256, &leftvol, &rightvol );
-		} else {
-			leftvol = rightvol = 256;
-		}
-
-		intVolumeLeft = leftvol * volume * s_volume->value;
-		intVolumeRight = rightvol * volume * s_volume->value;
-	}
 
 	if ( s_rawend[stream] < s_soundtime ) {
 		Com_DPrintf( "S_Base_RawSamples: resetting minimum: %i < %i\n", s_rawend[stream], s_soundtime );
@@ -1027,8 +1043,8 @@ void S_Base_RawSamples( int stream, int samples, int rate, int width, int s_chan
 			{
 				dst = s_rawend[stream]&(MAX_RAW_SAMPLES-1);
 				s_rawend[stream]++;
-				rawsamples[dst].left = ((short *)data)[i*2] * intVolumeLeft;
-				rawsamples[dst].right = ((short *)data)[i*2+1] * intVolumeRight;
+				rawsamples[dst].left = ((short *)data)[i*2];
+				rawsamples[dst].right = ((short *)data)[i*2+1];
 			}
 		}
 		else
@@ -1040,8 +1056,8 @@ void S_Base_RawSamples( int stream, int samples, int rate, int width, int s_chan
 					break;
 				dst = s_rawend[stream]&(MAX_RAW_SAMPLES-1);
 				s_rawend[stream]++;
-				rawsamples[dst].left = ((short *)data)[src*2] * intVolumeLeft;
-				rawsamples[dst].right = ((short *)data)[src*2+1] * intVolumeRight;
+				rawsamples[dst].left = ((short *)data)[src*2];
+				rawsamples[dst].right = ((short *)data)[src*2+1];
 			}
 		}
 	}
@@ -1054,14 +1070,13 @@ void S_Base_RawSamples( int stream, int samples, int rate, int width, int s_chan
 				break;
 			dst = s_rawend[stream]&(MAX_RAW_SAMPLES-1);
 			s_rawend[stream]++;
-			rawsamples[dst].left = ((short *)data)[src] * intVolumeLeft;
-			rawsamples[dst].right = ((short *)data)[src] * intVolumeRight;
+			rawsamples[dst].left = ((short *)data)[src];
+			rawsamples[dst].right = ((short *)data)[src];
 		}
 	}
 	else if (s_channels == 2 && width == 1)
 	{
-		intVolumeLeft *= 256;
-		intVolumeRight *= 256;
+		s_rawMasterVol[stream] *= 256;
 
 		for (i=0 ; ; i++)
 		{
@@ -1070,14 +1085,13 @@ void S_Base_RawSamples( int stream, int samples, int rate, int width, int s_chan
 				break;
 			dst = s_rawend[stream]&(MAX_RAW_SAMPLES-1);
 			s_rawend[stream]++;
-			rawsamples[dst].left = ((char *)data)[src*2] * intVolumeLeft;
-			rawsamples[dst].right = ((char *)data)[src*2+1] * intVolumeRight;
+			rawsamples[dst].left = ((char *)data)[src*2];
+			rawsamples[dst].right = ((char *)data)[src*2+1];
 		}
 	}
 	else if (s_channels == 1 && width == 1)
 	{
-		intVolumeLeft *= 256;
-		intVolumeRight *= 256;
+		s_rawMasterVol[stream] *= 256;
 
 		for (i=0 ; ; i++)
 		{
@@ -1086,14 +1100,16 @@ void S_Base_RawSamples( int stream, int samples, int rate, int width, int s_chan
 				break;
 			dst = s_rawend[stream]&(MAX_RAW_SAMPLES-1);
 			s_rawend[stream]++;
-			rawsamples[dst].left = (((byte *)data)[src]-128) * intVolumeLeft;
-			rawsamples[dst].right = (((byte *)data)[src]-128) * intVolumeRight;
+			rawsamples[dst].left = ((byte *)data)[src]-128;
+			rawsamples[dst].right = ((byte *)data)[src]-128;
 		}
 	}
 
 	if ( s_rawend[stream] > s_soundtime + MAX_RAW_SAMPLES ) {
 		Com_DPrintf( "S_Base_RawSamples: overflowed %i > %i\n", s_rawend[stream], s_soundtime );
 	}
+
+	S_SpatializeRawStream( stream );
 }
 
 //=============================================================================
@@ -1153,6 +1169,12 @@ void S_Base_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], int 
 			}
 
 			S_SpatializeOrigin (origin, ch->master_vol, &ch->leftvol, &ch->rightvol);
+		}
+	}
+
+	for ( i = 0 ; i < MAX_RAW_STREAMS ; i++ ) {
+		if ( s_rawend[ i ] >= s_paintedtime ) {
+			S_SpatializeRawStream( i );
 		}
 	}
 
@@ -1482,7 +1504,7 @@ void S_UpdateBackgroundTrack( void ) {
 		{
 			// add to raw buffer
 			S_Base_RawSamples(0, fileSamples, s_backgroundStream->info.rate,
-				s_backgroundStream->info.width, s_backgroundStream->info.channels, raw, s_musicVolume->value, -1);
+				s_backgroundStream->info.width, s_backgroundStream->info.channels, raw, s_musicVolume->value, 1/*-1*/); // ZTM: HACK FOR TESTING!
 		}
 		else
 		{
