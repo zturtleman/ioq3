@@ -1767,6 +1767,7 @@ void S_AL_RawSamples(int stream, int samples, int rate, int width, int channels,
 	int numBuffers;
 	ALuint buffer;
 	ALuint format;
+	ALenum error;
 
 	if ((stream < 0) || (stream >= MAX_RAW_STREAMS))
 		return;
@@ -1817,10 +1818,27 @@ void S_AL_RawSamples(int stream, int samples, int rate, int width, int channels,
 
 	// Select next buffer in loop
 	buffer = streamBuffers[stream][ streamBufIndex[stream] ];
-	streamBufIndex[stream] = (streamBufIndex[stream] + 1) % streamNumBuffers[stream];
 
 	// Fill buffer
+	S_AL_ClearError(qfalse);
 	qalBufferData(buffer, format, (ALvoid *)data, (samples * width * channels), rate);
+	error = qalGetError();
+
+	// If we ran out of memory, start evicting the least recently used sounds
+	while(error == AL_OUT_OF_MEMORY)
+	{
+		if( !S_AL_BufferEvict( ) )
+		{
+			Com_Printf( S_COLOR_RED "ERROR: Out of memory buffering data for raw stream %d\n", stream);
+			return;
+		}
+
+		// Try load it again
+		qalBufferData(buffer, format, (ALvoid *)data, (samples * width * channels), rate);
+		error = qalGetError();
+	}
+
+	streamBufIndex[stream] = (streamBufIndex[stream] + 1) % streamNumBuffers[stream];
 
 	// Shove the data onto the streamSource
 	qalSourceQueueBuffers(streamSources[stream], 1, &buffer);
