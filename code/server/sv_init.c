@@ -777,6 +777,16 @@ void SV_Shutdown( char *finalmsg ) {
 	Cvar_Set( "sv_running", "0" );
 	Cvar_Set("ui_singlePlayerActive", "0");
 
+	// reset server CVAR_ROM cvars
+	Cvar_ForceReset( "mapname" );
+	Cvar_ForceReset( "sv_cheats" );
+	Cvar_ForceReset( "sv_serverid" );
+	Cvar_ForceReset( "sv_mapChecksum" );
+	Cvar_ForceReset( "sv_paks" );
+	Cvar_ForceReset( "sv_pakNames" );
+	Cvar_ForceReset( "sv_referencedPaks" );
+	Cvar_ForceReset( "sv_referencedPakNames" );
+
 	Com_Printf( "---------------------------\n" );
 
 	// disconnect any local clients
