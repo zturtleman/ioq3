@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 static char          consoleLog[ MAX_LOG ];
 static unsigned int  writePos = 0;
 static unsigned int  readPos = 0;
+static unsigned int  savedReadPos = 0;
 
 /*
 ==================
@@ -126,4 +127,24 @@ unsigned int CON_LogRead( char *out, unsigned int outSize )
 	readPos = ( readPos + outSize ) % MAX_LOG;
 
 	return outSize;
+}
+
+/*
+==================
+CON_LogSaveReadPos
+==================
+*/
+void CON_LogSaveReadPos( void )
+{
+	savedReadPos = readPos;
+}
+
+/*
+==================
+CON_LogRestoreReadPos
+==================
+*/
+void CON_LogRestoreReadPos( void )
+{
+	readPos = savedReadPos;
 }

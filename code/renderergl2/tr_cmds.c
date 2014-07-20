@@ -527,7 +527,11 @@ void RE_EndFrame( int *frontEndMsec, int *backEndMsec ) {
 	}
 	cmd = R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
-		return;
+		R_IssuePendingRenderCommands();
+		cmd = R_GetCommandBuffer( sizeof( *cmd ) );
+		if ( !cmd ) {
+			return;
+		}
 	}
 	cmd->commandId = RC_SWAP_BUFFERS;
 

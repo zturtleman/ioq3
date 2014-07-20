@@ -1139,6 +1139,19 @@ dialogResult_t Sys_Dialog( dialogType_t type, const char *message, const char *t
 
 qboolean Sys_WritePIDFile( void );
 
+/*
+==============================================================
+
+CONSOLE LOG ACCESS
+
+==============================================================
+*/
+
+unsigned int CON_LogRead( char *out, unsigned int outSize );
+void CON_LogSaveReadPos( void );
+void CON_LogRestoreReadPos( void );
+
+
 /* This is based on the Adaptive Huffman algorithm described in Sayood's Data
  * Compression book.  The ranks are not actually stored, but implicitly defined
  * by the location of a node within a doubly-linked list */
