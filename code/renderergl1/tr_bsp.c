@@ -1623,7 +1623,8 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump ) {
 		out->tcScale = 1.0f / ( d * 8 );
 
 		// set the gradient vector
-		sideNum = LittleLong( fogs->visibleSide );
+		// ZTM: Hard code visibleSide to top. I'm unsure if this is the correct handling.
+		sideNum = 5; //LittleLong( fogs->visibleSide );
 
 		if ( sideNum == -1 ) {
 			out->hasSurface = qfalse;

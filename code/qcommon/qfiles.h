@@ -313,7 +313,7 @@ typedef struct {
 #define BSP_IDENT	(('P'<<24)+('S'<<16)+('B'<<8)+'I')
 		// little-endian "IBSP"
 
-#define BSP_VERSION			46
+#define BSP_VERSION			45 // Q3Test 1.06/1.07/1.08
 
 
 // there shouldn't be any problem with increasing these values at the
@@ -392,6 +392,8 @@ typedef struct {
 
 typedef struct {
 	float		mins[3], maxs[3];
+	int			unknownZeros[3]; // ZTM: These are always 0
+	int			unknownNegative; // ZTM: In model 0 this is 0. model 1 starts at some negative number (I do not know what it means). After model 1, it goes down 1 for each model.
 	int			firstSurface, numSurfaces;
 	int			firstBrush, numBrushes;
 } dmodel_t;
@@ -407,6 +409,7 @@ typedef struct {
 typedef struct {
 	float		normal[3];
 	float		dist;
+	int			unknown; // ZTM: this might be 'type' like in q2 bsp -- I haven't tried to check
 } dplane_t;
 
 typedef struct {
@@ -444,7 +447,7 @@ typedef struct {
 typedef struct {
 	char		shader[MAX_QPATH];
 	int			brushNum;
-	int			visibleSide;	// the brush side that ray tests need to clip against (-1 == none)
+	//int			visibleSide;	// the brush side that ray tests need to clip against (-1 == none)
 } dfog_t;
 
 typedef struct {

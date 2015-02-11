@@ -112,19 +112,34 @@ void R_RemapShader(const char *shaderName, const char *newShaderName, const char
 
 /*
 ===============
+ParseOptionalToken
+===============
+*/
+static qboolean ParseOptionalToken( char **text, const char *expected ) {
+	char *oldText = *text;
+	char *token;
+
+	token = COM_ParseExt( text, qfalse );
+	if ( strcmp( token, expected ) ) {
+		*text = oldText;
+		return qfalse;
+	}
+
+	return qtrue;
+}
+
+/*
+===============
 ParseVector
 ===============
 */
 static qboolean ParseVector( char **text, int count, float *v ) {
+	qboolean openParen, closeParen;
 	char	*token;
 	int		i;
 
 	// FIXME: spaces are currently required after parens, should change parseext...
-	token = COM_ParseExt( text, qfalse );
-	if ( strcmp( token, "(" ) ) {
-		ri.Printf( PRINT_WARNING, "WARNING: missing parenthesis in shader '%s'\n", shader.name );
-		return qfalse;
-	}
+	openParen = ParseOptionalToken( text, "(" );
 
 	for ( i = 0 ; i < count ; i++ ) {
 		token = COM_ParseExt( text, qfalse );
@@ -135,8 +150,8 @@ static qboolean ParseVector( char **text, int count, float *v ) {
 		v[i] = atof( token );
 	}
 
-	token = COM_ParseExt( text, qfalse );
-	if ( strcmp( token, ")" ) ) {
+	closeParen = ParseOptionalToken( text, ")" );
+	if ( closeParen != openParen ) {
 		ri.Printf( PRINT_WARNING, "WARNING: missing parenthesis in shader '%s'\n", shader.name );
 		return qfalse;
 	}
@@ -1030,6 +1045,14 @@ static qboolean ParseStage( shaderStage_t *stage, char **text )
 
 			continue;
 		}
+		//
+		// clampTexCoords
+		//
+		else if ( !Q_stricmp( token, "clampTexCoords" ) )
+		{
+			ri.Printf( PRINT_WARNING, "WARNING: clampTexCoords is unsupported, used by shader '%s'\n", shader.name );
+			continue;
+		}
 		else
 		{
 			ri.Printf( PRINT_WARNING, "WARNING: unknown parameter '%s' in shader '%s'\n", token, shader.name );
@@ -1626,6 +1649,11 @@ static qboolean ParseShader( char **text )
 		else if ( !Q_stricmp( token, "sort" ) )
 		{
 			ParseSort( text );
+			continue;
+		}
+		else if ( !Q_stricmp( token, "fogOnly" ) )
+		{
+			// nothing needs to be done
 			continue;
 		}
 		else
