@@ -410,6 +410,50 @@ ifneq (,$(findstring "$(PLATFORM)", "linux" "gnu_kfreebsd" "kfreebsd-gnu"))
 else # ifeq Linux
 
 #############################################################################
+# SETUP AND BUILD -- JS
+#############################################################################
+
+ifeq ($(PLATFORM),js)
+  CC=$(EMSCRIPTEN)/emcc
+  RANLIB=$(EMSCRIPTEN)/emranlib
+  ARCH=js
+  FULLBINEXT=.html
+
+  OPTIMIZEVM += -O2
+  OPTIMIZE = $(OPTIMIZEVM)
+
+  HAVE_VM_COMPILED=false
+  BUILD_GAME_QVM=1
+  BUILD_STANDALONE=1
+
+  USE_OPENAL=1
+  USE_CURL=0
+  USE_CODEC_VORBIS=0
+  USE_CODEC_OPUS=0
+  USE_MUMBLE=0
+  USE_VOIP=0
+  USE_OPENAL_DLOPEN=0
+  USE_RENDERER_DLOPEN=0
+  USE_LOCAL_HEADERS=0
+  BUILD_RENDERER_OPENGL2=1
+
+  CLIENT_CFLAGS += -s LEGACY_GL_EMULATION=1 \
+    -s USE_SDL=2 \
+    -s TOTAL_MEMORY=512000000 \
+    -s NO_EXIT_RUNTIME=1 \
+    -s GL_UNSAFE_OPTS=1 \
+    $(OPTIMIZE)
+
+  SERVER_CFLAGS += -s LEGACY_GL_EMULATION=1 \
+    -s USE_SDL=2 \
+    -s TOTAL_MEMORY=512000000 \
+    -s NO_EXIT_RUNTIME=1 \
+    -s GL_UNSAFE_OPTS=1 \
+    $(OPTIMIZE)
+
+else # ifeq js
+
+#############################################################################
 # SETUP AND BUILD -- MAC OS X
 #############################################################################
 
@@ -908,6 +952,7 @@ else # ifeq sunos
   SHLIBLDFLAGS=-shared
 
 endif #Linux
+endif #js
 endif #darwin
 endif #mingw32
 endif #FreeBSD
@@ -951,9 +996,6 @@ ifneq ($(BUILD_CLIENT),0)
     endif
   else
     TARGETS += $(B)/$(CLIENTBIN)$(FULLBINEXT)
-    ifneq ($(BUILD_RENDERER_OPENGL2),0)
-      TARGETS += $(B)/$(CLIENTBIN)_opengl2$(FULLBINEXT)
-    endif
   endif
 endif
 
@@ -1648,7 +1690,7 @@ Q3OBJ = \
   $(B)/client/con_log.o \
   $(B)/client/sys_main.o
 
-ifeq ($(PLATFORM),mingw32)
+ifneq (,$(findstring "$(PLATFORM)", "mingw32" "js"))
   Q3OBJ += \
     $(B)/client/con_passive.o
 else
@@ -2128,17 +2170,19 @@ $(B)/renderer_opengl2_$(SHLIBNAME): $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ)
 	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) \
 		$(THREAD_LIBS) $(LIBSDLMAIN) $(RENDERER_LIBS) $(LIBS)
 else
+ifeq ($(BUILD_RENDERER_OPENGL2), 0)
 $(B)/$(CLIENTBIN)$(FULLBINEXT): $(Q3OBJ) $(Q3ROBJ) $(JPGOBJ) $(LIBSDLMAIN)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) $(CLIENT_CFLAGS) $(CFLAGS) $(CLIENT_LDFLAGS) $(LDFLAGS) \
 		-o $@ $(Q3OBJ) $(Q3ROBJ) $(JPGOBJ) \
 		$(LIBSDLMAIN) $(CLIENT_LIBS) $(RENDERER_LIBS) $(LIBS)
-
-$(B)/$(CLIENTBIN)_opengl2$(FULLBINEXT): $(Q3OBJ) $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) $(LIBSDLMAIN)
+else
+$(B)/$(CLIENTBIN)$(FULLBINEXT): $(Q3OBJ) $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) $(LIBSDLMAIN)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) $(CLIENT_CFLAGS) $(CFLAGS) $(CLIENT_LDFLAGS) $(LDFLAGS) \
 		-o $@ $(Q3OBJ) $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) \
 		$(LIBSDLMAIN) $(CLIENT_LIBS) $(RENDERER_LIBS) $(LIBS)
+endif
 endif
 
 ifneq ($(strip $(LIBSDLMAIN)),)
@@ -2223,7 +2267,7 @@ Q3DOBJ = \
   $(B)/ded/null_snddma.o \
   \
   $(B)/ded/con_log.o \
-  $(B)/ded/sys_main.o
+  $(B)/ded/sys_main.o \
 
 ifeq ($(ARCH),x86)
   Q3DOBJ += \
@@ -2267,8 +2311,8 @@ ifeq ($(PLATFORM),mingw32)
     $(B)/ded/con_win32.o
 else
   Q3DOBJ += \
-    $(B)/ded/sys_unix.o \
-    $(B)/ded/con_tty.o
+    $(B)/ded/con_tty.o \
+    $(B)/ded/sys_unix.o
 endif
 
 ifeq ($(PLATFORM),darwin)
@@ -2278,7 +2322,7 @@ endif
 
 $(B)/$(SERVERBIN)$(FULLBINEXT): $(Q3DOBJ)
 	$(echo_cmd) "LD $@"
-	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(Q3DOBJ) $(LIBS)
+	$(Q)$(CC) $(CFLAGS) $(SERVER_CFLAGS) $(LDFLAGS) -o $@ $(Q3DOBJ) $(LIBS)
 
 
 

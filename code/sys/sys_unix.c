@@ -795,8 +795,10 @@ void Sys_GLimpInit( void )
 
 void Sys_SetFloatEnv(void)
 {
+#ifndef EMSCRIPTEN
 	// rounding toward nearest
 	fesetround(FE_TONEAREST);
+#endif
 }
 
 /*

@@ -220,6 +220,7 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLcharARB *extra, cha
 
 	dest[0] = '\0';
 
+#ifndef EMSCRIPTEN
 	// HACK: abuse the GLSL preprocessor to turn GLSL 1.20 shaders into 1.30 ones
 	if(glRefConfig.glslMajorVersion > 1 || (glRefConfig.glslMajorVersion == 1 && glRefConfig.glslMinorVersion >= 30))
 	{
@@ -242,20 +243,9 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLcharARB *extra, cha
 	{
 		Q_strcat(dest, size, "#version 120\n");
 	}
-
-	// HACK: add some macros to avoid extra uniforms and save speed and code maintenance
-	//Q_strcat(dest, size,
-	//		 va("#ifndef r_SpecularExponent\n#define r_SpecularExponent %f\n#endif\n", r_specularExponent->value));
-	//Q_strcat(dest, size,
-	//		 va("#ifndef r_SpecularScale\n#define r_SpecularScale %f\n#endif\n", r_specularScale->value));
-	//Q_strcat(dest, size,
-	//       va("#ifndef r_NormalScale\n#define r_NormalScale %f\n#endif\n", r_normalScale->value));
-
+#endif
 
 	Q_strcat(dest, size, "#ifndef M_PI\n#define M_PI 3.14159265358979323846\n#endif\n");
-
-	//Q_strcat(dest, size, va("#ifndef MAX_SHADOWMAPS\n#define MAX_SHADOWMAPS %i\n#endif\n", MAX_SHADOWMAPS));
-
 	Q_strcat(dest, size,
 					 va("#ifndef deformGen_t\n"
 						"#define deformGen_t\n"
@@ -274,7 +264,6 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLcharARB *extra, cha
 						DGEN_WAVE_INVERSE_SAWTOOTH,
 						DGEN_BULGE,
 						DGEN_MOVE));
-
 	Q_strcat(dest, size,
 					 va("#ifndef tcGen_t\n"
 						"#define tcGen_t\n"
@@ -442,7 +431,7 @@ static int GLSL_LoadGPUShaderText(const char *name, const char *fallback,
 	{
 		ri.FS_FreeFile(buffer);
 	}
-	
+
 	return result;
 }
 
@@ -641,7 +630,7 @@ void GLSL_InitUniforms(shaderProgram_t *program)
 
 		if (uniforms[i] == -1)
 			continue;
-		 
+
 		program->uniformBufferOffsets[i] = size;
 
 		switch(uniformsInfo[i].type)
@@ -677,8 +666,10 @@ void GLSL_InitUniforms(shaderProgram_t *program)
 
 void GLSL_FinishGPUShader(shaderProgram_t *program)
 {
+#ifndef EMSCRIPTEN
 	GLSL_ValidateProgram(program->program);
 	GLSL_ShowProgramUniforms(program->program);
+#endif
 	GL_CheckErrors();
 }
 
@@ -726,7 +717,7 @@ void GLSL_SetUniformFloat(shaderProgram_t *program, int uniformNum, GLfloat valu
 	}
 
 	*compare = value;
-	
+
 	qglUniform1fARB(uniforms[uniformNum], value);
 }
 
@@ -893,7 +884,7 @@ void GLSL_InitGPUShaders(void)
 	startTime = ri.Milliseconds();
 
 	for (i = 0; i < GENERICDEF_COUNT; i++)
-	{	
+	{
 		attribs = ATTR_POSITION | ATTR_TEXCOORD | ATTR_LIGHTCOORD | ATTR_NORMAL | ATTR_COLOR;
 		extradefines[0] = '\0';
 
@@ -942,7 +933,7 @@ void GLSL_InitGPUShaders(void)
 	{
 		ri.Error(ERR_FATAL, "Could not load texturecolor shader!");
 	}
-	
+
 	GLSL_InitUniforms(&tr.textureColorShader);
 
 	qglUseProgramObjectARB(tr.textureColorShader.program);
@@ -992,7 +983,7 @@ void GLSL_InitGPUShaders(void)
 		}
 
 		GLSL_InitUniforms(&tr.dlightShader[i]);
-		
+
 		qglUseProgramObjectARB(tr.dlightShader[i].program);
 		GLSL_SetUniformInt(&tr.dlightShader[i], UNIFORM_DIFFUSEMAP, TB_DIFFUSEMAP);
 		qglUseProgramObjectARB(0);
@@ -1187,13 +1178,14 @@ void GLSL_InitGPUShaders(void)
 	attribs = ATTR_POSITION | ATTR_NORMAL;
 	extradefines[0] = '\0';
 
+#ifndef EMSCRIPTEN
 	Q_strcat(extradefines, 1024, "#define USE_PCF\n#define USE_DISCARD\n");
 
 	if (!GLSL_InitGPUShader(&tr.pshadowShader, "pshadow", attribs, qtrue, extradefines, qtrue, fallbackShader_pshadow_vp, fallbackShader_pshadow_fp))
 	{
 		ri.Error(ERR_FATAL, "Could not load pshadow shader!");
 	}
-	
+
 	GLSL_InitUniforms(&tr.pshadowShader);
 
 	qglUseProgramObjectARB(tr.pshadowShader.program);
@@ -1212,7 +1204,7 @@ void GLSL_InitGPUShaders(void)
 	{
 		ri.Error(ERR_FATAL, "Could not load down4x shader!");
 	}
-	
+
 	GLSL_InitUniforms(&tr.down4xShader);
 
 	qglUseProgramObjectARB(tr.down4xShader.program);
@@ -1284,7 +1276,7 @@ void GLSL_InitGPUShaders(void)
 
 		GLSL_FinishGPUShader(&tr.calclevels4xShader[i]);
 
-		numEtcShaders++;		
+		numEtcShaders++;
 	}
 
 
@@ -1308,7 +1300,7 @@ void GLSL_InitGPUShaders(void)
 	{
 		ri.Error(ERR_FATAL, "Could not load shadowmask shader!");
 	}
-	
+
 	GLSL_InitUniforms(&tr.shadowmaskShader);
 
 	qglUseProgramObjectARB(tr.shadowmaskShader.program);
@@ -1358,7 +1350,7 @@ void GLSL_InitGPUShaders(void)
 		{
 			ri.Error(ERR_FATAL, "Could not load depthBlur shader!");
 		}
-		
+
 		GLSL_InitUniforms(&tr.depthBlurShader[i]);
 
 		qglUseProgramObjectARB(tr.depthBlurShader[i].program);
@@ -1370,32 +1362,12 @@ void GLSL_InitGPUShaders(void)
 
 		numEtcShaders++;
 	}
-
-#if 0
-	attribs = ATTR_POSITION | ATTR_TEXCOORD;
-	extradefines[0] = '\0';
-
-	if (!GLSL_InitGPUShader(&tr.testcubeShader, "testcube", attribs, qtrue, extradefines, qtrue, NULL, NULL))
-	{
-		ri.Error(ERR_FATAL, "Could not load testcube shader!");
-	}
-
-	GLSL_InitUniforms(&tr.testcubeShader);
-
-	qglUseProgramObjectARB(tr.testcubeShader.program);
-	GLSL_SetUniformInt(&tr.testcubeShader, UNIFORM_TEXTUREMAP, TB_COLORMAP);
-	qglUseProgramObjectARB(0);
-
-	GLSL_FinishGPUShader(&tr.testcubeShader);
-
-	numEtcShaders++;
 #endif
-
 
 	endTime = ri.Milliseconds();
 
-	ri.Printf(PRINT_ALL, "loaded %i GLSL shaders (%i gen %i light %i etc) in %5.2f seconds\n", 
-		numGenShaders + numLightShaders + numEtcShaders, numGenShaders, numLightShaders, 
+	ri.Printf(PRINT_ALL, "loaded %i GLSL shaders (%i gen %i light %i etc) in %5.2f seconds\n",
+		numGenShaders + numLightShaders + numEtcShaders, numGenShaders, numLightShaders,
 		numEtcShaders, (endTime - startTime) / 1000.0);
 }
 

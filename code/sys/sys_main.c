@@ -31,6 +31,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <ctype.h>
 #include <errno.h>
 
+#ifdef EMSCRIPTEN
+#include "emscripten.h"
+#endif
+
 #ifndef DEDICATED
 #ifdef USE_LOCAL_HEADERS
 #	include "SDL.h"
@@ -458,10 +462,10 @@ from executable path, then fs_basepath.
 void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 {
 	void *dllhandle;
-	
+
 	if(useSystemLib)
 		Com_Printf("Trying to load \"%s\"...\n", name);
-	
+
 	if(!useSystemLib || !(dllhandle = Sys_LoadLibrary(name)))
 	{
 		const char *topDir;
@@ -478,22 +482,22 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 		if(!(dllhandle = Sys_LoadLibrary(libPath)))
 		{
 			const char *basePath = Cvar_VariableString("fs_basepath");
-			
+
 			if(!basePath || !*basePath)
 				basePath = ".";
-			
+
 			if(FS_FilenameCompare(topDir, basePath))
 			{
 				Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, basePath);
 				Com_sprintf(libPath, sizeof(libPath), "%s%c%s", basePath, PATH_SEP, name);
 				dllhandle = Sys_LoadLibrary(libPath);
 			}
-			
+
 			if(!dllhandle)
 				Com_Printf("Loading \"%s\" failed\n", name);
 		}
 	}
-	
+
 	return dllhandle;
 }
 
@@ -603,6 +607,17 @@ void Sys_SigHandler( int signal )
 
 /*
 =================
+Sys_GameLoop
+=================
+*/
+void Sys_GameLoop(void)
+{
+    IN_Frame();
+    Com_Frame();
+}
+
+/*
+=================
 main
 =================
 */
@@ -680,11 +695,14 @@ int main( int argc, char **argv )
 	signal( SIGTERM, Sys_SigHandler );
 	signal( SIGINT, Sys_SigHandler );
 
-	while( 1 )
+#ifdef EMSCRIPTEN
+    emscripten_set_main_loop(Sys_GameLoop, 0, 0);
+#else
+	while(1)
 	{
-		IN_Frame( );
-		Com_Frame( );
+		Sys_GameLoop();
 	}
+#endif
 
 	return 0;
 }

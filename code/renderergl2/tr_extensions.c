@@ -110,7 +110,7 @@ void            (APIENTRY * qglGetUniformivARB) (GLhandleARB programObj, GLint l
 void            (APIENTRY * qglGetShaderSourceARB) (GLhandleARB obj, GLsizei maxLength, GLsizei * length, GLcharARB * source);
 
 // GL_ARB_texture_compression
-void (APIENTRY * qglCompressedTexImage3DARB)(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, 
+void (APIENTRY * qglCompressedTexImage3DARB)(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height,
 	GLsizei depth, GLint border, GLsizei imageSize, const GLvoid *data);
 void (APIENTRY * qglCompressedTexImage2DARB)(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height,
 	GLint border, GLsizei imageSize, const GLvoid *data);
@@ -120,7 +120,7 @@ void (APIENTRY * qglCompressedTexSubImage3DARB)(GLenum target, GLint level, GLin
 	GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const GLvoid *data);
 void (APIENTRY * qglCompressedTexSubImage2DARB)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
 	GLsizei height, GLenum format, GLsizei imageSize, const GLvoid *data);
-void (APIENTRY * qglCompressedTexSubImage1DARB)(GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, 
+void (APIENTRY * qglCompressedTexSubImage1DARB)(GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format,
 	GLsizei imageSize, const GLvoid *data);
 void (APIENTRY * qglGetCompressedTexImageARB)(GLenum target, GLint lod,
 	GLvoid *img);
@@ -217,11 +217,26 @@ void GLimp_InitExtraExtensions()
 		ri.Printf(PRINT_ALL, result[2], extension);
 	}
 
+#ifdef EMSCRIPTEN
+    // OES_element_index_uint
+    extension = "OES_element_index_uint";
+    if( GLimp_HaveExtension( extension ) )
+    {
+        ri.Printf(PRINT_ALL, result[1], extension);
+    }
+    else
+    {
+        ri.Error(ERR_FATAL, result[2], extension);
+    }
+#endif
+
 	// GL_EXT_multi_draw_arrays
 	extension = "GL_EXT_multi_draw_arrays";
 	glRefConfig.multiDrawArrays = qfalse;
 	qglMultiDrawArraysEXT = NULL;
 	qglMultiDrawElementsEXT = NULL;
+
+#ifndef EMSCRIPTEN
 	if( GLimp_HaveExtension( extension ) )
 	{
 		qglMultiDrawArraysEXT = (PFNGLMULTIDRAWARRAYSEXTPROC) SDL_GL_GetProcAddress("glMultiDrawArraysEXT");
@@ -236,6 +251,7 @@ void GLimp_InitExtraExtensions()
 	{
 		ri.Printf(PRINT_ALL, result[2], extension);
 	}
+#endif
 
 	// GL_ARB_vertex_program
 	//glRefConfig.vertexProgram = qfalse;
@@ -262,7 +278,7 @@ void GLimp_InitExtraExtensions()
 	{
 		ri.Error(ERR_FATAL, result[2], extension);
 	}
-	
+
 	// GL_ARB_vertex_buffer_object
 	//glRefConfig.vertexBufferObject = qfalse;
 	extension = "GL_ARB_vertex_buffer_object";
@@ -384,40 +400,16 @@ void GLimp_InitExtraExtensions()
 	}
 
 	// GL_ARB_vertex_shader
-	//glRefConfig.vertexShader = qfalse;
 	extension = "GL_ARB_vertex_shader";
 	qglBindAttribLocationARB = NULL;
 	qglGetActiveAttribARB = NULL;
 	qglGetAttribLocationARB = NULL;
 	if( GLimp_HaveExtension( extension ) )
 	{
-		//int				reservedComponents;
-
-		//qglGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB, &glConfig.maxVertexUniforms);
-		//qglGetIntegerv(GL_MAX_VARYING_FLOATS_ARB, &glConfig.maxVaryingFloats);
-		//qglGetIntegerv(GL_MAX_VERTEX_ATTRIBS_ARB, &glConfig.maxVertexAttribs);
-
-		//reservedComponents = 16 * 10; // approximation how many uniforms we have besides the bone matrices
-
-#if 0
-		if(glConfig.driverType == GLDRV_MESA)
-		{
-			// HACK
-			// restrict to number of vertex uniforms to 512 because of:
-			// xreal.x86_64: nv50_program.c:4181: nv50_program_validate_data: Assertion `p->param_nr <= 512' failed
-
-			glConfig.maxVertexUniforms = Q_bound(0, glConfig.maxVertexUniforms, 512);
-		}
-#endif
-
-		//glConfig.maxVertexSkinningBones = (int) Q_bound(0.0, (Q_max(glConfig.maxVertexUniforms - reservedComponents, 0) / 16), MAX_BONES);
-		//glConfig.vboVertexSkinningAvailable = r_vboVertexSkinning->integer && ((glConfig.maxVertexSkinningBones >= 12) ? qtrue : qfalse);
-
 		qglBindAttribLocationARB = (PFNGLBINDATTRIBLOCATIONARBPROC) SDL_GL_GetProcAddress("glBindAttribLocationARB");
 		qglGetActiveAttribARB = (PFNGLGETACTIVEATTRIBARBPROC) SDL_GL_GetProcAddress("glGetActiveAttribARB");
 		qglGetAttribLocationARB = (PFNGLGETATTRIBLOCATIONARBPROC) SDL_GL_GetProcAddress("glGetAttribLocationARB");
 		ri.Printf(PRINT_ALL, result[1], extension);
-		//glRefConfig.vertexShader = qtrue;
 	}
 	else
 	{
@@ -504,6 +496,8 @@ void GLimp_InitExtraExtensions()
 	// GL_EXT_framebuffer_object
 	extension = "GL_EXT_framebuffer_object";
 	glRefConfig.framebufferObject = qfalse;
+
+#ifndef EMSCRIPTEN
 	if( GLimp_HaveExtension( extension ) )
 	{
 		glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE_EXT, &glRefConfig.maxRenderbufferSize);
@@ -536,6 +530,7 @@ void GLimp_InitExtraExtensions()
 	{
 		ri.Printf(PRINT_ALL, result[2], extension);
 	}
+#endif
 
 	// GL_EXT_packed_depth_stencil
 	extension = "GL_EXT_packed_depth_stencil";
