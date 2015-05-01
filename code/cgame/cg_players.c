@@ -606,9 +606,11 @@ static qboolean CG_RegisterClientModelname( clientInfo_t *ci, const char *modelN
 		ci->modelIcon = trap_R_RegisterShaderNoMip( filename );
 	}
 
+#if 0 // q3test players do not have icons
 	if ( !ci->modelIcon ) {
 		return qfalse;
 	}
+#endif
 
 	return qtrue;
 }
