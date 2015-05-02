@@ -3,6 +3,10 @@
 ioq3.js is a simple port of [ioquake3](http://www.ioquake3.org) to the web using [Emscripten](http://github.com/kripken/emscripten). It was
 heavily inspired by inolen's [quakejs](https://github.com/inolen/quakejs), but aims to be simpler and up-to-date with the latest Emscripten features.
 
+## Demo
+
+You can play the demo version [here](https://dl.dropboxusercontent.com/u/62064441/ioquake3.js/ioquake3.html).
+
 ## Building
 
 ```shell
