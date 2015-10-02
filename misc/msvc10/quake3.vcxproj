@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug TA|Win32">
@@ -163,7 +163,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\code\SDL2\include;..\..\code\libcurl-7.35.0;..\..\code\AL;..\..\code\libspeex\include;..\..\code\zlib;..\..\code\jpeg-8c;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;HAVE_CONFIG_H;MISSIONPACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;USE_RENDERER_DLOPEN;HAVE_CONFIG_H;MISSIONPACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -218,7 +218,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\code\SDL2\include;..\..\code\libcurl-7.35.0;..\..\code\AL;..\..\code\libspeex\include;..\..\code\zlib;..\..\code\jpeg-8c;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32;WIN32;_WIN64;__WIN64__;NDEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;HAVE_CONFIG_H;MISSIONPACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;_WIN64;__WIN64__;NDEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;USE_RENDERER_DLOPEN;HAVE_CONFIG_H;MISSIONPACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -272,7 +272,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\code\SDL2\include;..\..\code\libcurl-7.35.0;..\..\code\AL;..\..\code\libspeex\include;..\..\code\zlib;..\..\code\jpeg-8c;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32;WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;USE_RENDERER_DLOPEN;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -329,7 +329,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\code\SDL2\include;..\..\code\libcurl-7.35.0;..\..\code\AL;..\..\code\libspeex\include;..\..\code\zlib;..\..\code\jpeg-8c;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32;WIN32;_WIN64;__WIN64__;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;_WIN64;__WIN64__;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;USE_RENDERER_DLOPEN;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -387,7 +387,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\code\SDL2\include;..\..\code\libcurl-7.35.0;..\..\code\AL;..\..\code\libspeex\include;..\..\code\zlib;..\..\code\jpeg-8c;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;USE_RENDERER_DLOPEN;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -442,7 +442,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\code\SDL2\include;..\..\code\libcurl-7.35.0;..\..\code\AL;..\..\code\libspeex\include;..\..\code\zlib;..\..\code\jpeg-8c;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32;WIN32;_WIN64;__WIN64__;NDEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;_WIN64;__WIN64__;NDEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;USE_RENDERER_DLOPEN;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -495,7 +495,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\code\SDL2\include;..\..\code\libcurl-7.35.0;..\..\code\AL;..\..\code\libspeex\include;..\..\code\zlib;..\..\code\jpeg-8c;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32;WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;HAVE_CONFIG_H;MISSIONPACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;USE_RENDERER_DLOPEN;HAVE_CONFIG_H;MISSIONPACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -552,7 +552,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\code\SDL2\include;..\..\code\libcurl-7.35.0;..\..\code\AL;..\..\code\libspeex\include;..\..\code\zlib;..\..\code\jpeg-8c;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32;WIN32;_WIN64;__WIN64__;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;HAVE_CONFIG_H;MISSIONPACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;_WIN64;__WIN64__;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;BOTLIB;USE_ICON;USE_CURL;USE_CURL_DLOPEN;USE_OPENAL;USE_OPENAL_DLOPEN;USE_VOIP;USE_INTERNAL_JPEG;USE_RENDERER_DLOPEN;HAVE_CONFIG_H;MISSIONPACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -1004,41 +1004,6 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="..\..\code\renderercommon\tr_font.c" />
-    <ClCompile Include="..\..\code\renderercommon\tr_image_bmp.c" />
-    <ClCompile Include="..\..\code\renderercommon\tr_image_jpg.c" />
-    <ClCompile Include="..\..\code\renderercommon\tr_image_pcx.c" />
-    <ClCompile Include="..\..\code\renderercommon\tr_image_png.c" />
-    <ClCompile Include="..\..\code\renderercommon\tr_image_tga.c" />
-    <ClCompile Include="..\..\code\renderercommon\tr_noise.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_animation.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_backend.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_bsp.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_cmds.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_curve.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_flares.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_image.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_init.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_light.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_main.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_marks.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_mesh.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_model.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_model_iqm.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_scene.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_shade.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_shader.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_shade_calc.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_shadows.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_sky.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_subs.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release TA|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug TA|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\code\renderergl1\tr_surface.c" />
-    <ClCompile Include="..\..\code\renderergl1\tr_world.c" />
     <ClCompile Include="..\..\code\sys\con_log.c" />
     <ClCompile Include="..\..\code\sys\con_passive.c" />
     <ClCompile Include="..\..\code\qcommon\cvar.c">
@@ -1238,8 +1203,6 @@
     <ClCompile Include="..\..\code\qcommon\q_math.c" />
     <ClCompile Include="..\..\code\qcommon\q_shared.c" />
     <ClCompile Include="..\..\code\client\qal.c" />
-    <ClCompile Include="..\..\code\sdl\sdl_gamma.c" />
-    <ClCompile Include="..\..\code\sdl\sdl_glimp.c" />
     <ClCompile Include="..\..\code\sdl\sdl_input.c" />
     <ClCompile Include="..\..\code\sdl\sdl_snd.c" />
     <ClCompile Include="..\..\code\client\snd_adpcm.c">
@@ -1681,52 +1644,6 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="..\..\code\jpeg-8c\jaricom.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jcapimin.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jcapistd.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jcarith.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jccoefct.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jccolor.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jcdctmgr.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jchuff.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jcinit.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jcmainct.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jcmarker.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jcmaster.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jcomapi.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jcparam.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jcprepct.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jcsample.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jctrans.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdapimin.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdapistd.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdarith.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdatadst.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdatasrc.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdcoefct.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdcolor.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jddctmgr.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdhuff.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdinput.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdmainct.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdmarker.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdmaster.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdmerge.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdpostct.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdsample.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jdtrans.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jerror.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jfdctflt.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jfdctfst.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jfdctint.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jidctflt.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jidctfst.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jidctint.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jmemmgr.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jmemnobs.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jquant1.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jquant2.c" />
-    <ClCompile Include="..\..\code\jpeg-8c\jutils.c" />
     <ClCompile Include="..\..\code\botlib\be_aas_bspq3.c" />
     <ClCompile Include="..\..\code\botlib\be_aas_cluster.c" />
     <ClCompile Include="..\..\code\botlib\be_aas_debug.c" />
@@ -1815,8 +1732,6 @@
     <ClInclude Include="..\..\code\qcommon\cm_polylib.h" />
     <ClInclude Include="..\..\code\qcommon\cm_public.h" />
     <ClInclude Include="..\..\code\game\g_public.h" />
-    <ClInclude Include="..\..\code\renderercommon\iqm.h" />
-    <ClInclude Include="..\..\code\renderercommon\tr_common.h" />
     <ClInclude Include="..\..\code\renderercommon\tr_public.h" />
     <ClInclude Include="..\..\code\renderercommon\tr_types.h" />
     <ClInclude Include="..\..\code\client\keycodes.h" />
@@ -1830,20 +1745,10 @@
     <ClInclude Include="..\..\code\client\snd_local.h" />
     <ClInclude Include="..\..\code\client\snd_public.h" />
     <ClInclude Include="..\..\code\qcommon\surfaceflags.h" />
-    <ClInclude Include="..\..\code\renderergl1\tr_local.h" />
     <ClInclude Include="..\..\code\ui\ui_public.h" />
     <ClInclude Include="..\..\code\qcommon\unzip.h" />
     <ClInclude Include="..\..\code\qcommon\vm_local.h" />
     <ClInclude Include="..\..\code\sys\sys_local.h" />
-    <ClInclude Include="..\..\code\jpeg-8c\jconfig.h" />
-    <ClInclude Include="..\..\code\jpeg-8c\jdct.h" />
-    <ClInclude Include="..\..\code\jpeg-8c\jerror.h" />
-    <ClInclude Include="..\..\code\jpeg-8c\jinclude.h" />
-    <ClInclude Include="..\..\code\jpeg-8c\jmemsys.h" />
-    <ClInclude Include="..\..\code\jpeg-8c\jmorecfg.h" />
-    <ClInclude Include="..\..\code\jpeg-8c\jpegint.h" />
-    <ClInclude Include="..\..\code\jpeg-8c\jpeglib.h" />
-    <ClInclude Include="..\..\code\jpeg-8c\jversion.h" />
     <ClInclude Include="..\..\code\botlib\aasfile.h" />
     <ClInclude Include="..\..\code\botlib\be_aas_bsp.h" />
     <ClInclude Include="..\..\code\botlib\be_aas_cluster.h" />
