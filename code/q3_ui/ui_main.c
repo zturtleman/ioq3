@@ -154,23 +154,28 @@ vmCvar_t	ui_server14;
 vmCvar_t	ui_server15;
 vmCvar_t	ui_server16;
 
+// mmp
+vmCvar_t	ui_sharpCursor;
+//vmCvar_t	ui_sensitivity; // since SDL2 pretty much increases the speed of the mouse by almost 228%
+vmCvar_t	ui_customRuleSet;
+
 vmCvar_t	ui_cdkeychecked;
 vmCvar_t	ui_ioq3;
 
 static cvarTable_t		cvarTable[] = {
-	{ &ui_ffa_fraglimit, "ui_ffa_fraglimit", "20", CVAR_ARCHIVE },
-	{ &ui_ffa_timelimit, "ui_ffa_timelimit", "0", CVAR_ARCHIVE },
+	{ &ui_ffa_fraglimit, "ui_ffa_fraglimit", "69", CVAR_ARCHIVE },
+	{ &ui_ffa_timelimit, "ui_ffa_timelimit", "10", CVAR_ARCHIVE },
 
 	{ &ui_tourney_fraglimit, "ui_tourney_fraglimit", "0", CVAR_ARCHIVE },
-	{ &ui_tourney_timelimit, "ui_tourney_timelimit", "15", CVAR_ARCHIVE },
+	{ &ui_tourney_timelimit, "ui_tourney_timelimit", "10", CVAR_ARCHIVE },
 
 	{ &ui_team_fraglimit, "ui_team_fraglimit", "0", CVAR_ARCHIVE },
-	{ &ui_team_timelimit, "ui_team_timelimit", "20", CVAR_ARCHIVE },
+	{ &ui_team_timelimit, "ui_team_timelimit", "10", CVAR_ARCHIVE },
 	{ &ui_team_friendly, "ui_team_friendly",  "1", CVAR_ARCHIVE },
 
 	{ &ui_ctf_capturelimit, "ui_ctf_capturelimit", "8", CVAR_ARCHIVE },
-	{ &ui_ctf_timelimit, "ui_ctf_timelimit", "30", CVAR_ARCHIVE },
-	{ &ui_ctf_friendly, "ui_ctf_friendly",  "0", CVAR_ARCHIVE },
+	{ &ui_ctf_timelimit, "ui_ctf_timelimit", "10", CVAR_ARCHIVE },
+	{ &ui_ctf_friendly, "ui_ctf_friendly",  "1", CVAR_ARCHIVE },
 
 	{ &ui_arenasFile, "g_arenasFile", "", CVAR_INIT|CVAR_ROM },
 	{ &ui_botsFile, "g_botsFile", "", CVAR_INIT|CVAR_ROM },
@@ -212,6 +217,10 @@ static cvarTable_t		cvarTable[] = {
 	{ &ui_server14, "server14", "", CVAR_ARCHIVE },
 	{ &ui_server15, "server15", "", CVAR_ARCHIVE },
 	{ &ui_server16, "server16", "", CVAR_ARCHIVE },
+
+	{ &ui_sharpCursor, "ui_sharpCursor", "1", CVAR_ARCHIVE },
+//	{ &ui_sensitivity, "ui_sensitivity", "0.4375", CVAR_ARCHIVE },
+	{ &ui_customRuleSet, "ui_customRuleSet", "0", CVAR_ARCHIVE },
 
 	{ &ui_cdkeychecked, "ui_cdkeychecked", "0", CVAR_ROM },
 	{ &ui_ioq3, "ui_ioq3", "1", CVAR_ROM }

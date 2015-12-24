@@ -183,7 +183,7 @@ static void UI_SPLevelMenu_SetBots( void ) {
 		while( *p && *p == ' ' ) {
 			p++;
 		}
-		if( !*p ) {
+		if( !p ) {
 			break;
 		}
 
@@ -236,6 +236,7 @@ static void UI_SPLevelMenu_SetMenuArena( int n, int level, const char *arenaInfo
 		levelMenuInfo.levelScores[n] = 8;
 	}
 
+	/*strcpy( levelMenuInfo.levelPicNames[n], va( "levelshots/%s.tga", map ) );*/
 	Com_sprintf( levelMenuInfo.levelPicNames[n], sizeof(levelMenuInfo.levelPicNames[n]), "levelshots/%s.tga", map );
 	if( !trap_R_RegisterShaderNoMip( levelMenuInfo.levelPicNames[n] ) ) {
 		strcpy( levelMenuInfo.levelPicNames[n], ART_MAP_UNKNOWN );
@@ -368,11 +369,7 @@ static void UI_SPLevelMenu_ResetAction( qboolean result ) {
 
 	// clear game variables
 	UI_NewGame();
-	if ( UI_GetSpecialArenaInfo( "training" ) ) {
-		trap_Cvar_SetValue( "ui_spSelection", -4 );
-	} else {
-		trap_Cvar_SetValue( "ui_spSelection", 0 );
-	}
+	trap_Cvar_SetValue( "ui_spSelection", -4 );
 
 	// make the level select menu re-initialize
 	UI_PopMenu();

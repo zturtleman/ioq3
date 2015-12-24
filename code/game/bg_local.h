@@ -24,14 +24,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	MIN_WALK_NORMAL	0.7f		// can't walk on very steep slopes
 
-#define	STEPSIZE		18
+#define	STEPSIZE		18 // it's what you think it is
 
-#define	JUMP_VELOCITY	270
+#define	JUMP_VELOCITY	270 * GAME_SPEED_MULTIPLIER
 
 #define	TIMER_LAND		130
-#define	TIMER_GESTURE	(34*66+50)
+#define	TIMER_GESTURE		1024 // was (34*66+50)
 
-#define	OVERCLIP		1.001f
+#define	OVERCLIP		1.001f // 2.002f is a nice hack, which keeps you bouncing
 
 // all of the locals will be zeroed before each
 // pmove, just to make damn sure we don't have
@@ -45,6 +45,7 @@ typedef struct {
 	qboolean	walking;
 	qboolean	groundPlane;
 	trace_t		groundTrace;
+	qboolean	ladder;
 
 	float		impactSpeed;
 

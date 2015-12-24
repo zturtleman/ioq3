@@ -82,7 +82,7 @@ void SV_UpdateConfigstrings(client_t *client)
 {
 	int index;
 
-	for( index = 0; index < MAX_CONFIGSTRINGS; index++ ) {
+	for( index = 0; index /*<=*/ < MAX_CONFIGSTRINGS; index++ ) {
 		// if the CS hasn't changed since we went to CS_PRIMED, ignore
 		if(!client->csUpdated[index])
 			continue;
@@ -422,6 +422,13 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 	// clear the whole hunk because we're (re)loading the server
 	Hunk_Clear();
 
+/*
+#ifndef DEDICATED
+	// Restart renderer
+	CL_StartHunkUsers( qtrue );
+#endif
+*/
+
 	// clear collision map data
 	CM_ClearMap();
 
@@ -634,22 +641,24 @@ void SV_Init (void)
 	SV_AddOperatorCommands ();
 
 	// serverinfo vars
-	Cvar_Get ("dmflags", "0", CVAR_SERVERINFO);
-	Cvar_Get ("fraglimit", "20", CVAR_SERVERINFO);
-	Cvar_Get ("timelimit", "0", CVAR_SERVERINFO);
+	Cvar_Get ("dmflags", "0", 0); // this will be removed
+	Cvar_Get ("scorelimit", "35", /*CVAR_SERVERINFO*/ 0); // replaced fraglimit, and was 20
+	Cvar_Get ("timelimit", "10", /*CVAR_SERVERINFO*/ 0); // was 0
 	sv_gametype = Cvar_Get ("g_gametype", "0", CVAR_SERVERINFO | CVAR_LATCH );
 	Cvar_Get ("sv_keywords", "", CVAR_SERVERINFO);
 	sv_mapname = Cvar_Get ("mapname", "nomap", CVAR_SERVERINFO | CVAR_ROM);
 	sv_privateClients = Cvar_Get ("sv_privateClients", "0", CVAR_SERVERINFO);
-	sv_hostname = Cvar_Get ("sv_hostname", "noname", CVAR_SERVERINFO | CVAR_ARCHIVE );
-	sv_maxclients = Cvar_Get ("sv_maxclients", "8", CVAR_SERVERINFO | CVAR_LATCH);
+	sv_hostname = Cvar_Get ("sv_hostname", "UnnamedServer", CVAR_SERVERINFO | CVAR_ARCHIVE ); // was "noname"
+	sv_maxclients = Cvar_Get ("sv_maxclients", "16", CVAR_SERVERINFO | CVAR_LATCH); // was 8
+	/*sv_realHumanPlayers = Cvar_Get ("sv_realHumanPlayers", "0", CVAR_SYSTEMINFO | CVAR_ROM );*/
 
-	sv_minRate = Cvar_Get ("sv_minRate", "0", CVAR_ARCHIVE | CVAR_SERVERINFO );
-	sv_maxRate = Cvar_Get ("sv_maxRate", "0", CVAR_ARCHIVE | CVAR_SERVERINFO );
-	sv_dlRate = Cvar_Get("sv_dlRate", "100", CVAR_ARCHIVE | CVAR_SERVERINFO);
-	sv_minPing = Cvar_Get ("sv_minPing", "0", CVAR_ARCHIVE | CVAR_SERVERINFO );
-	sv_maxPing = Cvar_Get ("sv_maxPing", "0", CVAR_ARCHIVE | CVAR_SERVERINFO );
-	sv_floodProtect = Cvar_Get ("sv_floodProtect", "1", CVAR_ARCHIVE | CVAR_SERVERINFO );
+	// mmp - bugfix-131119: forgot to comment out | CVAR_SERVERINFO, which left a blank cvar with a value of 0 in the info string
+	sv_minRate = Cvar_Get (/*"sv_minRate"*/"", "0", CVAR_ARCHIVE /*| CVAR_SERVERINFO*/ );
+	sv_maxRate = Cvar_Get (/*"sv_maxRate"*/"", "0", CVAR_ARCHIVE /*| CVAR_SERVERINFO*/ );
+	sv_dlRate = Cvar_Get("sv_dlRate""", "100", CVAR_ARCHIVE | CVAR_SERVERINFO);
+	sv_minPing = Cvar_Get (/*"sv_minPing"*/"", "0", CVAR_ARCHIVE /*| CVAR_SERVERINFO*/ );
+	sv_maxPing = Cvar_Get (/*"sv_maxPing"*/"", "0", CVAR_ARCHIVE /*| CVAR_SERVERINFO*/ );
+	sv_floodProtect = Cvar_Get ("sv_floodProtect", "1", CVAR_ARCHIVE /*| CVAR_SERVERINFO*/ );
 
 	// systeminfo
 	Cvar_Get ("sv_cheats", "1", CVAR_SYSTEMINFO | CVAR_ROM );
@@ -667,7 +676,7 @@ void SV_Init (void)
 	// server vars
 	sv_rconPassword = Cvar_Get ("rconPassword", "", CVAR_TEMP );
 	sv_privatePassword = Cvar_Get ("sv_privatePassword", "", CVAR_TEMP );
-	sv_fps = Cvar_Get ("sv_fps", "20", CVAR_TEMP );
+	sv_fps = Cvar_Get ("sv_fps", "40", CVAR_TEMP ); // was 20
 	sv_timeout = Cvar_Get ("sv_timeout", "200", CVAR_TEMP );
 	sv_zombietime = Cvar_Get ("sv_zombietime", "2", CVAR_TEMP );
 	Cvar_Get ("nextmap", "", CVAR_TEMP );
@@ -676,11 +685,14 @@ void SV_Init (void)
 	Cvar_Get ("sv_dlURL", "", CVAR_SERVERINFO | CVAR_ARCHIVE);
 	
 	sv_master[0] = Cvar_Get("sv_master1", MASTER_SERVER_NAME, 0);
-	sv_master[1] = Cvar_Get("sv_master2", "master.ioquake3.org", 0);
-	for(index = 2; index < MAX_MASTER_SERVERS; index++)
+	for(index = 1; index < MAX_MASTER_SERVERS; index++)
 		sv_master[index] = Cvar_Get(va("sv_master%d", index + 1), "", CVAR_ARCHIVE);
+	// mmp
+	/*sv_master[1] = Cvar_Get("sv_master2", TROLL_MASTER_SERVER_NAME, 0);
+	for(index = 2; index < MAX_MASTER_SERVERS; index++)
+		sv_master[index] = Cvar_Get(va("sv_master%d", index + 1), "", CVAR_ARCHIVE);*/
 
-	sv_reconnectlimit = Cvar_Get ("sv_reconnectlimit", "3", 0);
+	sv_reconnectlimit = Cvar_Get ("sv_reconnectlimit", "7", 0); // was 3
 	sv_showloss = Cvar_Get ("sv_showloss", "0", 0);
 	sv_padPackets = Cvar_Get ("sv_padPackets", "0", 0);
 	sv_killserver = Cvar_Get ("sv_killserver", "0", 0);
@@ -690,6 +702,17 @@ void SV_Init (void)
 	sv_strictAuth = Cvar_Get ("sv_strictAuth", "1", CVAR_ARCHIVE );
 #endif
 	sv_banFile = Cvar_Get("sv_banFile", "serverbans.dat", CVAR_ARCHIVE);
+
+	// mmp - privacy feature(s)
+	sv_hideClientInfo = Cvar_Get ("sv_hideClientInfo", "0", 0); // "1" hide ping and score of players, or "2" show nothing
+
+	// mmp - display test
+	sv_spoofHP = Cvar_Get ("sv_spoofHP", "-1", CVAR_CHEAT); // lie about the amount of human players (test use only)
+	sv_spoofList = Cvar_Get ("sv_spoofList", "0", CVAR_CHEAT); // falsely display player names in server info (test use only)
+	sv_spoofNames = Cvar_Get ("sv_spoofNames", "", CVAR_CHEAT); // name list for the cvar above (test use only)
+	sv_spoofNamesOffset = Cvar_Get ("sv_spoofNamesOffset", "0", CVAR_CHEAT); // skip a number of names of name list above
+	sv_useVQ3Protocol = Cvar_Get ("sv_useVQ3Protocol", "0", CVAR_CHEAT);
+	sv_gameMismatchError = Cvar_Get ("sv_gameMismatchError", "", CVAR_CHEAT); // specifies an error message on a game-mismatched client
 
 	// initialize bot cvars so they are listed and can be set before loading the botlib
 	SV_BotInitCvars();

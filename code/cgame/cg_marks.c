@@ -42,7 +42,7 @@ static		int	markTotal;
 ===================
 CG_InitMarkPolys
 
-This is called at startup and for tournement restarts
+This is called at startup and for tournament restarts
 ===================
 */
 void	CG_InitMarkPolys( void ) {
@@ -65,7 +65,7 @@ CG_FreeMarkPoly
 ==================
 */
 void CG_FreeMarkPoly( markPoly_t *le ) {
-	if ( !le->prevMark || !le->nextMark ) {
+	if ( !le->prevMark ) {
 		CG_Error( "CG_FreeLocalEntity: not active" );
 	}
 
@@ -253,7 +253,7 @@ void CG_AddMarks( void ) {
 		}
 
 		// fade out the energy bursts
-		if ( mp->markShader == cgs.media.energyMarkShader ) {
+		if ( mp->markShader == cgs.media.energyMarkShader || mp->markShader == cgs.media.blasterMarkShader ) {
 
 			fade = 450 - 450 * ( (cg.time - mp->time ) / 3000.0 );
 			if ( fade < 255 ) {

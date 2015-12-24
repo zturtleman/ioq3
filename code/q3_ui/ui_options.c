@@ -111,6 +111,8 @@ void SystemConfig_Cache( void ) {
 Options_MenuInit
 ===============
 */
+#define OPTION_XPOS			16
+
 void Options_MenuInit( void ) {
 	int				y;
 	uiClientState_t	cstate;

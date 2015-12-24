@@ -114,8 +114,8 @@ void UpdateTournamentInfo( void ) {
 
 #else
 		perfect = ( level.clients[playerClientNum].ps.persistant[PERS_RANK] == 0 && player->client->ps.persistant[PERS_KILLED] == 0 ) ? 1 : 0;
-		Com_sprintf( msg, sizeof(msg), "postgame %i %i %i %i %i %i %i %i", level.numNonSpectatorClients, playerClientNum, accuracy,
-			player->client->ps.persistant[PERS_IMPRESSIVE_COUNT], player->client->ps.persistant[PERS_EXCELLENT_COUNT],
+		Com_sprintf( msg, sizeof(msg), "postgame %i %i %i /*%i */%i %i %i %i", level.numNonSpectatorClients, playerClientNum, accuracy,
+			/*player->client->ps.persistant[PERS_IMPRESSIVE_COUNT],*/ player->client->ps.persistant[PERS_EXCELLENT_COUNT],
 			player->client->ps.persistant[PERS_GAUNTLET_FRAG_COUNT], player->client->ps.persistant[PERS_SCORE],
 			perfect );
 #endif
@@ -163,7 +163,7 @@ static gentity_t *SpawnModelOnVictoryPad( gentity_t *pad, vec3_t offset, gentity
 	body->s.legsAnim = LEGS_IDLE;
 	body->s.torsoAnim = TORSO_STAND;
 	if( body->s.weapon == WP_NONE ) {
-		body->s.weapon = WP_MACHINEGUN;
+		body->s.weapon = WP_SHOTGUN;
 	}
 	if( body->s.weapon == WP_GAUNTLET) {
 		body->s.torsoAnim = TORSO_STAND2;
@@ -224,6 +224,7 @@ static void CelebrateStart( gentity_t *player ) {
 	player->client->ps.eventSequence++;
 	*/
 	G_AddEvent(player, EV_TAUNT, 0);
+//	G_AddEvent(player, EV_TAUNT1 +(rand()&3), 0);
 }
 
 

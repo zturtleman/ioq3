@@ -538,9 +538,24 @@ void G_KillBox (gentity_t *ent) {
 			continue;
 		}
 
-		// nail it
-		G_Damage ( hit, ent, ent, NULL, NULL,
-			100000, DAMAGE_NO_PROTECTION, MOD_TELEFRAG);
+		// TODO: test this - mmp
+		// FIXME: if both players have pent, they both need to get telefragged, this is currently not happening
+		// also, this code is a fucking mess
+		// does the other entity have pent?
+		if ( !hit->client->ps.powerups[PW_PENT] ) {
+			// if not, nail it
+			G_Damage ( hit, ent, ent, NULL, NULL,
+				100000, DAMAGE_NO_PROTECTION, MOD_TELEFRAG);
+		} else {
+			// if both have pent, then they both die
+			if ( ent->client->ps.powerups[PW_PENT] ) {
+				G_Damage ( hit, ent, ent, NULL, NULL,
+					100000, DAMAGE_NO_PROTECTION, MOD_TELEFRAG);
+			}
+			// other gets nailed
+			G_Damage ( ent, hit, hit, NULL, NULL,
+				100000, DAMAGE_NO_PROTECTION, MOD_TELEFRAG);
+		}
 	}
 
 }

@@ -609,22 +609,17 @@ void Fade(int *flags, float *f, float clamp, int *nextTime, int offsetTime, qboo
 void Window_Paint(Window *w, float fadeAmount, float fadeClamp, float fadeCycle) {
   //float bordersize = 0;
   vec4_t color = {0};
-  rectDef_t fillRect;
+  rectDef_t fillRect = w->rect;
 
-  if ( w == NULL ) {
-    return;
-  }
 
   if (debugMode) {
     color[0] = color[1] = color[2] = color[3] = 1;
     DC->drawRect(w->rect.x, w->rect.y, w->rect.w, w->rect.h, 1, color);
   }
 
-  if (w->style == 0 && w->border == 0) {
+  if (w == NULL || (w->style == 0 && w->border == 0)) {
     return;
   }
-
-  fillRect = w->rect;
 
   if (w->border != 0) {
     fillRect.x += w->borderSize;
@@ -4208,12 +4203,12 @@ void Menu_HandleMouseMove(menuDef_t *menu, float x, float y) {
 						}
 					}
 				}
-			} else if (menu->items[i] && menu->items[i]->window.flags & WINDOW_MOUSEOVER) {
-				Item_MouseLeave(menu->items[i]);
-				Item_SetMouseOver(menu->items[i], qfalse);
-			}
-		}
-	}
+      } else if (menu->items[i]->window.flags & WINDOW_MOUSEOVER) {
+          Item_MouseLeave(menu->items[i]);
+          Item_SetMouseOver(menu->items[i], qfalse);
+      }
+    }
+  }
 
 }
 
@@ -5523,9 +5518,6 @@ qboolean MenuParse_itemDef( itemDef_t *item, int handle ) {
 	menuDef_t *menu = (menuDef_t*)item;
 	if (menu->itemCount < MAX_MENUITEMS) {
 		menu->items[menu->itemCount] = UI_Alloc(sizeof(itemDef_t));
-		if (!menu->items[menu->itemCount]) {
-			return qfalse;
-		}
 		Item_Init(menu->items[menu->itemCount]);
 		if (!Item_Parse(handle, menu->items[menu->itemCount])) {
 			return qfalse;

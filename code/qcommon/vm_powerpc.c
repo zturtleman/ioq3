@@ -45,7 +45,11 @@ static clock_t time_total_vm = 0;
 #endif
 
 /* exit() won't be called but use it because it is marked with noreturn */
-#define DIE( reason ) Com_Error( ERR_DROP, "vm_powerpc compiler error: " reason )
+#define DIE( reason ) \
+	do { \
+		Com_Error(ERR_DROP, "vm_powerpc compiler error: " reason); \
+		exit(1); \
+	} while(0)
 
 /*
  * vm_powerpc uses large quantities of memory during compilation,
@@ -1961,6 +1965,8 @@ PPC_ComputeCode( vm_t *vm )
 			di_now = di_first;
 		}
 	}
+
+	return;
 }
 
 static void

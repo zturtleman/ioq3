@@ -86,8 +86,8 @@ typedef struct {
 
 // the parseEntities array must be large enough to hold PACKET_BACKUP frames of
 // entities, so that when a delta compressed message arives from the server
-// it can be un-deltad from the original 
-#define	MAX_PARSE_ENTITIES	( PACKET_BACKUP * MAX_SNAPSHOT_ENTITIES )
+// it can be un-deltad from the original
+#define	MAX_PARSE_ENTITIES	( PACKET_BACKUP * MAX_SNAPSHOT_ENTITIES ) // was 2048
 
 extern int g_console_field_width;
 
@@ -118,6 +118,7 @@ typedef struct {
 	// cgame communicates a few values to the client system
 	int			cgameUserCmdValue;	// current weapon to add to usercmd_t
 	float		cgameSensitivity;
+	int			cgameMiscFlags;		// misc items to add to usercmd_t
 
 	// cmds[cmdNumber] is the predicted command, [cmdNumber-1] is the last
 	// properly generated command
@@ -343,6 +344,9 @@ typedef struct {
 
 	int pingUpdateSource;		// source currently pinging or updating
 
+	char		oldGame[MAX_QPATH];
+	qboolean	oldGameSet;
+
 	// update server info
 	netadr_t	updateServer;
 	char		updateChallenge[MAX_TOKEN_CHARS];
@@ -408,6 +412,8 @@ extern	cvar_t	*j_yaw;
 extern	cvar_t	*j_forward;
 extern	cvar_t	*j_side;
 extern	cvar_t	*j_up;
+extern	cvar_t	*j_upLockOut; // mmp - up pot lockout flag, 1 = forbig under zero, 2 = forbid over zero
+
 extern	cvar_t	*j_pitch_axis;
 extern	cvar_t	*j_yaw_axis;
 extern	cvar_t	*j_forward_axis;
@@ -567,7 +573,7 @@ void	SCR_DebugGraph (float value);
 int		SCR_GetBigStringWidth( const char *str );	// returns in virtual 640x480 coordinates
 
 void	SCR_AdjustFrom640( float *x, float *y, float *w, float *h );
-void	SCR_FillRect( float x, float y, float width, float height, 
+void	SCR_FillRect( float x, float y, float width, float height,
 					 const float *color );
 void	SCR_DrawPic( float x, float y, float width, float height, qhandle_t hShader );
 void	SCR_DrawNamedPic( float x, float y, float width, float height, const char *picname );

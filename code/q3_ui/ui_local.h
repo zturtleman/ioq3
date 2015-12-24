@@ -90,6 +90,11 @@ extern vmCvar_t	ui_server14;
 extern vmCvar_t	ui_server15;
 extern vmCvar_t	ui_server16;
 
+// mmp
+extern vmCvar_t	ui_sharpCursor;
+//extern vmCvar_t	ui_sensitivity;
+extern vmCvar_t	ui_customRuleSet;
+
 extern vmCvar_t	ui_cdkey;
 extern vmCvar_t	ui_cdkeychecked;
 extern vmCvar_t	ui_ioq3;
@@ -109,16 +114,17 @@ extern vmCvar_t	ui_ioq3;
 #define MAX_MENUITEMS			64
 
 #define MTYPE_NULL				0
-#define MTYPE_SLIDER			1	
+#define MTYPE_SLIDER			1
 #define MTYPE_ACTION			2
 #define MTYPE_SPINCONTROL		3
 #define MTYPE_FIELD				4
 #define MTYPE_RADIOBUTTON		5
-#define MTYPE_BITMAP			6	
+#define MTYPE_BITMAP			6
 #define MTYPE_TEXT				7
 #define MTYPE_SCROLLLIST		8
-#define MTYPE_PTEXT				9
-#define MTYPE_BTEXT				10
+#define MTYPE_MENUTEXT			9
+#define MTYPE_PTEXT				10
+#define MTYPE_BTEXT				11
 
 #define QMF_BLINK				((unsigned int) 0x00000001)
 #define QMF_SMALLFONT			((unsigned int) 0x00000002)
@@ -141,6 +147,8 @@ extern vmCvar_t	ui_ioq3;
 #define QMF_LOWERCASE			((unsigned int) 0x00040000)	// edit field is all lower case
 #define QMF_UPPERCASE			((unsigned int) 0x00080000)	// edit field is all upper case
 #define QMF_SILENT				((unsigned int) 0x00100000)
+
+#define OPTION_YPOS_ALIGN		4 // used for 16 px tall rows with small prop chars
 
 // callback notifications
 #define QM_GOTFOCUS				1
@@ -282,6 +290,8 @@ extern vec4_t		menu_highlight_color;
 extern vec4_t		menu_red_color;
 extern vec4_t		menu_black_color;
 extern vec4_t		menu_dim_color;
+extern vec4_t		menu_option_color;
+extern vec4_t		menu_select_color;
 extern vec4_t		color_black;
 extern vec4_t		color_white;
 extern vec4_t		color_yellow;
@@ -318,6 +328,15 @@ extern void MainMenu_Cache( void );
 extern void UI_MainMenu(void);
 extern void UI_RegisterCvars( void );
 extern void UI_UpdateCvars( void );
+
+// mmp menus start
+
+//
+// ui_mftest.c
+//
+extern void Test_Cache( void );
+
+// mmp menus end
 
 //
 // ui_credits.c

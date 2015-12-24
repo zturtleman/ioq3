@@ -28,6 +28,9 @@ char	*cg_customSoundNames[MAX_CUSTOM_SOUNDS] = {
 	"*death2.wav",
 	"*death3.wav",
 	"*jump1.wav",
+	"*jump2.wav",
+	"*jump3.wav",
+	"*jump4.wav",
 	"*pain25_1.wav",
 	"*pain50_1.wav",
 	"*pain75_1.wav",
@@ -36,7 +39,13 @@ char	*cg_customSoundNames[MAX_CUSTOM_SOUNDS] = {
 	"*gasp.wav",
 	"*drown.wav",
 	"*fall1.wav",
-	"*taunt.wav"
+	"*fall2.wav",
+	"*lava.wav",
+	"*taunt1.wav",
+	"*taunt2.wav",
+	"*taunt3.wav",
+	"*taunt4.wav",
+	"*taunt5.wav"
 };
 
 
@@ -83,7 +92,7 @@ CLIENT INFO
 ======================
 CG_ParseAnimationFile
 
-Read a configuration file containing animation counts and rates
+Read a configuration file containing animation coutns and rates
 models/players/visor/animation.cfg, etc
 ======================
 */
@@ -896,8 +905,16 @@ void CG_NewClientInfo( int clientNum ) {
 	v = Info_ValueForKey(configstring, "n");
 	Q_strncpyz( newInfo.name, v, sizeof( newInfo.name ) );
 
+	// isolate the player's clan name
+	v = Info_ValueForKey(configstring, "c");
+	Q_strncpyz( newInfo.clan, v, sizeof( newInfo.clan ) );
+
+	// isolate the player's portrait
+	v = Info_ValueForKey(configstring, "port");
+	Q_strncpyz( newInfo.port, v, sizeof( newInfo.port ) );
+
 	// colors
-	v = Info_ValueForKey( configstring, "c1" );
+	/*v = Info_ValueForKey( configstring, "c1" );
 	CG_ColorFromString( v, newInfo.color1 );
 
 	newInfo.c1RGBA[0] = 255 * newInfo.color1[0];
@@ -911,7 +928,7 @@ void CG_NewClientInfo( int clientNum ) {
 	newInfo.c2RGBA[0] = 255 * newInfo.color2[0];
 	newInfo.c2RGBA[1] = 255 * newInfo.color2[1];
 	newInfo.c2RGBA[2] = 255 * newInfo.color2[2];
-	newInfo.c2RGBA[3] = 255;
+	newInfo.c2RGBA[3] = 255;*/
 
 	// bot skill
 	v = Info_ValueForKey( configstring, "skill" );
@@ -941,11 +958,11 @@ void CG_NewClientInfo( int clientNum ) {
 	v = Info_ValueForKey( configstring, "tl" );
 	newInfo.teamLeader = atoi(v);
 
-	v = Info_ValueForKey( configstring, "g_redteam" );
+	/*v = Info_ValueForKey( configstring, "g_redteam" );
 	Q_strncpyz(newInfo.redTeam, v, MAX_TEAMNAME);
 
 	v = Info_ValueForKey( configstring, "g_blueteam" );
-	Q_strncpyz(newInfo.blueTeam, v, MAX_TEAMNAME);
+	Q_strncpyz(newInfo.blueTeam, v, MAX_TEAMNAME);*/
 
 	// model
 	v = Info_ValueForKey( configstring, "model" );
@@ -1774,9 +1791,12 @@ static void CG_PlayerTokens( centity_t *cent, int renderfx ) {
 	refEntity_t	ent;
 	vec3_t		dir, origin;
 	skulltrail_t *trail;
+
+	// limit skull trails to valid entities
 	if ( cent->currentState.number >= MAX_CLIENTS ) {
 		return;
 	}
+
 	trail = &cg.skulltrails[cent->currentState.number];
 	tokens = cent->currentState.generic1;
 	if ( !tokens ) {
@@ -1849,7 +1869,12 @@ static void CG_PlayerPowerups( centity_t *cent, refEntity_t *torso ) {
 
 	// quad gives a dlight
 	if ( powerups & ( 1 << PW_QUAD ) ) {
-		trap_R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 0.2f, 0.2f, 1 );
+		trap_R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 0.2f, 0.4f, 1 );
+	}
+
+	// pent gives a dlight
+	if ( powerups & ( 1 << PW_PENT ) ) {
+		trap_R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 1, 0.4f, 0.2f );
 	}
 
 	// flight plays a looped sound
@@ -1888,7 +1913,7 @@ static void CG_PlayerPowerups( centity_t *cent, refEntity_t *torso ) {
 		else {
 			CG_TrailItem( cent, cgs.media.neutralFlagModel );
 		}
-		trap_R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 1.0, 1.0, 1.0 );
+		trap_R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 1.0, 1.0, 0.2f );
 	}
 
 	// haste leaves smoke trails
@@ -1951,7 +1976,7 @@ static void CG_PlayerSprites( centity_t *cent ) {
 		return;
 	}
 
-	if ( cent->currentState.eFlags & EF_AWARD_IMPRESSIVE ) {
+	/*if ( cent->currentState.eFlags & EF_AWARD_IMPRESSIVE ) {
 		CG_PlayerFloatSprite( cent, cgs.media.medalImpressive );
 		return;
 	}
@@ -1979,7 +2004,7 @@ static void CG_PlayerSprites( centity_t *cent ) {
 	if ( cent->currentState.eFlags & EF_AWARD_CAP ) {
 		CG_PlayerFloatSprite( cent, cgs.media.medalCapture );
 		return;
-	}
+	}*/
 
 	team = cgs.clientinfo[ cent->currentState.clientNum ].team;
 	if ( !(cent->currentState.eFlags & EF_DEAD) && 
@@ -2145,9 +2170,15 @@ CG_AddRefEntityWithPowerups
 
 Adds a piece with modifications or duplications for powerups
 Also called by CG_Missile for quad rockets, but nobody can tell...
+
+...so sad.  :`(
 ===============
 */
-void CG_AddRefEntityWithPowerups( refEntity_t *ent, entityState_t *state, int team ) {
+void CG_AddRefEntityWithPowerups( refEntity_t *ent, entityState_t *state, int team, qboolean isMissile ) {
+
+	clientInfo_t	*localPlayer;
+
+	localPlayer = &cgs.clientinfo[cg.clientNum];
 
 	if ( state->powerups & ( 1 << PW_INVIS ) ) {
 		ent->customShader = cgs.media.invisShader;
@@ -2165,24 +2196,46 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, entityState_t *state, int te
 			trap_R_AddRefEntityToScene( ent );
 		//}
 
-		if ( state->powerups & ( 1 << PW_QUAD ) )
-		{
-			if (team == TEAM_RED)
-				ent->customShader = cgs.media.redQuadShader;
-			else
-				ent->customShader = cgs.media.quadShader;
-			trap_R_AddRefEntityToScene( ent );
-		}
-		if ( state->powerups & ( 1 << PW_REGEN ) ) {
-			if ( ( ( cg.time / 100 ) % 10 ) == 1 ) {
-				ent->customShader = cgs.media.regenShader;
-				trap_R_AddRefEntityToScene( ent );
+		if ( !isMissile && cg_lumOverlay.integer && !(state->eFlags & EF_DEAD) ) {
+			switch(team) {
+				case TEAM_RED:
+					ent->customShader = cgs.media.redOverlay;
+					trap_R_AddRefEntityToScene( ent );
+					break;
+				case TEAM_BLUE:
+					ent->customShader = cgs.media.blueOverlay;
+					trap_R_AddRefEntityToScene( ent );
+					break;
+				default:
+					ent->customShader = cgs.media.neutralOverlay;
+					trap_R_AddRefEntityToScene( ent );
 			}
 		}
-		if ( state->powerups & ( 1 << PW_BATTLESUIT ) ) {
-			ent->customShader = cgs.media.battleSuitShader;
-			trap_R_AddRefEntityToScene( ent );
+
+		if ( isMissile || !(state->eFlags & EF_DEAD) ) {
+
+			if ( state->powerups & ( 1 << PW_QUAD ) || cgs.quadMode )
+			{
+				/*if (team == TEAM_RED)
+					ent->customShader = cgs.media.redQuadShader;
+				else
+					ent->customShader = cgs.media.quadShader;*/
+				ent->customShader = cgs.media.quadShader;
+				trap_R_AddRefEntityToScene( ent );
+			}
+			if ( state->powerups & ( 1 << PW_REGEN ) ) {
+				if ( ( ( cg.time / 100 ) % 10 ) == 1 ) {
+					ent->customShader = cgs.media.regenShader;
+					trap_R_AddRefEntityToScene( ent );
+				}
+			}
+			if ( state->powerups & ( 1 << PW_PENT ) ) {
+				ent->customShader = cgs.media.pentShader;
+				trap_R_AddRefEntityToScene( ent );
+			}
+
 		}
+
 	}
 }
 
@@ -2326,7 +2379,7 @@ void CG_Player( centity_t *cent ) {
 	legs.renderfx = renderfx;
 	VectorCopy (legs.origin, legs.oldorigin);	// don't positionally lerp at all
 
-	CG_AddRefEntityWithPowerups( &legs, &cent->currentState, ci->team );
+	CG_AddRefEntityWithPowerups( &legs, &cent->currentState, ci->team, qfalse );
 
 	// if the model failed, allow the default nullmodel to be displayed
 	if (!legs.hModel) {
@@ -2350,7 +2403,7 @@ void CG_Player( centity_t *cent ) {
 	torso.shadowPlane = shadowPlane;
 	torso.renderfx = renderfx;
 
-	CG_AddRefEntityWithPowerups( &torso, &cent->currentState, ci->team );
+	CG_AddRefEntityWithPowerups( &torso, &cent->currentState, ci->team, qfalse );
 
 #ifdef MISSIONPACK
 	if ( cent->currentState.eFlags & EF_KAMIKAZE ) {
@@ -2572,7 +2625,7 @@ void CG_Player( centity_t *cent ) {
 	head.shadowPlane = shadowPlane;
 	head.renderfx = renderfx;
 
-	CG_AddRefEntityWithPowerups( &head, &cent->currentState, ci->team );
+	CG_AddRefEntityWithPowerups( &head, &cent->currentState, ci->team, qfalse );
 
 #ifdef MISSIONPACK
 	CG_BreathPuffs(cent, &head);

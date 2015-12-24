@@ -42,7 +42,7 @@ COM_SkipPath
 char *COM_SkipPath (char *pathname)
 {
 	char	*last;
-	
+
 	last = pathname;
 	while (*pathname)
 	{
@@ -76,12 +76,8 @@ COM_StripExtension
 void COM_StripExtension( const char *in, char *out, int destsize )
 {
 	const char *dot = strrchr(in, '.'), *slash;
-
 	if (dot && (!(slash = strrchr(in, '/')) || slash < dot))
-		destsize = (destsize < dot-in+1 ? destsize : dot-in+1);
-
-	if ( in == out && destsize > 1 )
-		out[destsize-1] = '\0';
+		Q_strncpyz(out, in, (destsize < dot-in+1 ? destsize : dot-in+1));
 	else
 		Q_strncpyz(out, in, destsize);
 }
@@ -96,18 +92,18 @@ string compare the end of the strings and return qtrue if strings match
 qboolean COM_CompareExtension(const char *in, const char *ext)
 {
 	int inlen, extlen;
-	
+
 	inlen = strlen(in);
 	extlen = strlen(ext);
-	
+
 	if(extlen <= inlen)
 	{
 		in += inlen - extlen;
-		
+
 		if(!Q_stricmp(in, ext))
 			return qtrue;
 	}
-	
+
 	return qfalse;
 }
 
@@ -252,7 +248,7 @@ void Swap_Init (void)
 {
 	byte	swaptest[2] = {1,0};
 
-// set the byte swapping variables in a portable manner	
+// set the byte swapping variables in a portable manner
 	if ( *(short *)swaptest == 1)
 	{
 		_BigShort = ShortSwap;
@@ -290,22 +286,15 @@ PARSING
 static	char	com_token[MAX_TOKEN_CHARS];
 static	char	com_parsename[MAX_TOKEN_CHARS];
 static	int		com_lines;
-static	int		com_tokenline;
 
 void COM_BeginParseSession( const char *name )
 {
-	com_lines = 1;
-	com_tokenline = 0;
+	com_lines = 0;
 	Com_sprintf(com_parsename, sizeof(com_parsename), "%s", name);
 }
 
 int COM_GetCurrentParseLine( void )
 {
-	if ( com_tokenline )
-	{
-		return com_tokenline;
-	}
-
 	return com_lines;
 }
 
@@ -323,7 +312,7 @@ void COM_ParseError( char *format, ... )
 	Q_vsnprintf (string, sizeof(string), format, argptr);
 	va_end (argptr);
 
-	Com_Printf("ERROR: %s, line %d: %s\n", com_parsename, COM_GetCurrentParseLine(), string);
+	Com_Printf("ERROR: %s, line %d: %s\n", com_parsename, com_lines, string);
 }
 
 void COM_ParseWarning( char *format, ... )
@@ -335,7 +324,7 @@ void COM_ParseWarning( char *format, ... )
 	Q_vsnprintf (string, sizeof(string), format, argptr);
 	va_end (argptr);
 
-	Com_Printf("WARNING: %s, line %d: %s\n", com_parsename, COM_GetCurrentParseLine(), string);
+	Com_Printf("WARNING: %s, line %d: %s\n", com_parsename, com_lines, string);
 }
 
 /*
@@ -382,9 +371,9 @@ int COM_Compress( char *data_p ) {
 				}
 			// skip /* */ comments
 			} else if ( c == '/' && in[1] == '*' ) {
-				while ( *in && ( *in != '*' || in[1] != '/' ) ) 
+				while ( *in && ( *in != '*' || in[1] != '/' ) )
 					in++;
-				if ( *in ) 
+				if ( *in )
 					in += 2;
 				// record when we hit a newline
 			} else if ( c == '\n' || c == '\r' ) {
@@ -445,7 +434,6 @@ char *COM_ParseExt( char **data_p, qboolean allowLineBreaks )
 	data = *data_p;
 	len = 0;
 	com_token[0] = 0;
-	com_tokenline = 0;
 
 	// make sure incoming data is valid
 	if ( !data )
@@ -480,18 +468,14 @@ char *COM_ParseExt( char **data_p, qboolean allowLineBreaks )
 			}
 		}
 		// skip /* */ comments
-		else if ( c=='/' && data[1] == '*' ) 
+		else if ( c=='/' && data[1] == '*' )
 		{
 			data += 2;
-			while ( *data && ( *data != '*' || data[1] != '/' ) ) 
+			while ( *data && ( *data != '*' || data[1] != '/' ) )
 			{
-				if ( *data == '\n' )
-				{
-					com_lines++;
-				}
 				data++;
 			}
-			if ( *data ) 
+			if ( *data )
 			{
 				data += 2;
 			}
@@ -501,9 +485,6 @@ char *COM_ParseExt( char **data_p, qboolean allowLineBreaks )
 			break;
 		}
 	}
-
-	// token starts on this line
-	com_tokenline = com_lines;
 
 	// handle quoted strings
 	if (c == '\"')
@@ -517,10 +498,6 @@ char *COM_ParseExt( char **data_p, qboolean allowLineBreaks )
 				com_token[len] = 0;
 				*data_p = ( char * ) data;
 				return com_token;
-			}
-			if ( c == '\n' )
-			{
-				com_lines++;
 			}
 			if (len < MAX_TOKEN_CHARS - 1)
 			{
@@ -540,6 +517,8 @@ char *COM_ParseExt( char **data_p, qboolean allowLineBreaks )
 		}
 		data++;
 		c = *data;
+		if ( c == '\n' )
+			com_lines++;
 	} while (c>32);
 
 	com_token[len] = 0;
@@ -567,7 +546,8 @@ void COM_MatchToken( char **buf_p, char *match ) {
 =================
 SkipBracedSection
 
-The next token should be an open brace or set depth to 1 if already parsed it.
+The next token should be an open brace or
+set depth to 1 if already parsed it.
 Skips until a matching close brace is found.
 Internal brace depths are properly skipped.
 =================
@@ -601,8 +581,9 @@ void SkipRestOfLine ( char **data ) {
 
 	p = *data;
 
-	if ( !*p )
+	if ( !*p ) {
 		return;
+	}
 
 	while ( (c = *p++) != 0 ) {
 		if ( c == '\n' ) {
@@ -692,6 +673,83 @@ int Com_HexStrToInt( const char *str )
 	return -1;
 }
 
+
+// mmp -----
+/*
+===================
+Com_HexStrToInt
+===================
+*/
+int Com_HexToByte( const char *str, int valueOffset ) {
+	int		i;
+	int		out = 0;
+	int		offset;
+
+	// toss out out of range requests
+	if ( valueOffset < 0 ) {
+		return -1;
+	}
+	offset = valueOffset << 1;
+	if ( offset >= (strlen( str ) + 1) ) {
+		return -1;
+	}
+
+	// TODO: modify to optimize since it only was meant to read 2 chars only
+	for( i = 0; i < 2; i++, offset++ ) {
+		char	digit;
+
+		out *= 16;
+
+		digit = tolower( str[ offset ] );
+
+		if( digit >= '0' && digit <= '9' )
+			digit -= '0';
+		else if( digit >= 'a' && digit <= 'f' )
+			digit = digit - 'a' + 10;
+		else
+			return -1;
+
+		out += digit;
+	}
+
+	return out;
+
+}
+
+/*
+===================
+Com_ByteToHex
+
+Wainly will be used with 'G_InfoUpdate' in g_main.c
+===================
+*/
+
+char *Com_ByteToHex( int value ) {
+	static char	out[3];
+	int	test;
+
+	test = (value >> 4) & 15;
+	if ( test > 9 ) {
+		out[0] = 'A' + (test - 10);
+	} else {
+		out[0] = '0' + test;
+	}
+
+	test = value & 15;
+	if ( test > 9 ) {
+		out[1] = 'A' + (test - 10);
+	} else {
+		out[1] = '0' + test;
+	}
+
+	out[2] = '\0';
+
+	return out;
+
+}
+
+// mmp -----
+
 /*
 ============================================================================
 
@@ -750,7 +808,7 @@ qboolean Q_isintegral( float f )
 /*
 =============
 Q_vsnprintf
- 
+
 Special wrapper function for Microsoft's broken _vsnprintf() function.
 MinGW comes with its own snprintf() which is not broken.
 =============
@@ -759,7 +817,7 @@ MinGW comes with its own snprintf() which is not broken.
 int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap)
 {
 	int retval;
-	
+
 	retval = _vsnprintf(str, size, format, ap);
 
 	if(retval < 0 || retval == size)
@@ -770,11 +828,11 @@ int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap)
 		//
 		// Obviously we cannot determine that value from Microsoft's
 		// implementation, so we have no choice but to return size.
-		
+
 		str[size - 1] = '\0';
 		return size;
 	}
-	
+
 	return retval;
 }
 #endif
@@ -782,39 +840,144 @@ int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap)
 /*
 =============
 Q_strncpyz
- 
+
 Safe strncpy that ensures a trailing zero
 =============
 */
 void Q_strncpyz( char *dest, const char *src, int destsize ) {
-  if ( !dest ) {
-    Com_Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
-  }
+	if ( !dest ) {
+		Com_Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
+	}
 	if ( !src ) {
 		Com_Error( ERR_FATAL, "Q_strncpyz: NULL src" );
 	}
 	if ( destsize < 1 ) {
-		Com_Error(ERR_FATAL,"Q_strncpyz: destsize < 1" ); 
+		Com_Error(ERR_FATAL,"Q_strncpyz: destsize < 1" );
 	}
 
 	strncpy( dest, src, destsize-1 );
-  dest[destsize-1] = 0;
+	dest[destsize-1] = 0;
 }
-                 
+
+/*
+=============
+Q_stricmpf
+
+filters string 1, and compares it to string 2 (unfiltered)
+only alphanumerical chars are compared from string 1
+=============
+*/
+
+int Q_stricmpf(const char *s1, const char *s2, int n) { // mmp
+	int		c1, c2;
+	int		cnt;
+	const char	*cs1, *cs2;
+
+	if ( !s1 ) {
+		if ( !s2 )
+			return 0;
+		else
+			return -1;
+	}
+	else if ( !s2 )
+		return 1;
+
+	cs1 = s1;
+	cs2 = s2;
+	cnt = n;
+
+	while ( *cs1 ) {
+
+		// check string for within a certain length
+		if (!cnt--) {
+			return 0;		// strings are equal until end point
+		}
+
+		// ignore colors
+		if ( Q_IsColorString( cs1 ) ) {
+			cs1+=2;
+			/*cnt--;*/
+			continue;
+		}
+
+		if (*cs1 != *cs2) {
+
+			// change case of char
+			if ( *cs1 >= 'a' && *cs1 <= 'z' ) {
+				c1 = *cs1 - ('a' - 'A');
+			} else {
+				c1 = *cs1;
+			}
+			if ( *cs2 >= 'a' && *cs2 <= 'z' ) {
+				c2 = *cs2 - ('a' - 'A');
+			} else {
+				c2 = *cs2;
+			}
+
+			// make sure char is alphanumerical
+			if ( !( ( c1 >= 'A' && c1 <= 'Z' ) || ( c1 >= '0' && c1 <= '9' ) )  ) {
+				cs1++;
+				continue; // otherwise filter it out
+			}
+
+			// if chars don't match, return non-equal
+			if (c1 != c2) {
+				return c1 < c2 ? -1 : 1;
+			}
+		}
+
+		cs1++;
+		cs2++;
+
+	}
+
+	// one final check
+	if (*cs1 != *cs2) {
+
+		if ( !(*cs1) && *cs2 ) {
+			return 1;		// string 1 is shorter than 2
+		}
+
+		// change case of char
+		if ( *cs1 >= 'a' && *cs1 <= 'z' ) {
+			c1 = *cs1 - ('a' - 'A');
+		} else {
+			c1 = *cs1;
+		}
+		if ( *cs2 >= 'a' && *cs2 <= 'z' ) {
+			c2 = *cs2 - ('a' - 'A');
+		} else {
+			c2 = *cs2;
+		}
+
+		// make sure char is alphanumerical
+		if ( !( ( c1 >= 'A' && c1 <= 'Z' ) || ( c1 >= '0' && c1 <= '9' ) )  ) {
+			return 0;		// strings are equal
+		}
+
+		// if chars don't match, return non-equal
+		if (c1 != c2) {
+			return c1 < c2 ? -1 : 1;
+		}
+	}
+
+	return 0;		// strings are equal
+}
+
 int Q_stricmpn (const char *s1, const char *s2, int n) {
 	int		c1, c2;
 
-        if ( s1 == NULL ) {
-           if ( s2 == NULL )
-             return 0;
-           else
-             return -1;
-        }
-        else if ( s2==NULL )
-          return 1;
+	if ( s1 == NULL ) {
+		if ( s2 == NULL )
+			return 0;
+		else
+			return -1;
+	}
+	else if ( s2==NULL )
+		return 1;
 
 
-	
+
 	do {
 		c1 = *s1++;
 		c2 = *s2++;
@@ -822,7 +985,7 @@ int Q_stricmpn (const char *s1, const char *s2, int n) {
 		if (!n--) {
 			return 0;		// strings are equal until end point
 		}
-		
+
 		if (c1 != c2) {
 			if (c1 >= 'a' && c1 <= 'z') {
 				c1 -= ('a' - 'A');
@@ -835,13 +998,13 @@ int Q_stricmpn (const char *s1, const char *s2, int n) {
 			}
 		}
 	} while (c1);
-	
+
 	return 0;		// strings are equal
 }
 
 int Q_strncmp (const char *s1, const char *s2, int n) {
 	int		c1, c2;
-	
+
 	do {
 		c1 = *s1++;
 		c2 = *s2++;
@@ -849,12 +1012,12 @@ int Q_strncmp (const char *s1, const char *s2, int n) {
 		if (!n--) {
 			return 0;		// strings are equal until end point
 		}
-		
+
 		if (c1 != c2) {
 			return c1 < c2 ? -1 : 1;
 		}
 	} while (c1);
-	
+
 	return 0;		// strings are equal
 }
 
@@ -902,31 +1065,31 @@ void Q_strcat( char *dest, int size, const char *src ) {
 */
 const char *Q_stristr( const char *s, const char *find)
 {
-  char c, sc;
-  size_t len;
+	char c, sc;
+	size_t len;
 
-  if ((c = *find++) != 0)
-  {
-    if (c >= 'a' && c <= 'z')
-    {
-      c -= ('a' - 'A');
-    }
-    len = strlen(find);
-    do
-    {
-      do
-      {
-        if ((sc = *s++) == 0)
-          return NULL;
-        if (sc >= 'a' && sc <= 'z')
-        {
-          sc -= ('a' - 'A');
-        }
-      } while (sc != c);
-    } while (Q_stricmpn(s, find, len) != 0);
-    s--;
-  }
-  return s;
+	if ((c = *find++) != 0)
+	{
+		if (c >= 'a' && c <= 'z')
+		{
+			c -= ('a' - 'A');
+		}
+		len = strlen(find);
+		do
+		{
+			do
+			{
+				if ((sc = *s++) == 0)
+					return NULL;
+				if (sc >= 'a' && sc <= 'z')
+				{
+					sc -= ('a' - 'A');
+				}
+			} while (sc != c);
+		} while (Q_stricmpn(s, find, len) != 0);
+		s--;
+	}
+	return s;
 }
 
 
@@ -963,7 +1126,7 @@ char *Q_CleanStr( char *string ) {
 	while ((c = *s) != 0 ) {
 		if ( Q_IsColorString( s ) ) {
 			s++;
-		}		
+		}
 		else if ( c >= 0x20 && c <= 0x7E ) {
 			*d++ = c;
 		}
@@ -977,13 +1140,13 @@ char *Q_CleanStr( char *string ) {
 int Q_CountChar(const char *string, char tocount)
 {
 	int count;
-	
+
 	for(count = 0; *string; string++)
 	{
 		if(*string == tocount)
 			count++;
 	}
-	
+
 	return count;
 }
 
@@ -998,7 +1161,7 @@ int QDECL Com_sprintf(char *dest, int size, const char *fmt, ...)
 
 	if(len >= size)
 		Com_Printf("Com_sprintf: Output length %d too short, require %d bytes.\n", size, len + 1);
-	
+
 	return len;
 }
 
@@ -1070,7 +1233,7 @@ char *Info_ValueForKey( const char *s, const char *key ) {
 											// work without stomping on each other
 	static	int	valueindex = 0;
 	char	*o;
-	
+
 	if ( !s || !key ) {
 		return "";
 	}
@@ -1201,7 +1364,7 @@ void Info_RemoveKey( char *s, const char *key ) {
 		if (!strcmp (key, pkey) )
 		{
 			memmove(start, s, strlen(s) + 1); // remove this part
-			
+
 			return;
 		}
 
@@ -1275,6 +1438,8 @@ Info_Validate
 
 Some characters are illegal in info strings because they
 can mess up the server's parsing
+
+TODO: rename this Com_Validate, since it's now used other than checking client info
 ==================
 */
 qboolean Info_Validate( const char *s ) {
@@ -1310,7 +1475,7 @@ void Info_SetValueForKey( char *s, const char *key, const char *value ) {
 			return;
 		}
 	}
-	
+
 	Info_RemoveKey (s, key);
 	if (!value || !strlen(value))
 		return;
@@ -1437,3 +1602,73 @@ char *Com_SkipTokens( char *s, int numTokens, char *sep )
 	else
 		return s;
 }
+
+//====================================================================
+
+char *Com_GetSingleValue ( const char *s, int n ) {
+	static		char out[BIG_INFO_VALUE];	// return value
+	int			l = 0;
+	char		*o;
+
+	if ( n < 0 ) {
+		return "";
+	}
+	if ( *s != '\\' ) {
+		return "";
+	}
+
+	while ( l < n) {
+		s++;
+		while (*s != '\\') {
+			if (!*s) {
+				return "";
+			}
+			s++;
+		}
+
+		l++;
+	}
+
+	s++;
+
+	o = out;
+	while (*s != '\\' && *s)
+	{
+		*o++ = *s++;
+	}
+	*o = 0;
+
+	return out;
+
+}
+
+//====================================================================
+
+int Com_GetSingleCount ( const char *s ) {
+	int			l;
+
+	if ( *s != '\\' ) {
+		return 0;
+	}
+
+	l = 0;
+
+	while (1) {
+		s++;
+		while (*s != '\\') {
+			if (!*s) {
+				return l;
+			}
+			s++;
+		}
+
+		l++;
+	}
+
+	return l; // it'll never come here, but simply put here just to keep the compiler quiet
+
+}
+
+
+
+

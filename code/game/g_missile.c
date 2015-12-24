@@ -24,6 +24,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	MISSILE_PRESTEP_TIME	50
 
+// new missile prestep
+// 0  =  old behavior
+// 1  =  new simple prestep
+// 2+ =  compensate for client ping up to this number
+/*#define NEWPRESTEP(behavior,ping,svfps) (\ // jessicaRA: this is how messy the old prestep looked, lets try a function instead?  it may even be faster as a function without the tests being duplicated all over
+    trap_Cvar_VariableValue( "sv_running" ) == 0 ? 0 : \
+    behavior == 0 ? 50 : \
+    behavior > 1 && ping > behavior ? (1000/svfps) + behavior : \
+    behavior > 1 && ping <= behavior ? (1000/svfps) + ping : \
+    (1000/svfps) \
+)*/
+
+int lagNudge(gentity_t *myself);
+
 /*
 ================
 G_BounceMissile
@@ -87,6 +101,13 @@ void G_ExplodeMissile( gentity_t *ent ) {
 			, ent->splashMethodOfDeath ) ) {
 			g_entities[ent->r.ownerNum].client->accuracy_hits++;
 		}
+	}
+
+	// global explosion sound (rockets and grenades)
+	if ( ent->globalExpSound == qtrue ) {
+		//G_Printf ("^8DEBUG: BOOM!\n");
+		//G_AddEvent( ent, EV_GLOBAL_EXPLOSION, 0 );
+		trap_SendServerCommand( -1, va("sndCall \"%i\"", SC_EXPLOSION_GLOBAL ) ); // test
 	}
 
 	trap_LinkEntity( ent );
@@ -282,6 +303,13 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		G_BounceMissile( ent, trace );
 		G_AddEvent( ent, EV_GRENADE_BOUNCE, 0 );
 		return;
+	}
+
+	// global explosion sound (rockets and grenades)
+	if ( ent->globalExpSound == qtrue ) {
+		//G_Printf ("^8DEBUG: BOOM!\n");
+		//G_AddEvent( ent, EV_GLOBAL_EXPLOSION, 0 );
+		trap_SendServerCommand( -1, va("sndCall \"%i\"", SC_EXPLOSION_GLOBAL ) ); // test
 	}
 
 #ifdef MISSIONPACK
@@ -513,6 +541,53 @@ void G_RunMissile( gentity_t *ent ) {
 
 //=============================================================================
 
+
+/*
+=================
+fire_blaster
+
+=================
+*/
+gentity_t *fire_blaster (gentity_t *self, vec3_t start, vec3_t dir) {
+	gentity_t	*bolt;
+
+	VectorNormalize (dir);
+
+	bolt = G_Spawn();
+	bolt->classname = "blaster";
+	bolt->nextthink = level.time + 12500;
+	bolt->think = G_ExplodeMissile;
+	bolt->s.eType = ET_MISSILE;
+	bolt->r.svFlags = SVF_USE_CURRENT_ORIGIN;
+	bolt->s.weapon = WP_BLASTER;
+	bolt->r.ownerNum = self->s.number;
+//unlagged - projectile nudge
+	// we'll need this for nudging projectiles later
+	bolt->s.otherEntityNum = self->s.number;
+//unlagged - projectile nudge
+	bolt->parent = self;
+	bolt->damage = 10;
+	bolt->splashDamage = 0;
+	bolt->splashRadius = 0;
+	bolt->methodOfDeath = MOD_BLASTER;
+	bolt->splashMethodOfDeath = MOD_BLASTER;
+	bolt->clipmask = MASK_SHOT;
+	bolt->target_ent = NULL;
+
+	bolt->s.pos.trType = TR_LINEAR;
+	bolt->s.pos.trTime = level.time - lagNudge(self);		// move a bit on the very first frame
+//	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
+	VectorCopy( start, bolt->s.pos.trBase );
+	VectorScale( dir, 1500 * GAME_SPEED_MULTIPLIER, bolt->s.pos.trDelta );
+	SnapVector( bolt->s.pos.trDelta );			// save net bandwidth
+
+	VectorCopy (start, bolt->r.currentOrigin);
+
+	return bolt;
+}	
+
+//=============================================================================
+
 /*
 =================
 fire_plasma
@@ -532,9 +607,13 @@ gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t dir) {
 	bolt->r.svFlags = SVF_USE_CURRENT_ORIGIN;
 	bolt->s.weapon = WP_PLASMAGUN;
 	bolt->r.ownerNum = self->s.number;
+//unlagged - projectile nudge
+	// we'll need this for nudging projectiles later
+	bolt->s.otherEntityNum = self->s.number;
+//unlagged - projectile nudge
 	bolt->parent = self;
 	bolt->damage = 20;
-	bolt->splashDamage = 15;
+	bolt->splashDamage = 20;
 	bolt->splashRadius = 20;
 	bolt->methodOfDeath = MOD_PLASMA;
 	bolt->splashMethodOfDeath = MOD_PLASMA_SPLASH;
@@ -542,9 +621,10 @@ gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t dir) {
 	bolt->target_ent = NULL;
 
 	bolt->s.pos.trType = TR_LINEAR;
-	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
+	bolt->s.pos.trTime = level.time - lagNudge(self);		// move a bit on the very first frame
+//	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
 	VectorCopy( start, bolt->s.pos.trBase );
-	VectorScale( dir, 2000, bolt->s.pos.trDelta );
+	VectorScale( dir, 2000 * GAME_SPEED_MULTIPLIER, bolt->s.pos.trDelta );
 	SnapVector( bolt->s.pos.trDelta );			// save net bandwidth
 
 	VectorCopy (start, bolt->r.currentOrigin);
@@ -554,6 +634,51 @@ gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t dir) {
 
 //=============================================================================
 
+/*
+=================
+fire_spread
+
+=================
+*/
+gentity_t *fire_spread (gentity_t *self, vec3_t start, vec3_t dir) {
+	gentity_t	*bolt;
+
+	VectorNormalize (dir);
+
+	bolt = G_Spawn();
+	bolt->classname = "spread";
+	bolt->nextthink = level.time + 12500;
+	bolt->think = G_ExplodeMissile;
+	bolt->s.eType = ET_MISSILE;
+	bolt->r.svFlags = SVF_USE_CURRENT_ORIGIN;
+	bolt->s.weapon = WP_SPREADSHOT;
+	bolt->r.ownerNum = self->s.number;
+//unlagged - projectile nudge
+	// we'll need this for nudging projectiles later
+	bolt->s.otherEntityNum = self->s.number;
+//unlagged - projectile nudge
+	bolt->parent = self;
+	bolt->damage = 15;
+	bolt->splashDamage = 15;
+	bolt->splashRadius = 15;
+	bolt->methodOfDeath = MOD_SPREADSHOT;
+	bolt->splashMethodOfDeath = MOD_SPREADSHOT_SPLASH;
+	bolt->clipmask = MASK_SHOT;
+	bolt->target_ent = NULL;
+
+	bolt->s.pos.trType = TR_LINEAR;
+	bolt->s.pos.trTime = level.time - lagNudge(self);		// move a bit on the very first frame
+//	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
+	VectorCopy( start, bolt->s.pos.trBase );
+	VectorScale( dir, 1250 * GAME_SPEED_MULTIPLIER, bolt->s.pos.trDelta );
+	SnapVector( bolt->s.pos.trDelta );			// save net bandwidth
+
+	VectorCopy (start, bolt->r.currentOrigin);
+
+	return bolt;
+}	
+
+//=============================================================================
 
 /*
 =================
@@ -567,26 +692,32 @@ gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t dir) {
 
 	bolt = G_Spawn();
 	bolt->classname = "grenade";
-	bolt->nextthink = level.time + 2500;
+	bolt->nextthink = level.time + (2500 / GAME_SPEED_MULTIPLIER);
 	bolt->think = G_ExplodeMissile;
 	bolt->s.eType = ET_MISSILE;
 	bolt->r.svFlags = SVF_USE_CURRENT_ORIGIN;
 	bolt->s.weapon = WP_GRENADE_LAUNCHER;
 	bolt->s.eFlags = EF_BOUNCE_HALF;
 	bolt->r.ownerNum = self->s.number;
+//unlagged - projectile nudge
+	// we'll need this for nudging projectiles later
+	bolt->s.otherEntityNum = self->s.number;
+//unlagged - projectile nudge
 	bolt->parent = self;
-	bolt->damage = 100;
-	bolt->splashDamage = 100;
-	bolt->splashRadius = 150;
+	bolt->damage = 120;
+	bolt->splashDamage = 120;
+	bolt->splashRadius = 160;
 	bolt->methodOfDeath = MOD_GRENADE;
 	bolt->splashMethodOfDeath = MOD_GRENADE_SPLASH;
 	bolt->clipmask = MASK_SHOT;
 	bolt->target_ent = NULL;
+	bolt->globalExpSound = qtrue;
 
 	bolt->s.pos.trType = TR_GRAVITY;
-	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
+	bolt->s.pos.trTime = level.time - lagNudge(self);		// move a bit on the very first frame
+//	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
 	VectorCopy( start, bolt->s.pos.trBase );
-	VectorScale( dir, 700, bolt->s.pos.trDelta );
+	VectorScale( dir, 700 * GAME_SPEED_MULTIPLIER, bolt->s.pos.trDelta );
 	SnapVector( bolt->s.pos.trDelta );			// save net bandwidth
 
 	VectorCopy (start, bolt->r.currentOrigin);
@@ -596,43 +727,6 @@ gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t dir) {
 
 //=============================================================================
 
-
-/*
-=================
-fire_bfg
-=================
-*/
-gentity_t *fire_bfg (gentity_t *self, vec3_t start, vec3_t dir) {
-	gentity_t	*bolt;
-
-	VectorNormalize (dir);
-
-	bolt = G_Spawn();
-	bolt->classname = "bfg";
-	bolt->nextthink = level.time + 10000;
-	bolt->think = G_ExplodeMissile;
-	bolt->s.eType = ET_MISSILE;
-	bolt->r.svFlags = SVF_USE_CURRENT_ORIGIN;
-	bolt->s.weapon = WP_BFG;
-	bolt->r.ownerNum = self->s.number;
-	bolt->parent = self;
-	bolt->damage = 100;
-	bolt->splashDamage = 100;
-	bolt->splashRadius = 120;
-	bolt->methodOfDeath = MOD_BFG;
-	bolt->splashMethodOfDeath = MOD_BFG_SPLASH;
-	bolt->clipmask = MASK_SHOT;
-	bolt->target_ent = NULL;
-
-	bolt->s.pos.trType = TR_LINEAR;
-	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
-	VectorCopy( start, bolt->s.pos.trBase );
-	VectorScale( dir, 2000, bolt->s.pos.trDelta );
-	SnapVector( bolt->s.pos.trDelta );			// save net bandwidth
-	VectorCopy (start, bolt->r.currentOrigin);
-
-	return bolt;
-}
 
 //=============================================================================
 
@@ -655,22 +749,81 @@ gentity_t *fire_rocket (gentity_t *self, vec3_t start, vec3_t dir) {
 	bolt->r.svFlags = SVF_USE_CURRENT_ORIGIN;
 	bolt->s.weapon = WP_ROCKET_LAUNCHER;
 	bolt->r.ownerNum = self->s.number;
+//unlagged - projectile nudge
+	// we'll need this for nudging projectiles later
+	bolt->s.otherEntityNum = self->s.number;
+//unlagged - projectile nudge
 	bolt->parent = self;
-	bolt->damage = 100;
-	bolt->splashDamage = 100;
-	bolt->splashRadius = 120;
+	bolt->damage = 120;
+	bolt->splashDamage = 120;
+	bolt->splashRadius = 160;
 	bolt->methodOfDeath = MOD_ROCKET;
 	bolt->splashMethodOfDeath = MOD_ROCKET_SPLASH;
 	bolt->clipmask = MASK_SHOT;
 	bolt->target_ent = NULL;
+	bolt->globalExpSound = qtrue;
 
 	bolt->s.pos.trType = TR_LINEAR;
-	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
+	bolt->s.pos.trTime = level.time - lagNudge(self);		// move a bit on the very first frame
+//	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
 	VectorCopy( start, bolt->s.pos.trBase );
-	VectorScale( dir, 900, bolt->s.pos.trDelta );
+	VectorScale( dir, 1000 * GAME_SPEED_MULTIPLIER, bolt->s.pos.trDelta ); // 900 in vq3
 	SnapVector( bolt->s.pos.trDelta );			// save net bandwidth
 	VectorCopy (start, bolt->r.currentOrigin);
 
+	return bolt;
+}
+
+/*
+=================
+fire_flame
+=================
+*/
+#define FLAME_SPREAD	500
+
+gentity_t *fire_flame (gentity_t *self, vec3_t start, vec3_t forward, vec3_t right, vec3_t up) {
+	gentity_t	*bolt;
+	vec3_t		dir;
+	vec3_t		end;
+	float		r, u, scale;
+	
+	bolt = G_Spawn();
+	bolt->classname = "flame";
+	bolt->nextthink = level.time + 350; // was 1500
+	bolt->think = G_ExplodeMissile;
+	bolt->s.eType = ET_MISSILE;
+	bolt->r.svFlags = SVF_USE_CURRENT_ORIGIN;
+	bolt->s.weapon = WP_FLAMETHROWER;
+	bolt->r.ownerNum = self->s.number;
+	bolt->parent = self;
+	bolt->damage = 30;//30
+	bolt->splashDamage = 30;//25
+	bolt->splashRadius = 60;//45
+	bolt->methodOfDeath = MOD_FLAMETHROWER;
+	bolt->splashMethodOfDeath = MOD_FLAMETHROWER;
+	bolt->clipmask = MASK_SHOT;
+	
+	bolt->s.pos.trType = TR_LINEAR;
+	bolt->s.pos.trTime = level.time - lagNudge(self);//MISSILE_PRESTEP_TIME;// move a bit on the very first frame
+	VectorCopy( start, bolt->s.pos.trBase );
+
+	VectorNormalize (dir);
+
+	// shoot the flame at slightly different angles
+	r = random() * M_PI * 2.0f;
+	u = sin(r) * crandom() * FLAME_SPREAD * 16;
+	r = cos(r) * crandom() * FLAME_SPREAD * 16;
+	VectorMA( start, 8192 * 16, forward, end);
+	VectorMA (end, r, right, end);
+	VectorMA (end, u, up, end);
+	VectorSubtract( end, start, dir );
+	VectorNormalize( dir );
+
+	VectorScale( dir, 450 * GAME_SPEED_MULTIPLIER, bolt->s.pos.trDelta );//speed was 300, now 450
+	SnapVector( bolt->s.pos.trDelta );// save net bandwidth
+	
+	VectorCopy (start, bolt->r.currentOrigin);
+	
 	return bolt;
 }
 
@@ -698,10 +851,11 @@ gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
 	hook->target_ent = NULL;
 
 	hook->s.pos.trType = TR_LINEAR;
-	hook->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
+	hook->s.pos.trTime = level.time - lagNudge(self);		// move a bit on the very first frame
+//	hook->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
 	hook->s.otherEntityNum = self->s.number; // use to match beam in client
 	VectorCopy( start, hook->s.pos.trBase );
-	VectorScale( dir, 800, hook->s.pos.trDelta );
+	VectorScale( dir, 2000 * GAME_SPEED_MULTIPLIER, hook->s.pos.trDelta ); // 800 in vq3
 	SnapVector( hook->s.pos.trDelta );			// save net bandwidth
 	VectorCopy (start, hook->r.currentOrigin);
 
@@ -733,6 +887,10 @@ gentity_t *fire_nail( gentity_t *self, vec3_t start, vec3_t forward, vec3_t righ
 	bolt->r.svFlags = SVF_USE_CURRENT_ORIGIN;
 	bolt->s.weapon = WP_NAILGUN;
 	bolt->r.ownerNum = self->s.number;
+//unlagged - projectile nudge
+	// we'll need this for nudging projectiles later
+	bolt->s.otherEntityNum = self->s.number;
+//unlagged - projectile nudge
 	bolt->parent = self;
 	bolt->damage = 20;
 	bolt->methodOfDeath = MOD_NAIL;
@@ -752,7 +910,8 @@ gentity_t *fire_nail( gentity_t *self, vec3_t start, vec3_t forward, vec3_t righ
 	VectorSubtract( end, start, dir );
 	VectorNormalize( dir );
 
-	scale = 555 + random() * 1800;
+//	scale = 555 + random() * 1800;
+	scale = 666 + random() * 2250;
 	VectorScale( dir, scale, bolt->s.pos.trDelta );
 	SnapVector( bolt->s.pos.trDelta );
 
@@ -797,9 +956,10 @@ gentity_t *fire_prox( gentity_t *self, vec3_t start, vec3_t dir ) {
 	bolt->s.generic1 = self->client->sess.sessionTeam;
 
 	bolt->s.pos.trType = TR_GRAVITY;
-	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
+	bolt->s.pos.trTime = level.time - lagNudge(self);		// move a bit on the very first frame
+//	bolt->s.pos.trTime = level.time - MISSILE_PRESTEP_TIME;		// move a bit on the very first frame
 	VectorCopy( start, bolt->s.pos.trBase );
-	VectorScale( dir, 700, bolt->s.pos.trDelta );
+	VectorScale( dir, 700 * GAME_SPEED_MULTIPLIER, bolt->s.pos.trDelta );
 	SnapVector( bolt->s.pos.trDelta );			// save net bandwidth
 
 	VectorCopy (start, bolt->r.currentOrigin);
@@ -807,3 +967,36 @@ gentity_t *fire_prox( gentity_t *self, vec3_t start, vec3_t dir ) {
 	return bolt;
 }
 #endif
+
+/*
+==================
+lagNudge
+==================
+This does the anti lag stuff for projectiles.
+*/
+
+int lagNudge(gentity_t *myself) {
+	if (trap_Cvar_VariableValue( "sv_running" ) == 0) return 0; // the server deals with the nudge, not clients
+	if (g_delagprojectiles.integer <= 0 ) {
+		return 0; // old behavior
+	} else if (g_delagprojectiles.integer == 1) {
+		return 50; // less old behavior, unlagged versions use this
+	} else if (g_delagprojectiles.integer == 2) {
+		return 1000/sv_fps.integer; // accurate to 1 server snap, usually no different from 50msec
+	} else {
+		// add client ping to the nudge, clamped at g_delagprojectiles
+		// it would be ideal to time shift before the nudge but that would effect rocket jumps badly
+		// so this is the best which i can do for now.  tracing hits along the path the rocket would
+		// take may be an option for testing if the player is rocket jumping for if we should time
+		// shift or not but it would come with some problems for rockets which would hit the floor
+		// around enemies.  then the test starts to get very complex and i seriously have to wonder
+		// if pings would raise to 200 from the complex tests on every rocket.
+		// maybe client side prediction will also somewhat help do this already?
+		// the error in this method is small unless firing rockets at point blank range.
+		int tmp;
+		tmp = myself->client->ps.ping;
+		if (tmp > g_delagprojectiles.integer) tmp = g_delagprojectiles.integer;
+		tmp += 1000/sv_fps.integer;
+		return tmp;
+	}
+}

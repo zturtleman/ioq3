@@ -73,7 +73,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 static qboolean localClient; // true if local client has been displayed
 
 
-							 /*
+/*
 =================
 CG_DrawScoreboard
 =================
@@ -258,7 +258,7 @@ static int CG_TeamScoreboard( int y, team_t team, float fade, int maxClients, in
 
 /*
 =================
-CG_DrawScoreboard
+CG_DrawOldScoreboard
 
 Draw the normal in-game scoreboard
 =================
@@ -446,7 +446,7 @@ static void CG_CenterGiantLine( float y, const char *string ) {
 =================
 CG_DrawTourneyScoreboard
 
-Draw the oversize scoreboard for tournements
+Draw the oversize scoreboard for tournaments
 =================
 */
 void CG_DrawOldTourneyScoreboard( void ) {

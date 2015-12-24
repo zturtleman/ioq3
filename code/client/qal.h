@@ -125,6 +125,7 @@ extern LPALGETBUFFERI qalGetBufferi;
 extern LPALGETBUFFER3I qalGetBuffer3i;
 extern LPALGETBUFFERIV qalGetBufferiv;
 extern LPALDOPPLERFACTOR qalDopplerFactor;
+extern LPALDOPPLERVELOCITY qalDopplerVelocity; // old - mmp
 extern LPALSPEEDOFSOUND qalSpeedOfSound;
 extern LPALDISTANCEMODEL qalDistanceModel;
 
@@ -219,6 +220,7 @@ extern LPALCCAPTURESAMPLES qalcCaptureSamples;
 #define qalGetBuffer3i alGetBuffer3i
 #define qalGetBufferiv alGetBufferiv
 #define qalDopplerFactor alDopplerFactor
+#define qalDopplerVelocity alDopplerVelocity // old - mmp
 #define qalSpeedOfSound alSpeedOfSound
 #define qalDistanceModel alDistanceModel
 

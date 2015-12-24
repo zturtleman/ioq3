@@ -228,8 +228,13 @@ qboolean	PM_SlideMove( qboolean gravity ) {
 ==================
 PM_StepSlideMove
 
+TODO: Prevent player from landing on a platform while jumping
 ==================
 */
+
+#define	TRACE_FRACTION		1.0
+//#define		STEP_VELOCITY_CUTOFF	50 // 0 in vq3, allows the player to get that extra climb - mmp
+#define			STEP_VELOCITY_CUTOFF		0 // the previous edit was not needed
 void PM_StepSlideMove( qboolean gravity ) {
 	vec3_t		start_o, start_v;
 //	vec3_t		down_o, down_v;
@@ -247,11 +252,23 @@ void PM_StepSlideMove( qboolean gravity ) {
 	}
 
 	VectorCopy(start_o, down);
-	down[2] -= STEPSIZE;
+	down[2] -= STEPSIZE; // the higher the value, the higher a step can be made from a jump (if that makes sense)
 	pm->trace (&trace, start_o, pm->mins, pm->maxs, down, pm->ps->clientNum, pm->tracemask);
 	VectorSet(up, 0, 0, 1);
 	// never step up when you still have up velocity
-	if ( pm->ps->velocity[2] > 0 && (trace.fraction == 1.0 ||
+	/*if ( (pm->ps->persistant[PERS_MISC] & PMSC_PHYSICS_SELECTION) ||
+			(pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS)) {
+		if ( pm->ps->velocity[2] > STEP_VELOCITY_CUTOFF && (trace.fraction == TRACE_FRACTION ||
+											DotProduct(trace.plane.normal, up) < 0.7)) {
+			return;
+		}
+	} else {
+		// q1/w does not allow the player to start walking until velocity is 0
+		if ( pm->ps->velocity[2] > STEP_VELOCITY_CUTOFF ) {
+			return;
+		}
+	}*/
+	if ( pm->ps->velocity[2] > STEP_VELOCITY_CUTOFF && (trace.fraction == TRACE_FRACTION ||
 										DotProduct(trace.plane.normal, up) < 0.7)) {
 		return;
 	}
@@ -260,7 +277,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 	//VectorCopy (pm->ps->velocity, down_v);
 
 	VectorCopy (start_o, up);
-	up[2] += STEPSIZE;
+	up[2] += STEPSIZE; // the higher the value, the higher a step can be made
 
 	// test the player position if they were a stepheight higher
 	pm->trace (&trace, start_o, pm->mins, pm->maxs, up, pm->ps->clientNum, pm->tracemask);
@@ -285,14 +302,14 @@ void PM_StepSlideMove( qboolean gravity ) {
 	if ( !trace.allsolid ) {
 		VectorCopy (trace.endpos, pm->ps->origin);
 	}
-	if ( trace.fraction < 1.0 ) {
+	if ( trace.fraction < TRACE_FRACTION ) {
 		PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP );
 	}
 
 #if 0
 	// if the down trace can trace back to the original position directly, don't step
 	pm->trace( &trace, pm->ps->origin, pm->mins, pm->maxs, start_o, pm->ps->clientNum, pm->tracemask);
-	if ( trace.fraction == 1.0 ) {
+	if ( trace.fraction == TRACE_FRACTION ) {
 		// use the original move
 		VectorCopy (down_o, pm->ps->origin);
 		VectorCopy (down_v, pm->ps->velocity);

@@ -841,7 +841,7 @@ static void S_AL_SrcSetup(srcHandle_t src, sfxHandle_t sfx, alSrcPriority_t prio
 
 /*
 =================
-S_AL_SaveLoopPos
+S_AL_NewLoopMaster
 Remove given source as loop master if it is the master and hand off master status to another source in this case.
 =================
 */
@@ -2116,6 +2116,7 @@ void S_AL_StartBackgroundTrack( const char *intro, const char *loop )
 
 	// Copy the loop over
 	Q_strncpyz( s_backgroundLoop, loop, sizeof( s_backgroundLoop ) );
+	/*strncpy( s_backgroundLoop, loop, sizeof( s_backgroundLoop ) );*/
 
 	if(!issame)
 	{
@@ -2309,6 +2310,7 @@ void S_AL_Update( void )
 	}
 	if(s_alDopplerSpeed->modified)
 	{
+		qalDopplerVelocity(s_alDopplerSpeed->value); // old - mmp
 		qalSpeedOfSound(s_alDopplerSpeed->value);
 		s_alDopplerSpeed->modified = qfalse;
 	}
@@ -2506,7 +2508,7 @@ qboolean S_AL_Init( soundInterface_t *si )
 	s_alGain = Cvar_Get( "s_alGain", "1.0", CVAR_ARCHIVE );
 	s_alSources = Cvar_Get( "s_alSources", "96", CVAR_ARCHIVE );
 	s_alDopplerFactor = Cvar_Get( "s_alDopplerFactor", "1.0", CVAR_ARCHIVE );
-	s_alDopplerSpeed = Cvar_Get( "s_alDopplerSpeed", "9000", CVAR_ARCHIVE );
+	s_alDopplerSpeed = Cvar_Get( "s_alDopplerSpeed", "13512", CVAR_ARCHIVE );
 	s_alMinDistance = Cvar_Get( "s_alMinDistance", "120", CVAR_CHEAT );
 	s_alMaxDistance = Cvar_Get("s_alMaxDistance", "1024", CVAR_CHEAT);
 	s_alRolloff = Cvar_Get( "s_alRolloff", "2", CVAR_CHEAT);
@@ -2521,6 +2523,7 @@ qboolean S_AL_Init( soundInterface_t *si )
 	if( !QAL_Init( s_alDriver->string ) )
 	{
 		Com_Printf( "Failed to load library: \"%s\".\n", s_alDriver->string );
+		//return qfalse;
 		if( !Q_stricmp( s_alDriver->string, ALDRIVER_DEFAULT ) || !QAL_Init( ALDRIVER_DEFAULT ) ) {
 			return qfalse;
 		}
@@ -2623,6 +2626,7 @@ qboolean S_AL_Init( soundInterface_t *si )
 	// Set up OpenAL parameters (doppler, etc)
 	qalDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
 	qalDopplerFactor( s_alDopplerFactor->value );
+	qalDopplerVelocity( s_alDopplerSpeed->value ); // old
 	qalSpeedOfSound( s_alDopplerSpeed->value );
 
 #ifdef USE_VOIP

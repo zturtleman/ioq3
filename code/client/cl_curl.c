@@ -116,7 +116,7 @@ qboolean CL_cURL_Init()
 	qcurl_easy_duphandle = GPA("curl_easy_duphandle");
 	qcurl_easy_reset = GPA("curl_easy_reset");
 	qcurl_easy_strerror = GPA("curl_easy_strerror");
-	
+
 	qcurl_multi_init = GPA("curl_multi_init");
 	qcurl_multi_add_handle = GPA("curl_multi_add_handle");
 	qcurl_multi_remove_handle = GPA("curl_multi_remove_handle");
@@ -299,7 +299,7 @@ void CL_cURL_BeginDownload( const char *localName, const char *remoteURL )
 	qcurl_easy_setopt_warn(clc.downloadCURL, CURLOPT_FAILONERROR, 1);
 	qcurl_easy_setopt_warn(clc.downloadCURL, CURLOPT_FOLLOWLOCATION, 1);
 	qcurl_easy_setopt_warn(clc.downloadCURL, CURLOPT_MAXREDIRS, 5);
-	clc.downloadCURLM = qcurl_multi_init();	
+	clc.downloadCURLM = qcurl_multi_init();
 	if(!clc.downloadCURLM) {
 		qcurl_easy_cleanup(clc.downloadCURL);
 		clc.downloadCURL = NULL;
@@ -353,7 +353,7 @@ void CL_cURL_PerformDownload(void)
 		long code;
 
 		qcurl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE,
-			&code);	
+			&code);
 		Com_Error(ERR_DROP, "Download Error: %s Code: %ld URL: %s",
 			qcurl_easy_strerror(msg->data.result),
 			code, clc.downloadURL);

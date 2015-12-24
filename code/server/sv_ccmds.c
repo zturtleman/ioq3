@@ -162,6 +162,13 @@ static void SV_Map_f( void ) {
 		return;
 	}
 
+	// filter out map names
+	if( !Q_stricmp (map, "oasago2") )
+	{
+		Com_Printf ("Couldn't find map: %s\n", map);
+		return;
+	}
+
 	// make sure the level exists before trying to change, so that
 	// a typo at the server console won't end the game
 	Com_sprintf (expanded, sizeof(expanded), "maps/%s.bsp", map);
@@ -176,9 +183,9 @@ static void SV_Map_f( void ) {
 	cmd = Cmd_Argv(0);
 	if( Q_stricmpn( cmd, "sp", 2 ) == 0 ) {
 		Cvar_SetValue( "g_gametype", GT_SINGLE_PLAYER );
-		Cvar_SetValue( "g_doWarmup", 0 );
+		//Cvar_SetValue( "g_doWarmup", 0 ); // will be removed
 		// may not set sv_maxclients directly, always set latched
-		Cvar_SetLatched( "sv_maxclients", "8" );
+		Cvar_SetLatched( "sv_maxclients", "16" ); // mmp - was 8
 		cmd += 2;
 		if (!Q_stricmp( cmd, "devmap" ) ) {
 			cheat = qtrue;
@@ -254,7 +261,12 @@ static void SV_MapRestart_f( void ) {
 	else {
 		delay = 5;
 	}
-	if( delay && !Cvar_VariableValue("g_doWarmup") ) {
+	/*if( delay && !Cvar_VariableValue("g_doWarmup") ) {
+		sv.restartTime = sv.time + delay * 1000;
+		SV_SetConfigstring( CS_WARMUP, va("%i", sv.restartTime) );
+		return;
+	}*/
+	if( delay && !Cvar_VariableValue("g_warmup") ) {
 		sv.restartTime = sv.time + delay * 1000;
 		SV_SetConfigstring( CS_WARMUP, va("%i", sv.restartTime) );
 		return;
@@ -638,7 +650,7 @@ static void SV_RehashBans_f(void)
 	fileHandle_t readfrom;
 	char *textbuf, *curpos, *maskpos, *newlinepos, *endpos;
 	char filepath[MAX_QPATH];
-	
+
 	// make sure server is running
 	if ( !com_sv_running->integer ) {
 		return;
@@ -837,7 +849,7 @@ static void SV_AddBanToList(qboolean isexception)
 		Com_Printf( "Server is not running.\n" );
 		return;
 	}
-
+	
 	argc = Cmd_Argc();
 	
 	if(argc < 2 || argc > 3)
@@ -869,7 +881,6 @@ static void SV_AddBanToList(qboolean isexception)
 		client_t *cl;
 		
 		// client num.
-		
 		cl = SV_GetPlayerByNum();
 
 		if(!cl)
@@ -901,7 +912,7 @@ static void SV_AddBanToList(qboolean isexception)
 
 	if(ip.type != NA_IP && ip.type != NA_IP6)
 	{
-		Com_Printf("Error: Can ban players connected via the internet only.\n");
+		Com_Printf("Error: Can only ban players connected via the internet.\n");
 		return;
 	}
 
@@ -973,7 +984,7 @@ static void SV_DelBanFromList(qboolean isexception)
 	int index, count = 0, todel, mask;
 	netadr_t ip;
 	char *banstring;
-	
+
 	// make sure server is running
 	if ( !com_sv_running->integer ) {
 		Com_Printf( "Server is not running.\n" );
@@ -1142,25 +1153,6 @@ static void SV_ExceptDel_f(void)
 }
 
 /*
-** SV_Strlen -- skips color escape codes
-*/
-static int SV_Strlen( const char *str ) {
-	const char *s = str;
-	int count = 0;
-
-	while ( *s ) {
-		if ( Q_IsColorString( s ) ) {
-			s += 2;
-		} else {
-			count++;
-			s++;
-		}
-	}
-
-	return count;
-}
-
-/*
 ================
 SV_Status_f
 ================
@@ -1178,44 +1170,35 @@ static void SV_Status_f( void ) {
 		return;
 	}
 
-	Com_Printf ("map: %s\n", sv_mapname->string );
+	Com_Printf ("Map: %s\n\n", sv_mapname->string );
 
-	Com_Printf ("cl score ping name            address                                 rate \n");
-	Com_Printf ("-- ----- ---- --------------- --------------------------------------- -----\n");
+	Com_Printf ("Num Score Ping LastCom Address               QPort Rate  Name\n");
+	Com_Printf ("--- ----- ---- ------- --------------------- ----- ----- ------------------\n");
 	for (i=0,cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++)
 	{
 		if (!cl->state)
 			continue;
-		Com_Printf ("%2i ", i);
+		Com_Printf ("%3i ", i);
 		ps = SV_GameClientNum( i );
 		Com_Printf ("%5i ", ps->persistant[PERS_SCORE]);
 
 		if (cl->state == CS_CONNECTED)
-			Com_Printf ("CON ");
+			Com_Printf ("CONN ");
 		else if (cl->state == CS_ZOMBIE)
-			Com_Printf ("ZMB ");
+			Com_Printf ("ZOMB ");
 		else
 		{
 			ping = cl->ping < 9999 ? cl->ping : 9999;
 			Com_Printf ("%4i ", ping);
 		}
 
-		Com_Printf ("%s", cl->name);
-		
-		l = 16 - SV_Strlen(cl->name);
-		j = 0;
-		
-		do
-		{
-			Com_Printf (" ");
-			j++;
-		} while(j < l);
+		Com_Printf ("%7i ", svs.time - cl->lastPacketTime );
 
-
-		// TTimo adding a ^7 to reset the color
+		// TODO: show ip6 address where it won't misalign the table
+		// perhaps, break it into 2 lines
 		s = NET_AdrToString( cl->netchan.remoteAddress );
-		Com_Printf ("^7%s", s);
-		l = 39 - strlen(s);
+		Com_Printf ("%s", s);
+		l = 22 - strlen(s);
 		j = 0;
 		
 		do
@@ -1224,11 +1207,70 @@ static void SV_Status_f( void ) {
 			j++;
 		} while(j < l);
 		
+		Com_Printf ("%5i ", cl->netchan.qport);
+
+		Com_Printf ("%5i ", cl->rate);
+
+		Com_Printf ("%s^7\n", cl->name); // name gets moved to the end, to avoid misaligned tables
+	}
+	Com_Printf ("\n");
+
+	/*
+	Com_Printf ("num score ping name            lastmsg address               qport rate\n");
+	Com_Printf ("--- ----- ---- --------------- ------- --------------------- ----- -----\n");
+	for (i=0,cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++)
+	{
+		if (!cl->state)
+			continue;
+		Com_Printf ("%3i ", i);
+		ps = SV_GameClientNum( i );
+		Com_Printf ("%5i ", ps->persistant[PERS_SCORE]);
+
+		if (cl->state == CS_CONNECTED)
+			Com_Printf ("CNCT ");
+		else if (cl->state == CS_ZOMBIE)
+			Com_Printf ("ZMBI ");
+		else
+		{
+			ping = cl->ping < 9999 ? cl->ping : 9999;
+			Com_Printf ("%4i ", ping);
+		}
+
+		Com_Printf ("%s", cl->name);
+		
+		// TTimo adding a ^7 to reset the color
+		// NOTE: colored names in status breaks the padding (WONTFIX)
+		Com_Printf ("^7");
+		l = 14 - strlen(cl->name);
+		j = 0;
+		
+		do
+		{
+			Com_Printf (" ");
+			j++;
+		} while(j < l);
+
+		Com_Printf ("%7i ", svs.time - cl->lastPacketTime );
+
+		s = NET_AdrToString( cl->netchan.remoteAddress );
+		Com_Printf ("%s", s);
+		l = 22 - strlen(s);
+		j = 0;
+		
+		do
+		{
+			Com_Printf(" ");
+			j++;
+		} while(j < l);
+		
+		Com_Printf ("%5i", cl->netchan.qport);
+
 		Com_Printf (" %5i", cl->rate);
 
 		Com_Printf ("\n");
 	}
 	Com_Printf ("\n");
+	*/
 }
 
 /*

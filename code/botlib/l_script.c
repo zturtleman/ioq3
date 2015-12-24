@@ -828,6 +828,7 @@ int PS_ReadPrimitive(script_t *script, token_t *token)
 	len = 0;
 	while(*script->script_p > ' ' && *script->script_p != ';')
 	{
+		//if (len >= MAX_TOKEN)
 		if (len >= MAX_TOKEN - 1)
 		{
 			ScriptError(script, "primitive token longer than MAX_TOKEN = %d", MAX_TOKEN);
@@ -1352,6 +1353,7 @@ script_t *LoadScriptFile(const char *filename)
 	buffer = GetClearedMemory(sizeof(script_t) + length + 1);
 	script = (script_t *) buffer;
 	Com_Memset(script, 0, sizeof(script_t));
+	/*strcpy(script->filename, filename);*/
 	Q_strncpyz(script->filename, filename, sizeof(script->filename));
 	script->buffer = (char *) buffer + sizeof(script_t);
 	script->buffer[length] = 0;
@@ -1398,6 +1400,7 @@ script_t *LoadScriptMemory(char *ptr, int length, char *name)
 	buffer = GetClearedMemory(sizeof(script_t) + length + 1);
 	script = (script_t *) buffer;
 	Com_Memset(script, 0, sizeof(script_t));
+	/*strcpy(script->filename, name);*/
 	Q_strncpyz(script->filename, name, sizeof(script->filename));
 	script->buffer = (char *) buffer + sizeof(script_t);
 	script->buffer[length] = 0;

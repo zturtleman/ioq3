@@ -383,12 +383,13 @@ int AAS_LoadAASFile(char *filename)
 	} //end if
 	//
 	aasworld.bspchecksum = atoi(LibVarGetString( "sv_mapChecksum"));
-	if (LittleLong(header.bspchecksum) != aasworld.bspchecksum)
+	// TODO: UNCOMMENT AAS CHECKSUM COMPARE
+	/*if (LittleLong(header.bspchecksum) != aasworld.bspchecksum)
 	{
 		AAS_Error("aas file %s is out of date\n", filename);
 		botimport.FS_FCloseFile(fp);
 		return BLERR_WRONGAASFILEVERSION;
-	} //end if
+	}*/ //end if
 	//load the lumps:
 	//bounding boxes
 	offset = LittleLong(header.lumps[AASLUMP_BBOXES].fileofs);

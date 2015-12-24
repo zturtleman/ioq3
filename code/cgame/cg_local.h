@@ -31,6 +31,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // If you absolutely need something stored, it can either be kept
 // by the server in the server stored userinfos, or stashed in a cvar.
 
+#ifdef MISSIONPACK
+#define CG_FONT_THRESHOLD 0.1
+#endif
+
 #define	POWERUP_BLINKS		5
 
 #define	POWERUP_BLINK_TIME	1000
@@ -53,6 +57,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	ATTACKER_HEAD_TIME	10000
 #define	REWARD_TIME			3000
 
+// mmp
+#define FALL_TIME			500
+
+#define ITEM_GET_FLASH		250
+#define	MAX_FOV				140 // was 160, but you were able to see through walls
+#define OVERSCAN_ADJ		0.90 // assume 90 percent of screen is at least visible
+
 #define	PULSE_SCALE			1.5			// amount to scale up the icons when activating
 
 #define	MAX_STEP_CHANGE		32
@@ -67,14 +78,45 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	CHAR_HEIGHT			48
 #define	TEXT_ICON_SPACE		4
 
-#define	TEAMCHAT_WIDTH		80
+#define	TEAMCHAT_WIDTH		80 // nolonger used
 #define TEAMCHAT_HEIGHT		8
+#define CHAT_HEIGHT			8
+#define NOTIFY_HEIGHT		8
+
+#define HUD_TEXT_HEIGHT		8
+#define HUD_BOARD_TEXT_HEIGHT	10
+#define TOTAL_HUD_TEXT_BOXES	4
+#define HUD_TEXT_BUFFER_SIZE	256
+#define HUD_FRAG_STAT_NAME_BUFFER_SIZE		48
+
+#define	HUD_POS_LOCK_TYPES	6
 
 // very large characters
 #define	GIANT_WIDTH			32
 #define	GIANT_HEIGHT		48
 
 #define	NUM_CROSSHAIRS		10
+
+#define	NUM_HUDBAR_TYPES	10
+//#define	NUM_HUDBAR_PARTS	6
+#define	NUM_BORDER_TYPES	10
+#define	NUM_MINISCORE_TYPES	10
+#define	NUM_PLAYER_PORTS	128
+#define	NUM_FIXED_PORTS		10
+
+#define	NUM_CHATSOUND_TYPES	9
+#define	NUM_HITSOUND_TYPES	9
+#define	NUM_KILLSOUND_TYPES	9
+
+// spectator info
+#define	SINFO_CHAR_BUFFER_SIZE			1024
+
+// filter color flags
+#define	FC_CROSSHAIR_NAMES	1
+#define	FC_SCOREBOARD_NAMES	2
+#define	FC_TEAM_OVERLAY		4
+#define	FC_FRAGGED_NAMES	8
+#define	FC_CHAT_TEXT		16
 
 #define TEAM_OVERLAY_MAXNAME_WIDTH	12
 #define TEAM_OVERLAY_MAXLOCATION_WIDTH	16
@@ -88,8 +130,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	DEFAULT_TEAM_HEAD		"sarge"
 #endif
 
-#define DEFAULT_REDTEAM_NAME		"Stroggs"
-#define DEFAULT_BLUETEAM_NAME		"Pagans"
+#define DEFAULT_REDTEAM_NAME		"Red"
+#define DEFAULT_BLUETEAM_NAME		"Blue"
+
+#define SHORT_RED_TEAM_NAME		S_COLOR_RED"[R]"S_COLOR_WHITE
+#define SHORT_BLUE_TEAM_NAME		S_COLOR_BLUE"[B]"S_COLOR_WHITE
+#define SHORT_SPECTATOR_TEAM_NAME	S_COLOR_CYAN"[S]"S_COLOR_WHITE
 
 typedef enum {
 	FOOTSTEP_NORMAL,
@@ -181,7 +227,7 @@ typedef struct centity_s {
 	int				errorTime;		// decay the error from this time
 	vec3_t			errorOrigin;
 	vec3_t			errorAngles;
-	
+
 	qboolean		extrapolated;	// false if origin / angles is an interpolation
 	vec3_t			rawOrigin;
 	vec3_t			rawAngles;
@@ -273,7 +319,7 @@ typedef struct localEntity_s {
 	leMarkType_t		leMarkType;		// mark to leave on fragment impact
 	leBounceSoundType_t	leBounceSoundType;
 
-	refEntity_t		refEntity;		
+	refEntity_t		refEntity;
 } localEntity_t;
 
 //======================================================================
@@ -297,6 +343,24 @@ typedef struct {
 	int				team;
 } score_t;
 
+
+// end-game stats
+typedef struct {
+	int				clientNo;
+
+	int				sessionTeam;
+	int				score;
+	int				ping;
+	int				playTime;
+	int				kills;
+	int				deaths;
+	int				suicides;
+	int				teamKills;
+	int				captures;
+	int				killStreak;
+} endGameStats_t;
+
+
 // each client has an associated clientInfo_t
 // that contains media references necessary to present the
 // client model and other color coded effects
@@ -308,21 +372,27 @@ typedef struct {
 	qboolean		infoValid;
 
 	char			name[MAX_QPATH];
+	char			clan[MAX_QPATH];
+	char			port[196];
 	team_t			team;
 
 	int				botSkill;		// 0 = not bot, 1-5 = bot
 
-	vec3_t			color1;
-	vec3_t			color2;
-	
-	byte c1RGBA[4];
-	byte c2RGBA[4];
+	vec3_t			color1; // to be removed
+	vec3_t			color2; // to be removed
+
+	byte			c1RGBA[4];
+	byte			c2RGBA[4];
 
 	int				score;			// updated by score servercmds
 	int				location;		// location index for team mode
 	int				health;			// you only get this info about your teammates
 	int				armor;
 	int				curWeapon;
+
+	// position of player for use with mini map
+	int				posXLoc;
+	int				posYLoc;
 
 	int				handicap;
 	int				wins, losses;	// in tourney mode
@@ -345,8 +415,8 @@ typedef struct {
 	char			skinName[MAX_QPATH];
 	char			headModelName[MAX_QPATH];
 	char			headSkinName[MAX_QPATH];
-	char			redTeam[MAX_TEAMNAME];
-	char			blueTeam[MAX_TEAMNAME];
+	char			redTeam[MAX_TEAMNAME]; // to be removed
+	char			blueTeam[MAX_TEAMNAME]; // to be removed
 	qboolean		deferred;
 
 	qboolean		newAnims;		// true if using the new mission pack animations
@@ -446,12 +516,16 @@ typedef struct {
 // occurs, and they will have visible effects for #define STEP_TIME or whatever msec after
 
 #define MAX_PREDICTED_EVENTS	16
- 
+
+//unlagged - optimized prediction
+#define NUM_SAVED_STATES (CMD_BACKUP + 2)
+//unlagged - optimized prediction
+
 typedef struct {
 	int			clientFrame;		// incremented each frame
 
 	int			clientNum;
-	
+
 	qboolean	demoPlayback;
 	qboolean	levelShot;			// taking a level menu screenshot
 	int			deferredPlayerLoading;
@@ -480,7 +554,10 @@ typedef struct {
 	int			physicsTime;	// either cg.snap->time or cg.nextSnap->time
 
 	int			timelimitWarnings;	// 5 min, 1 min, overtime
+	int			timelimitTicks;		// less than 10 seconds left
 	int			fraglimitWarnings;
+
+	int			itemGetFlashTime;	// this controls the screen flash when getting an item
 
 	qboolean	mapRestart;			// set on a map restart to set back the weapon
 
@@ -509,6 +586,9 @@ typedef struct {
 	// input state sent to server
 	int			weaponSelect;
 
+	// physics select
+	int			physicsSelect;
+
 	// auto rotating items
 	vec3_t		autoAngles;
 	vec3_t		autoAxis[3];
@@ -532,6 +612,7 @@ typedef struct {
 	int			numScores;
 	int			selectedScore;
 	int			teamScores[2];
+	int			readyMask[4];		// warm up ready flags
 	score_t		scores[MAX_CLIENTS];
 	qboolean	showScores;
 	qboolean	scoreBoardShowing;
@@ -639,6 +720,16 @@ typedef struct {
 	char			testModelName[MAX_QPATH];
 	qboolean		testGun;
 
+	// mega hud temp layout pos
+	int			ypos[HUD_POS_LOCK_TYPES];
+
+//unlagged - optimized prediction
+	int			lastPredictedCommand;
+	int			lastServerTime;
+	playerState_t savedPmoveStates[NUM_SAVED_STATES];
+	int			stateHead, stateTail;
+//unlagged - optimized prediction
+
 } cg_t;
 
 
@@ -649,9 +740,13 @@ typedef struct {
 typedef struct {
 	qhandle_t	charsetShader;
 	qhandle_t	charsetProp;
+	qhandle_t	charsetPropHQ;
 	qhandle_t	charsetPropGlow;
 	qhandle_t	charsetPropB;
+	qhandle_t	charsetDigit;
+	qhandle_t	charsetDigitHQ;
 	qhandle_t	whiteShader;
+	qhandle_t	numChar;
 
 #ifdef MISSIONPACK
 	qhandle_t	redCubeModel;
@@ -713,8 +808,8 @@ typedef struct {
 	qhandle_t	machinegunBrassModel;
 	qhandle_t	shotgunBrassModel;
 
-	qhandle_t	railRingsShader;
-	qhandle_t	railCoreShader;
+	qhandle_t	laserRingsShader;
+	qhandle_t	laserCoreShader;
 
 	qhandle_t	lightningShader;
 
@@ -726,15 +821,19 @@ typedef struct {
 	qhandle_t	selectShader;
 	qhandle_t	viewBloodShader;
 	qhandle_t	tracerShader;
-	qhandle_t	crosshairShader[NUM_CROSSHAIRS];
+//	qhandle_t	crosshairShader[NUM_CROSSHAIRS];
+	qhandle_t	crosshairTypeA[NUM_CROSSHAIRS - 1];
+	qhandle_t	crosshairTypeB[NUM_CROSSHAIRS - 1];
 	qhandle_t	lagometerShader;
 	qhandle_t	backTileShader;
 	qhandle_t	noammoShader;
 
 	qhandle_t	smokePuffShader;
 	qhandle_t	smokePuffRageProShader;
+	qhandle_t	blasterBallShader; // mmp
 	qhandle_t	shotgunSmokePuffShader;
 	qhandle_t	plasmaBallShader;
+	qhandle_t	spreadBallShader;
 	qhandle_t	waterBubbleShader;
 	qhandle_t	bloodTrailShader;
 #ifdef MISSIONPACK
@@ -742,7 +841,66 @@ typedef struct {
 	qhandle_t	blueProxMine;
 #endif
 
+	qhandle_t	flameBallShader; // mmp
+
 	qhandle_t	numberShaders[11];
+	qhandle_t	hudBarShaders[NUM_HUDBAR_TYPES];
+//	qhandle_t	hudBarShaders[NUM_HUDBAR_TYPES][NUM_HUDBAR_PARTS];
+	qhandle_t	hudBorderShaders[NUM_BORDER_TYPES];
+	qhandle_t	hudGrad;
+	qhandle_t	hudGradRCurve;
+	qhandle_t	hudPing;
+	qhandle_t	hudMiniScoreShaders[NUM_MINISCORE_TYPES];
+	qhandle_t	hudFlagStatus[NUM_MINISCORE_TYPES];
+
+	qhandle_t	hudKeycards;
+
+	qhandle_t	oldFilm1;
+	qhandle_t	oldFilm2;
+
+	// scoreboard portrait
+	qhandle_t	hudDefaultPort;
+	qhandle_t	hudFixedPort[NUM_FIXED_PORTS];
+	qhandle_t	hudPlayerPort[NUM_PLAYER_PORTS];
+
+	qhandle_t	armorIconWhite;
+	qhandle_t	healthIconWhite;
+	qhandle_t	flagIconWhite;
+	qhandle_t	skullIconWhite; // not used?
+
+	// in-game mini map
+	qhandle_t	miniMap;
+	qhandle_t	miniMapPlyr;
+	qhandle_t	miniMapTeam;
+
+	// gametype icon (note that sp will use the dm icon)
+	qhandle_t	gametypeIcon_dm;
+	qhandle_t	gametypeIcon_duel;
+	qhandle_t	gametypeIcon_tdm;
+	qhandle_t	gametypeIcon_ctf;
+
+	// gametype icons
+	qhandle_t	gametypeIcons;
+
+	qhandle_t	scoreIconOK; // used for ready icon
+	qhandle_t	scoreIconNo; // used for break icon
+//	qhandle_t	scoreIconOut;
+	qhandle_t	scoreIconLock; // used for something... might have to do with pizza
+	qhandle_t	iconCam;
+	qhandle_t	iconSkull;
+	qhandle_t	iconSkullFlame;
+	qhandle_t	iconSkullTele;
+
+	qhandle_t	rulesBG256; // ruleset background
+	qhandle_t	rulesBG064; // objective background
+
+	// button press
+	qhandle_t	hudButtonPress;
+
+	qhandle_t	hudScoreBoard[TEAM_BLUE+1]; // for FREE, RED, and BLUE
+	qhandle_t	hudScoreBoardSpec; // spectator background
+	qhandle_t	hudScoreBoardBG; // score background
+	qhandle_t	hudHighlight; // highlight
 
 	qhandle_t	shadowMarkShader;
 
@@ -754,21 +912,33 @@ typedef struct {
 	qhandle_t	bulletMarkShader;
 	qhandle_t	burnMarkShader;
 	qhandle_t	holeMarkShader;
+	qhandle_t	blasterMarkShader;
 	qhandle_t	energyMarkShader;
+	qhandle_t	spreadMarkShader;
 
 	// powerup shaders
 	qhandle_t	quadShader;
+	qhandle_t	quadWareOffShader;
 	qhandle_t	redQuadShader;
 	qhandle_t	quadWeaponShader;
 	qhandle_t	invisShader;
 	qhandle_t	regenShader;
 	qhandle_t	battleSuitShader;
 	qhandle_t	battleWeaponShader;
+	qhandle_t	pentShader;
+	qhandle_t	pentWeaponShader;
 	qhandle_t	hastePuffShader;
 #ifdef MISSIONPACK
 	qhandle_t	redKamikazeShader;
 	qhandle_t	blueKamikazeShader;
 #endif
+
+	// player overlays
+	qhandle_t       neutralOverlay;
+	qhandle_t       redOverlay;
+	qhandle_t       blueOverlay;
+	qhandle_t       customOverlay;
+	qhandle_t       customOverlayAlpha;
 
 	// weapon effect models
 	qhandle_t	bulletFlashModel;
@@ -777,13 +947,17 @@ typedef struct {
 	qhandle_t	lightningExplosionModel;
 
 	// weapon effect shaders
-	qhandle_t	railExplosionShader;
+	qhandle_t	blasterExplosionShader; // mmp
+	qhandle_t	laserExplosionShader;
 	qhandle_t	plasmaExplosionShader;
+	qhandle_t	spreadExplosionShader;
 	qhandle_t	bulletExplosionShader;
 	qhandle_t	rocketExplosionShader;
 	qhandle_t	grenadeExplosionShader;
 	qhandle_t	bfgExplosionShader;
 	qhandle_t	bloodExplosionShader;
+
+	qhandle_t	flameExplosionShader; // mmp
 
 	// special effects models
 	qhandle_t	teleportEffectModel;
@@ -834,15 +1008,24 @@ typedef struct {
 	sfxHandle_t	sfx_ric3;
 	//sfxHandle_t	sfx_railg;
 	sfxHandle_t	sfx_rockexp;
+	sfxHandle_t	sfx_blasterexp; // mmp
+	sfxHandle_t	sfx_spreadexp; // mmp
 	sfxHandle_t	sfx_plasmaexp;
+
+	// mmp
+	sfxHandle_t	sfx_exp_hi;
+	sfxHandle_t	sfx_exp_lo;
+	sfxHandle_t	sfx_exp_global;
+	//
+
+	sfxHandle_t	sfx_chghit;
+	sfxHandle_t	sfx_chghitflesh;
+	sfxHandle_t	sfx_chghitmetal;
 #ifdef MISSIONPACK
 	sfxHandle_t	sfx_proxexp;
 	sfxHandle_t	sfx_nghit;
 	sfxHandle_t	sfx_nghitflesh;
 	sfxHandle_t	sfx_nghitmetal;
-	sfxHandle_t	sfx_chghit;
-	sfxHandle_t	sfx_chghitflesh;
-	sfxHandle_t	sfx_chghitmetal;
 	sfxHandle_t kamikazeExplodeSound;
 	sfxHandle_t kamikazeImplodeSound;
 	sfxHandle_t kamikazeFarSound;
@@ -866,10 +1049,13 @@ typedef struct {
 	sfxHandle_t	teleOutSound;
 	sfxHandle_t	noAmmoSound;
 	sfxHandle_t	respawnSound;
-	sfxHandle_t talkSound;
-	sfxHandle_t landSound;
-	sfxHandle_t fallSound;
-	sfxHandle_t jumpPadSound;
+	sfxHandle_t	superRespawnSound;
+	sfxHandle_t	chatSound[NUM_CHATSOUND_TYPES]; // mmp - there are 9 chat sounds
+	sfxHandle_t	clockTickSound;
+//	sfxHandle_t	talkSound;
+	sfxHandle_t	landSound;
+	sfxHandle_t	fallSound;
+	sfxHandle_t	jumpPadSound;
 
 	sfxHandle_t oneMinuteSound;
 	sfxHandle_t fiveMinuteSound;
@@ -879,7 +1065,15 @@ typedef struct {
 	sfxHandle_t twoFragSound;
 	sfxHandle_t oneFragSound;
 
+#ifdef MISSIONPACK
 	sfxHandle_t hitSound;
+#endif
+	sfxHandle_t hitSound0[NUM_HITSOUND_TYPES];
+	sfxHandle_t hitSound1[NUM_HITSOUND_TYPES];
+	sfxHandle_t hitSound2[NUM_HITSOUND_TYPES];
+	sfxHandle_t hitSound3[NUM_HITSOUND_TYPES];
+	sfxHandle_t hitSound4[NUM_HITSOUND_TYPES];
+	sfxHandle_t killSound[NUM_HITSOUND_TYPES];
 	sfxHandle_t hitSoundHighArmor;
 	sfxHandle_t hitSoundLowArmor;
 	sfxHandle_t hitTeamSound;
@@ -927,26 +1121,59 @@ typedef struct {
 	sfxHandle_t	takenYourTeamSound;
 	sfxHandle_t	takenOpponentSound;
 
-	sfxHandle_t redFlagReturnedSound;
-	sfxHandle_t blueFlagReturnedSound;
+	sfxHandle_t	redFlagReturnedSound;
+	sfxHandle_t	blueFlagReturnedSound;
 #ifdef MISSIONPACK
-	sfxHandle_t neutralFlagReturnedSound;
+	sfxHandle_t	neutralFlagReturnedSound;
 #endif
 	sfxHandle_t	enemyTookYourFlagSound;
-	sfxHandle_t yourTeamTookEnemyFlagSound;
+	sfxHandle_t	yourTeamTookEnemyFlagSound;
 	sfxHandle_t	youHaveFlagSound;
 #ifdef MISSIONPACK
 	sfxHandle_t	enemyTookTheFlagSound;
-	sfxHandle_t yourTeamTookTheFlagSound;
-	sfxHandle_t yourBaseIsUnderAttackSound;
+	sfxHandle_t	yourTeamTookTheFlagSound;
+	sfxHandle_t	yourBaseIsUnderAttackSound;
 #endif
-	sfxHandle_t holyShitSound;
+	sfxHandle_t	holyShitSound;
+
+	// misc sounds
+	sfxHandle_t	oneMinuteTone;
+	sfxHandle_t	voteUpdate;
+
+	sfxHandle_t	toneConnect1;
+	sfxHandle_t	toneDisconnect1;
+	sfxHandle_t	timelimit;
+	sfxHandle_t	overtime;
 
 	// tournament sounds
+	sfxHandle_t	count10Sound;
+	sfxHandle_t	count9Sound;
+	sfxHandle_t	count8Sound;
+	sfxHandle_t	count7Sound;
+	sfxHandle_t	count6Sound;
+	sfxHandle_t	count5Sound;
+	sfxHandle_t	count4Sound;
 	sfxHandle_t	count3Sound;
 	sfxHandle_t	count2Sound;
 	sfxHandle_t	count1Sound;
 	sfxHandle_t	countFightSound;
+	sfxHandle_t	countEngageSound;
+
+	// announcer sounds
+	// TODO: combind with above
+	sfxHandle_t	an_shit;
+	sfxHandle_t	an_yes;
+	sfxHandle_t	an_great;
+	sfxHandle_t	an_ok;
+	sfxHandle_t	an_excellent;
+	sfxHandle_t	an_superb;
+	sfxHandle_t	an_keepItUp;
+	sfxHandle_t	an_wonderful;
+	sfxHandle_t	an_fuckem;
+	sfxHandle_t	an_youSuck;
+	sfxHandle_t	an_cBreaker;
+	sfxHandle_t	an_perfect;
+
 	sfxHandle_t	countPrepareSound;
 
 #ifdef MISSIONPACK
@@ -987,14 +1214,17 @@ typedef struct {
 
 // The client game static (cgs) structure hold everything
 // loaded or calculated from the gamestate.  It will NOT
-// be cleared when a tournement restart is done, allowing
+// be cleared when a tournament restart is done, allowing
 // all clients to begin playing instantly
 typedef struct {
 	gameState_t		gameState;			// gamestate from server
 	glconfig_t		glconfig;			// rendering configuration
 	float			screenXScale;		// derived from glconfig
 	float			screenYScale;
+	float			screenXOffset;		// adjustment for overscan
+	float			screenYOffset;
 	float			screenXBias;
+	float			overscanAdj;		// if overscan adjustments are enabled
 
 	int				serverCommandSequence;	// reliable command stream counter
 	int				processedSnapshotNum;// the number of snapshots cgame has requested
@@ -1003,13 +1233,59 @@ typedef struct {
 
 	// parsed from serverinfo
 	gametype_t		gametype;
-	int				dmflags;
-	int				teamflags;
-	int				fraglimit;
-	int				capturelimit;
-	int				timelimit;
+	int				dmflags; // not used anymore
+	int				teamflags; // not used?
 	int				maxclients;
+
+	 // game stats
+	endGameStats_t	endGameStats[MAX_GAME_STATS];
+	int				endGameStats_CurSlot;
+	qboolean		endGameStats_Active;
+
+	int				totalPlayTime; // total length of time match went for
+
+	// parsed from ruleset cmd
+	int				ruleSet;
+
+	float			timelimit;
+	int				overtime;
+	int				scorelimit;
+	int				mercylimit;
+	int				physicsMode;
+	int				friendlyFire;
+	int				matchMode;
+	int				weaponRespawn;
+	int				forceRespawn;
+	int				teamLocOverlay;
+	int				hitSound;
+	int				randomSpawn;
+	int				scoreBalance;
+
+	int				quadMode;
+	int				selfDamage;
+	int				doubleAmmo;
+	int				keycardRespawn;
+	int				keycardDropable;
+
+	int				noArenaGrenades;
+	int				noArenaLightningGun;
+	int				enemyAttackLevel;
+	int				powerUps;
+	int				armor;
+	int				popCTF;
+
+	int				shortGame;
+
+	int				teamSize;
+
+	int				serverInfoLoad;
+
+	//
+	int				overtimeSets;
+
 	char			mapname[MAX_QPATH];
+	char			mapdispname[MAX_QPATH];
+
 	char			redTeam[MAX_QPATH];
 	char			blueTeam[MAX_QPATH];
 
@@ -1018,6 +1294,7 @@ typedef struct {
 	int				voteNo;
 	qboolean		voteModified;			// beep whenever changed
 	char			voteString[MAX_STRING_TOKENS];
+	int				voteFlash;
 
 	int				teamVoteTime[2];
 	int				teamVoteYes[2];
@@ -1045,11 +1322,52 @@ typedef struct {
 
 	clientInfo_t	clientinfo[MAX_CLIENTS];
 
+	// hud text
+	// buffer width is x3 because of embedded color codes
+	char			hudInfoMsgs[TOTAL_HUD_TEXT_BOXES][HUD_TEXT_HEIGHT][HUD_TEXT_BUFFER_SIZE];
+	int				hudInfoMsgTimes[TOTAL_HUD_TEXT_BOXES][HUD_TEXT_HEIGHT];
+	int				hudInfoPos[TOTAL_HUD_TEXT_BOXES];
+	int				hudInfoLastPos[TOTAL_HUD_TEXT_BOXES];
+
+	char			hudFragInfoKiller[HUD_TEXT_HEIGHT][HUD_FRAG_STAT_NAME_BUFFER_SIZE];
+	qhandle_t		hudFragInfoDeathIcon[HUD_TEXT_HEIGHT];
+	char			hudFragInfoVictom[HUD_TEXT_HEIGHT][HUD_FRAG_STAT_NAME_BUFFER_SIZE];
+	int				hudFragInfoTimes[HUD_TEXT_HEIGHT];
+	int				hudFragInfoPos;
+	int				hudFragInfoLastPos;
+
+	// intermission scoreboard info/chat
+	char			hudBoardInfoMsgs[HUD_BOARD_TEXT_HEIGHT][HUD_TEXT_BUFFER_SIZE];
+//	int				hudBoardInfoTimes[HUD_BOARD_TEXT_HEIGHT];
+	int				hudBoardInfoPos;
+//	int				hudBoardInfoLastPos;
+
+	// TODO - remove teamchat, chat and notify
 	// teamchat width is *3 because of embedded color codes
-	char			teamChatMsgs[TEAMCHAT_HEIGHT][TEAMCHAT_WIDTH*3+1];
+//	char			teamChatMsgs[TEAMCHAT_HEIGHT][TEAMCHAT_WIDTH*3+1];
+	char			teamChatMsgs[TEAMCHAT_HEIGHT][HUD_TEXT_BUFFER_SIZE];
 	int				teamChatMsgTimes[TEAMCHAT_HEIGHT];
 	int				teamChatPos;
 	int				teamLastChatPos;
+
+	// chat width is *3 because of embedded color codes
+	char			chatMsgs[CHAT_HEIGHT][HUD_TEXT_BUFFER_SIZE];
+	int				chatMsgTimes[CHAT_HEIGHT];
+	int				chatPos;
+	int				lastChatPos;
+
+	// notify width is *3 because of embedded color codes
+	char			notifyMsgs[NOTIFY_HEIGHT][HUD_TEXT_BUFFER_SIZE];
+	int				notifyMsgTimes[NOTIFY_HEIGHT];
+	int				notifyPos;
+	int				lastNotifyPos;
+
+	// mini map information
+	float			miniMapXScale;
+	float			miniMapYScale;
+
+	char			spectatorInfo[SINFO_CHAR_BUFFER_SIZE];
+	char			spectatorInfoScroll[SINFO_CHAR_BUFFER_SIZE*4];
 
 	int cursorX;
 	int cursorY;
@@ -1072,6 +1390,13 @@ typedef struct {
 	// media
 	cgMedia_t		media;
 
+//unlagged - client options
+	// this will be set to the server's g_delagHitscan
+	int				delagHitscan;
+//unlagged - client options
+
+	fileHandle_t	chatLogFile; // mmp
+
 } cgs_t;
 
 //==============================================================================
@@ -1079,7 +1404,7 @@ typedef struct {
 extern	cgs_t			cgs;
 extern	cg_t			cg;
 extern	centity_t		cg_entities[MAX_GENTITIES];
-extern	weaponInfo_t	cg_weapons[MAX_WEAPONS];
+extern	weaponInfo_t		cg_weapons[MAX_WEAPONS];
 extern	itemInfo_t		cg_items[MAX_ITEMS];
 extern	markPoly_t		cg_markPolys[MAX_MARK_POLYS];
 
@@ -1131,10 +1456,16 @@ extern	vmCvar_t		cg_tracerChance;
 extern	vmCvar_t		cg_tracerWidth;
 extern	vmCvar_t		cg_tracerLength;
 extern	vmCvar_t		cg_autoswitch;
+extern	vmCvar_t		cg_switchOnEmpty;
+extern	vmCvar_t		cg_switchToEmpty;
+extern	vmCvar_t		cg_powerupOverlay;
+extern	vmCvar_t		cg_itemPickUpOverlay;
+extern	vmCvar_t		cg_intermissionEffect;
 extern	vmCvar_t		cg_ignore;
 extern	vmCvar_t		cg_simpleItems;
 extern	vmCvar_t		cg_fov;
 extern	vmCvar_t		cg_zoomFov;
+extern	vmCvar_t		cg_fovMode;
 extern	vmCvar_t		cg_thirdPersonRange;
 extern	vmCvar_t		cg_thirdPersonAngle;
 extern	vmCvar_t		cg_thirdPerson;
@@ -1157,7 +1488,11 @@ extern	vmCvar_t		cg_noVoiceChats;
 extern	vmCvar_t		cg_noVoiceText;
 #endif
 extern  vmCvar_t		cg_scorePlum;
-extern	vmCvar_t		cg_smoothClients;
+extern  vmCvar_t		cg_damagePlum;
+//unlagged - smooth clients #2
+// this is done server-side now
+//extern	vmCvar_t		cg_smoothClients;
+//unlagged - smooth clients #2
 extern	vmCvar_t		pmove_fixed;
 extern	vmCvar_t		pmove_msec;
 //extern	vmCvar_t		cg_pmove_fixed;
@@ -1174,7 +1509,381 @@ extern	vmCvar_t		cg_noProjectileTrail;
 extern	vmCvar_t		cg_oldRail;
 extern	vmCvar_t		cg_oldRocket;
 extern	vmCvar_t		cg_oldPlasma;
+extern	vmCvar_t		cg_damageKick;
+extern	vmCvar_t		cg_chatSound;
+extern	vmCvar_t		cg_teamChatSound;
+
 extern	vmCvar_t		cg_trueLightning;
+
+extern	vmCvar_t		cg_hitSound;
+extern	vmCvar_t		cg_killSound;
+extern	vmCvar_t		cg_teamKillSound;
+extern	vmCvar_t		cg_lumOverlay;
+
+extern	vmCvar_t		cg_weaponCycleSkipsBlaster;
+extern	vmCvar_t		cg_placebo;
+
+
+// hud
+extern	vmCvar_t		hud_scoreboard_pingType;
+extern	vmCvar_t		hud_scoreboard_barType;
+
+extern	vmCvar_t		hud_keys_show; // was hud_showKeys
+extern	vmCvar_t		hud_keys_align;
+extern	vmCvar_t		hud_keys_xPos;
+extern	vmCvar_t		hud_keys_xAlign;
+extern	vmCvar_t		hud_keys_yPos;
+extern	vmCvar_t		hud_keys_scale;
+extern	vmCvar_t		hud_keys_color;
+extern	vmCvar_t		hud_keys_pressColor;
+
+extern	vmCvar_t		hud_testStatus_show;
+
+extern	vmCvar_t		hud_crosshair_innerColor;
+extern	vmCvar_t		hud_crosshair_innerType;
+extern	vmCvar_t		hud_crosshair_outsideColor;
+extern	vmCvar_t		hud_crosshair_outsideType;
+
+extern	vmCvar_t		hud_fps_show;
+extern	vmCvar_t		hud_fps_align;
+extern	vmCvar_t		hud_fps_style;
+extern	vmCvar_t		hud_fps_posLock;
+extern	vmCvar_t		hud_fps_xPos;
+extern	vmCvar_t		hud_fps_xAlign;
+extern	vmCvar_t		hud_fps_yPos;
+extern	vmCvar_t		hud_fps_xScale;
+extern	vmCvar_t		hud_fps_yScale;
+extern	vmCvar_t		hud_fps_color;
+
+extern	vmCvar_t		hud_gameClock_show;
+
+extern	vmCvar_t		hud_digitalClock_show;
+extern	vmCvar_t		hud_digitalClock_align;
+extern	vmCvar_t		hud_digitalClock_style;
+extern	vmCvar_t		hud_digitalClock_posLock;
+extern	vmCvar_t		hud_digitalClock_xPos;
+extern	vmCvar_t		hud_digitalClock_xAlign;
+extern	vmCvar_t		hud_digitalClock_yPos;
+extern	vmCvar_t		hud_digitalClock_xScale;
+extern	vmCvar_t		hud_digitalClock_yScale;
+extern	vmCvar_t		hud_digitalClock_color;
+
+extern	vmCvar_t		hud_ups_show;
+extern	vmCvar_t		hud_ups_align;
+extern	vmCvar_t		hud_ups_style;
+extern	vmCvar_t		hud_ups_posLock;
+extern	vmCvar_t		hud_ups_xPos;
+extern	vmCvar_t		hud_ups_xAlign;
+extern	vmCvar_t		hud_ups_yPos;
+extern	vmCvar_t		hud_ups_xScale;
+extern	vmCvar_t		hud_ups_yScale;
+extern	vmCvar_t		hud_ups_color;
+
+extern	vmCvar_t		hud_briefScore_show;
+extern	vmCvar_t		hud_briefScore_align;
+extern	vmCvar_t		hud_briefScore_style;
+extern	vmCvar_t		hud_briefScore_posLock;
+extern	vmCvar_t		hud_briefScore_xPos;
+extern	vmCvar_t		hud_briefScore_xAlign;
+extern	vmCvar_t		hud_briefScore_yPos;
+extern	vmCvar_t		hud_briefScore_xScale;
+extern	vmCvar_t		hud_briefScore_yScale;
+extern	vmCvar_t		hud_briefScore_colorTeam;
+extern	vmCvar_t		hud_briefScore_colorEnemy;
+extern	vmCvar_t		hud_briefScore_colorRed;
+extern	vmCvar_t		hud_briefScore_colorBlue;
+extern	vmCvar_t		hud_briefScore_colorNum;
+
+extern	vmCvar_t		hud_gameMap_show;
+extern	vmCvar_t		hud_gameMap_align;
+extern	vmCvar_t		hud_gameMap_posLock;
+extern	vmCvar_t		hud_gameMap_xPos;
+extern	vmCvar_t		hud_gameMap_xAlign;
+extern	vmCvar_t		hud_gameMap_yPos;
+extern	vmCvar_t		hud_gameMap_xScale;
+extern	vmCvar_t		hud_gameMap_yScale;
+extern	vmCvar_t		hud_gameMap_colorBG;
+extern	vmCvar_t		hud_gameMap_colorPlayer;
+extern	vmCvar_t		hud_gameMap_colorTeam;
+
+extern	vmCvar_t		hud_statusHealth_show;
+extern	vmCvar_t		hud_statusHealth_showZero;
+extern	vmCvar_t		hud_statusHealth_colorType;
+extern	vmCvar_t		hud_statusHealth_align;
+extern	vmCvar_t		hud_statusHealth_style;
+extern	vmCvar_t		hud_statusHealth_posLock;
+extern	vmCvar_t		hud_statusHealth_xPos;
+extern	vmCvar_t		hud_statusHealth_xAlign;
+extern	vmCvar_t		hud_statusHealth_yPos;
+extern	vmCvar_t		hud_statusHealth_xScale;
+extern	vmCvar_t		hud_statusHealth_yScale;
+extern	vmCvar_t		hud_statusHealth_colorNormal;
+extern	vmCvar_t		hud_statusHealth_colorHigh;
+extern	vmCvar_t		hud_statusHealth_colorLow;
+extern	vmCvar_t		hud_statusHealth_colorLowFlash;
+extern	vmCvar_t		hud_statusHealth_colorNormalRed;
+extern	vmCvar_t		hud_statusHealth_colorHighRed;
+extern	vmCvar_t		hud_statusHealth_colorLowRed;
+extern	vmCvar_t		hud_statusHealth_colorLowFlashRed;
+extern	vmCvar_t		hud_statusHealth_colorNormalBlue;
+extern	vmCvar_t		hud_statusHealth_colorHighBlue;
+extern	vmCvar_t		hud_statusHealth_colorLowBlue;
+extern	vmCvar_t		hud_statusHealth_colorLowFlashBlue;
+
+extern	vmCvar_t		hud_statusHealthIcon_show;
+extern	vmCvar_t		hud_statusHealthIcon_showZero;
+extern	vmCvar_t		hud_statusHealthIcon_colorType;
+extern	vmCvar_t		hud_statusHealthIcon_align;
+extern	vmCvar_t		hud_statusHealthIcon_style;
+extern	vmCvar_t		hud_statusHealthIcon_posLock;
+extern	vmCvar_t		hud_statusHealthIcon_xPos;
+extern	vmCvar_t		hud_statusHealthIcon_xAlign;
+extern	vmCvar_t		hud_statusHealthIcon_yPos;
+extern	vmCvar_t		hud_statusHealthIcon_xScale;
+extern	vmCvar_t		hud_statusHealthIcon_yScale;
+extern	vmCvar_t		hud_statusHealthIcon_colorNormal;
+extern	vmCvar_t		hud_statusHealthIcon_colorHigh;
+extern	vmCvar_t		hud_statusHealthIcon_colorLow;
+extern	vmCvar_t		hud_statusHealthIcon_colorLowFlash;
+extern	vmCvar_t		hud_statusHealthIcon_colorNormalRed;
+extern	vmCvar_t		hud_statusHealthIcon_colorHighRed;
+extern	vmCvar_t		hud_statusHealthIcon_colorLowRed;
+extern	vmCvar_t		hud_statusHealthIcon_colorLowFlashRed;
+extern	vmCvar_t		hud_statusHealthIcon_colorNormalBlue;
+extern	vmCvar_t		hud_statusHealthIcon_colorHighBlue;
+extern	vmCvar_t		hud_statusHealthIcon_colorLowBlue;
+extern	vmCvar_t		hud_statusHealthIcon_colorLowFlashBlue;
+
+extern	vmCvar_t		hud_statusArmor_show;
+extern	vmCvar_t		hud_statusArmor_showZero;
+extern	vmCvar_t		hud_statusArmor_colorBreakPoint;
+extern	vmCvar_t		hud_statusArmor_colorType;
+extern	vmCvar_t		hud_statusArmor_align;
+extern	vmCvar_t		hud_statusArmor_style;
+extern	vmCvar_t		hud_statusArmor_posLock;
+extern	vmCvar_t		hud_statusArmor_xPos;
+extern	vmCvar_t		hud_statusArmor_xAlign;
+extern	vmCvar_t		hud_statusArmor_yPos;
+extern	vmCvar_t		hud_statusArmor_xScale;
+extern	vmCvar_t		hud_statusArmor_yScale;
+extern	vmCvar_t		hud_statusArmor_color;
+extern	vmCvar_t		hud_statusArmor_colorBreak;
+extern	vmCvar_t		hud_statusArmor_colorRed;
+extern	vmCvar_t		hud_statusArmor_colorRedBreak;
+extern	vmCvar_t		hud_statusArmor_colorBlue;
+extern	vmCvar_t		hud_statusArmor_colorBlueBreak;
+extern	vmCvar_t		hud_statusArmor_colorTier1;
+extern	vmCvar_t		hud_statusArmor_colorTier1Break;
+extern	vmCvar_t		hud_statusArmor_colorTier2;
+extern	vmCvar_t		hud_statusArmor_colorTier2Break;
+extern	vmCvar_t		hud_statusArmor_colorTier3;
+extern	vmCvar_t		hud_statusArmor_colorTier3Break;
+
+
+extern	vmCvar_t		hud_statusArmorIcon_show;
+extern	vmCvar_t		hud_statusArmorIcon_showZero;
+extern	vmCvar_t		hud_statusArmorIcon_colorType;
+extern	vmCvar_t		hud_statusArmorIcon_align;
+extern	vmCvar_t		hud_statusArmorIcon_style;
+extern	vmCvar_t		hud_statusArmorIcon_posLock;
+extern	vmCvar_t		hud_statusArmorIcon_xPos;
+extern	vmCvar_t		hud_statusArmorIcon_xAlign;
+extern	vmCvar_t		hud_statusArmorIcon_yPos;
+extern	vmCvar_t		hud_statusArmorIcon_xScale;
+extern	vmCvar_t		hud_statusArmorIcon_yScale;
+extern	vmCvar_t		hud_statusArmorIcon_color;
+extern	vmCvar_t		hud_statusArmorIcon_colorRed;
+extern	vmCvar_t		hud_statusArmorIcon_colorBlue;
+extern	vmCvar_t		hud_statusArmorIcon_colorTier1;
+extern	vmCvar_t		hud_statusArmorIcon_colorTier2;
+extern	vmCvar_t		hud_statusArmorIcon_colorTier3;
+
+extern	vmCvar_t		hud_statusArmorTier_show;
+extern	vmCvar_t		hud_statusArmorTier_showZero;
+extern	vmCvar_t		hud_statusArmorTier_colorType;
+extern	vmCvar_t		hud_statusArmorTier_type;
+extern	vmCvar_t		hud_statusArmorTier_align;
+extern	vmCvar_t		hud_statusArmorTier_style;
+extern	vmCvar_t		hud_statusArmorTier_posLock;
+extern	vmCvar_t		hud_statusArmorTier_xPos;
+extern	vmCvar_t		hud_statusArmorTier_xAlign;
+extern	vmCvar_t		hud_statusArmorTier_yPos;
+extern	vmCvar_t		hud_statusArmorTier_xScale;
+extern	vmCvar_t		hud_statusArmorTier_yScale;
+extern	vmCvar_t		hud_statusArmorTier_color;
+extern	vmCvar_t		hud_statusArmorTier_colorRed;
+extern	vmCvar_t		hud_statusArmorTier_colorBlue;
+extern	vmCvar_t		hud_statusArmorTier_colorTier1;
+extern	vmCvar_t		hud_statusArmorTier_colorTier2;
+extern	vmCvar_t		hud_statusArmorTier_colorTier3;
+
+extern	vmCvar_t		hud_statusLevel_show;
+extern	vmCvar_t		hud_statusLevel_colorType;
+extern	vmCvar_t		hud_statusLevel_type;
+extern	vmCvar_t		hud_statusLevel_align;
+extern	vmCvar_t		hud_statusLevel_style;
+extern	vmCvar_t		hud_statusLevel_posLock;
+extern	vmCvar_t		hud_statusLevel_xPos;
+extern	vmCvar_t		hud_statusLevel_xAlign;
+extern	vmCvar_t		hud_statusLevel_yPos;
+extern	vmCvar_t		hud_statusLevel_xScale;
+extern	vmCvar_t		hud_statusLevel_yScale;
+extern	vmCvar_t		hud_statusLevel_color;
+extern	vmCvar_t		hud_statusLevel_colorRed;
+extern	vmCvar_t		hud_statusLevel_colorBlue;
+
+extern	vmCvar_t		hud_statusPhysics_show;
+extern	vmCvar_t		hud_statusPhysics_colorType;
+extern	vmCvar_t		hud_statusPhysics_type;
+extern	vmCvar_t		hud_statusPhysics_align;
+extern	vmCvar_t		hud_statusPhysics_style;
+extern	vmCvar_t		hud_statusPhysics_posLock;
+extern	vmCvar_t		hud_statusPhysics_xPos;
+extern	vmCvar_t		hud_statusPhysics_xAlign;
+extern	vmCvar_t		hud_statusPhysics_yPos;
+extern	vmCvar_t		hud_statusPhysics_xScale;
+extern	vmCvar_t		hud_statusPhysics_yScale;
+extern	vmCvar_t		hud_statusPhysics_color;
+extern	vmCvar_t		hud_statusPhysics_colorRed;
+extern	vmCvar_t		hud_statusPhysics_colorBlue;
+
+extern	vmCvar_t		hud_statusKeycards_show;
+extern	vmCvar_t		hud_statusKeycards_align;
+extern	vmCvar_t		hud_statusKeycards_style;
+extern	vmCvar_t		hud_statusKeycards_posLock;
+extern	vmCvar_t		hud_statusKeycards_xPos;
+extern	vmCvar_t		hud_statusKeycards_xAlign;
+extern	vmCvar_t		hud_statusKeycards_yPos;
+extern	vmCvar_t		hud_statusKeycards_xScale;
+extern	vmCvar_t		hud_statusKeycards_yScale;
+
+extern	vmCvar_t		hud_statusHoldable_show;
+extern	vmCvar_t		hud_statusHoldable_align;
+extern	vmCvar_t		hud_statusHoldable_style;
+extern	vmCvar_t		hud_statusHoldable_posLock;
+extern	vmCvar_t		hud_statusHoldable_xPos;
+extern	vmCvar_t		hud_statusHoldable_xAlign;
+extern	vmCvar_t		hud_statusHoldable_yPos;
+extern	vmCvar_t		hud_statusHoldable_xScale;
+extern	vmCvar_t		hud_statusHoldable_yScale;
+
+extern	vmCvar_t		hud_statusItem_show;
+extern	vmCvar_t		hud_statusItem_align;
+extern	vmCvar_t		hud_statusItem_style;
+extern	vmCvar_t		hud_statusItem_posLock;
+extern	vmCvar_t		hud_statusItem_xPos;
+extern	vmCvar_t		hud_statusItem_xAlign;
+extern	vmCvar_t		hud_statusItem_yPos;
+extern	vmCvar_t		hud_statusItem_xScale;
+extern	vmCvar_t		hud_statusItem_yScale;
+
+extern	vmCvar_t		hud_weaponBar_show;
+extern	vmCvar_t		hud_weaponBar_align;
+extern	vmCvar_t		hud_weaponBar_style;
+extern	vmCvar_t		hud_weaponBar_angle;
+//extern	vmCvar_t		hud_weaponBar_posLock;
+extern	vmCvar_t		hud_weaponBar_xPos;
+extern	vmCvar_t		hud_weaponBar_xAlign;
+extern	vmCvar_t		hud_weaponBar_yPos;
+//extern	vmCvar_t		hud_weaponBar_xScale;
+//extern	vmCvar_t		hud_weaponBar_yScale;
+extern	vmCvar_t		hud_weaponBar_colorNormal;
+extern	vmCvar_t		hud_weaponBar_colorLow;
+extern	vmCvar_t		hud_weaponBar_colorDead;
+//extern	vmCvar_t		hud_weaponBar_colorText;
+//extern	vmCvar_t		hud_weaponBar_colorTextDead;
+extern	vmCvar_t		hud_weaponBar_colorFlash1;
+extern	vmCvar_t		hud_weaponBar_colorFlash2;
+
+extern	vmCvar_t		hud_ammoBar_show;
+extern	vmCvar_t		hud_ammoBar_align;
+extern	vmCvar_t		hud_ammoBar_style;
+extern	vmCvar_t		hud_ammoBar_angle;
+extern	vmCvar_t		hud_ammoBar_xPos;
+extern	vmCvar_t		hud_ammoBar_xAlign;
+extern	vmCvar_t		hud_ammoBar_yPos;
+extern	vmCvar_t		hud_ammoBar_colorNormal;
+extern	vmCvar_t		hud_ammoBar_colorLow;
+extern	vmCvar_t		hud_ammoBar_colorDead;
+extern	vmCvar_t		hud_ammoBar_colorText;
+extern	vmCvar_t		hud_ammoBar_colorTextDead;
+extern	vmCvar_t		hud_ammoBar_colorFlash1;
+extern	vmCvar_t		hud_ammoBar_colorFlash2;
+
+extern	vmCvar_t		hud_voteStatus_show;
+extern	vmCvar_t		hud_voteStatus_align;
+extern	vmCvar_t		hud_voteStatus_style;
+extern	vmCvar_t		hud_voteStatus_posLock;
+extern	vmCvar_t		hud_voteStatus_xPos;
+extern	vmCvar_t		hud_voteStatus_xAlign;
+extern	vmCvar_t		hud_voteStatus_yPos;
+extern	vmCvar_t		hud_voteStatus_xScale;
+extern	vmCvar_t		hud_voteStatus_yScale;
+
+extern	vmCvar_t		hud_teamOverlay_show;
+extern	vmCvar_t		hud_teamOverlay_xPos;
+extern	vmCvar_t		hud_teamOverlay_yPos;
+
+extern	vmCvar_t		hud_chatBoxRoute;
+extern	vmCvar_t		hud_teamChatBoxRoute;
+extern	vmCvar_t		hud_notifyBoxRoute;
+extern	vmCvar_t		hud_notifyBoxFilter;
+
+extern	vmCvar_t		hud_infoBox0_show;
+extern	vmCvar_t		hud_infoBox0_xPos;
+extern	vmCvar_t		hud_infoBox0_xAlign;
+extern	vmCvar_t		hud_infoBox0_yPos;
+extern	vmCvar_t		hud_infoBox0_lines;
+extern	vmCvar_t		hud_infoBox0_dir;
+extern	vmCvar_t		hud_infoBox0_scale;
+
+extern	vmCvar_t		hud_infoBox1_show;
+extern	vmCvar_t		hud_infoBox1_xPos;
+extern	vmCvar_t		hud_infoBox1_xAlign;
+extern	vmCvar_t		hud_infoBox1_yPos;
+extern	vmCvar_t		hud_infoBox1_lines;
+extern	vmCvar_t		hud_infoBox1_dir;
+extern	vmCvar_t		hud_infoBox1_scale;
+
+extern	vmCvar_t		hud_infoBox2_show;
+extern	vmCvar_t		hud_infoBox2_xPos;
+extern	vmCvar_t		hud_infoBox2_xAlign;
+extern	vmCvar_t		hud_infoBox2_yPos;
+extern	vmCvar_t		hud_infoBox2_lines;
+extern	vmCvar_t		hud_infoBox2_dir;
+extern	vmCvar_t		hud_infoBox2_scale;
+
+extern	vmCvar_t		hud_infoBox3_show;
+extern	vmCvar_t		hud_infoBox3_xPos;
+extern	vmCvar_t		hud_infoBox3_xAlign;
+extern	vmCvar_t		hud_infoBox3_yPos;
+extern	vmCvar_t		hud_infoBox3_lines;
+extern	vmCvar_t		hud_infoBox3_dir;
+extern	vmCvar_t		hud_infoBox3_scale;
+
+extern	vmCvar_t		hud_fragInfo_show;
+extern	vmCvar_t		hud_fragInfo_xPos;
+extern	vmCvar_t		hud_fragInfo_xAlign;
+extern	vmCvar_t		hud_fragInfo_yPos;
+extern	vmCvar_t		hud_fragInfo_lines;
+extern	vmCvar_t		hud_fragInfo_dir;
+extern	vmCvar_t		hud_fragInfo_align;
+extern	vmCvar_t		hud_fragInfo_scale;
+
+extern	vmCvar_t		hud_filterColors;
+extern	vmCvar_t		hud_aspectRatioScale;
+extern	vmCvar_t		hud_autoRatioScale;
+extern	vmCvar_t		hud_overscanAdjust;
+
+extern	vmCvar_t		hud_iUnderstand;
+extern	vmCvar_t		hud_showRulesetInFreeFloat;
+
+extern	vmCvar_t		hud_useEmoticons;
+extern	vmCvar_t		hud_hqFontThreshold;
+
+extern	vmCvar_t		hud_customHUD;
+
+
 #ifdef MISSIONPACK
 extern	vmCvar_t		cg_redTeamName;
 extern	vmCvar_t		cg_blueTeamName;
@@ -1189,6 +1898,26 @@ extern  vmCvar_t		cg_recordSPDemoName;
 extern	vmCvar_t		cg_obeliskRespawnDelay;
 #endif
 
+//unlagged - client options
+extern	vmCvar_t		cg_delag;
+//extern	vmCvar_t		cg_debugDelag;
+//extern	vmCvar_t		cg_drawBBox;
+extern	vmCvar_t		cg_cmdTimeNudge;
+extern	vmCvar_t		sv_fps;
+extern	vmCvar_t		cg_projectileNudge;
+extern	vmCvar_t		cg_optimizePrediction;
+extern	vmCvar_t		cl_timeNudge;
+//extern	vmCvar_t		cg_latentSnaps;
+//extern	vmCvar_t		cg_latentCmds;
+//extern	vmCvar_t		cg_plOut;
+//unlagged - client options
+
+//unlagged - cg_unlagged.c
+void CG_PredictWeaponEffects( centity_t *cent );
+//void CG_AddBoundingBox( centity_t *cent );
+qboolean CG_Cvar_ClampInt( const char *name, vmCvar_t *vmCvar, int min, int max );
+//unlagged - cg_unlagged.c
+
 //
 // cg_main.c
 //
@@ -1199,6 +1928,7 @@ void QDECL CG_Printf( const char *msg, ... ) __attribute__ ((format (printf, 1, 
 void QDECL CG_Error( const char *msg, ... ) __attribute__ ((noreturn, format (printf, 1, 2)));
 
 void CG_StartMusic( void );
+void CG_EndMatchMusic( void );
 
 void CG_UpdateCvars( void );
 
@@ -1212,7 +1942,10 @@ void CG_RankRunFrame( void );
 void CG_SetScoreSelection(void *menu);
 score_t *CG_GetSelectedScore( void );
 void CG_BuildSpectatorString( void );
+char CG_AddEmoticons( char *str );
 
+//unlagged, sagos modfication
+void SnapVectorTowards( vec3_t v, vec3_t to );
 
 //
 // cg_view.c
@@ -1236,11 +1969,11 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 void CG_AdjustFrom640( float *x, float *y, float *w, float *h );
 void CG_FillRect( float x, float y, float width, float height, const float *color );
 void CG_DrawPic( float x, float y, float width, float height, qhandle_t hShader );
-void CG_DrawString( float x, float y, const char *string, 
+void CG_DrawString( float x, float y, const char *string,
 				   float charWidth, float charHeight, const float *modulate );
 
 
-void CG_DrawStringExt( int x, int y, const char *string, const float *setColor, 
+void CG_DrawStringExt( int x, int y, const char *string, const float *setColor,
 		qboolean forceColor, qboolean shadow, int charWidth, int charHeight, int maxChars );
 void CG_DrawBigString( int x, int y, const char *s, float alpha );
 void CG_DrawBigStringColor( int x, int y, const char *s, vec4_t color );
@@ -1259,6 +1992,21 @@ void UI_DrawProportionalString( int x, int y, const char* str, int style, vec4_t
 void CG_DrawRect( float x, float y, float width, float height, float size, const float *color );
 void CG_DrawSides(float x, float y, float w, float h, float size);
 void CG_DrawTopBottom(float x, float y, float w, float h, float size);
+
+//
+// cg_megadraw.c
+//
+/*void CG_DrawTest( int xpos, int ypos, int style, float scale, vec4_t color );
+static CG_MegaDrawFPS( int xpos, int ypos, int style, float scale, vec4_t color );
+static CG_MegaDrawTimer( int xpos, int ypos, int style, float scale, vec4_t color );
+static CG_MegaDrawDigitTimer( int xpos, int ypos, int style, float scale, vec4_t color );
+static CG_MegaDrawUPS( int xpos, int ypos, int style, float scale, vec4_t color );
+static CG_MegaDrawBriefScore( int xpos, int ypos, int layout, int style, float scale, vec4_t color, vec4_t color1, vec4_t color2 );
+static void CG_MegaDrawHUDInfo( int xpos, int ypos, int xsize, int ysize, int ydir, int hudBox, int style, float scale, vec4_t hcolor );
+static void CG_MegaDrawChat( int xpos, int ypos, int xsize, int ysize, int ydir, int style, float scale, vec4_t hcolor );
+static void CG_MegaDrawCrosshair( float xpos, float ypos, float xsize, float ysize, int typeA, int typeB, vec4_t colorA, vec4_t colorB );
+static void CG_MegaDrawHudPart( float xpos, float ypos, float xsize, float ysize, qhandle_t hShader, int fcol, int frow, int fcol2, int frow2, vec4_t color);
+static void CG_MegaDrawBorder( float xpos, float ypos, float xsize, float ysize, int ptype, vec4_t color);*/
 
 
 //
@@ -1308,7 +2056,7 @@ qhandle_t CG_StatusHandle(int task);
 //
 void CG_Player( centity_t *cent );
 void CG_ResetPlayerEntity( centity_t *cent );
-void CG_AddRefEntityWithPowerups( refEntity_t *ent, entityState_t *state, int team );
+void CG_AddRefEntityWithPowerups( refEntity_t *ent, entityState_t *state, int team, qboolean isMissile );
 void CG_NewClientInfo( int clientNum );
 sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName );
 
@@ -1317,7 +2065,7 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName );
 //
 void CG_BuildSolidList( void );
 int	CG_PointContents( const vec3_t point, int passEntityNum );
-void CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
+void CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
 					 int skipNumber, int mask );
 void CG_PredictPlayerState( void );
 void CG_LoadDeferredPlayers( void );
@@ -1328,6 +2076,7 @@ void CG_LoadDeferredPlayers( void );
 //
 void CG_CheckEvents( centity_t *cent );
 const char	*CG_PlaceString( int rank );
+//static void CG_AddToFragInfo( int hudBox, const char *str );
 void CG_EntityEvent( centity_t *cent, vec3_t position );
 void CG_PainEvent( centity_t *cent, int health );
 
@@ -1340,9 +2089,9 @@ void CG_AddPacketEntities( void );
 void CG_Beam( centity_t *cent );
 void CG_AdjustPositionForMover(const vec3_t in, int moverNum, int fromTime, int toTime, vec3_t out, vec3_t angles_in, vec3_t angles_out);
 
-void CG_PositionEntityOnTag( refEntity_t *entity, const refEntity_t *parent, 
+void CG_PositionEntityOnTag( refEntity_t *entity, const refEntity_t *parent,
 							qhandle_t parentModel, char *tagName );
-void CG_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_t *parent, 
+void CG_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_t *parent,
 							qhandle_t parentModel, char *tagName );
 
 
@@ -1358,9 +2107,11 @@ void CG_RegisterWeapon( int weaponNum );
 void CG_RegisterItemVisuals( int itemNum );
 
 void CG_FireWeapon( centity_t *cent );
+void CG_RemoveWeapon( void );
 void CG_MissileHitWall( int weapon, int clientNum, vec3_t origin, vec3_t dir, impactSound_t soundType );
 void CG_MissileHitPlayer( int weapon, vec3_t origin, vec3_t dir, int entityNum );
 void CG_ShotgunFire( entityState_t *es );
+void CG_SuperShotgunFire( entityState_t *es );
 void CG_Bullet( vec3_t origin, int sourceEntityNum, vec3_t normal, qboolean flesh, int fleshEntityNum );
 
 void CG_RailTrail( clientInfo_t *ci, vec3_t start, vec3_t end );
@@ -1376,11 +2127,11 @@ void CG_OutOfAmmoChange( void );	// should this be in pmove?
 //
 void	CG_InitMarkPolys( void );
 void	CG_AddMarks( void );
-void	CG_ImpactMark( qhandle_t markShader, 
-				    const vec3_t origin, const vec3_t dir, 
-					float orientation, 
-				    float r, float g, float b, float a, 
-					qboolean alphaFade, 
+void	CG_ImpactMark( qhandle_t markShader,
+				    const vec3_t origin, const vec3_t dir,
+					float orientation,
+				    float r, float g, float b, float a,
+					qboolean alphaFade,
 					float radius, qboolean temporary );
 
 //
@@ -1393,8 +2144,8 @@ void	CG_AddLocalEntities( void );
 //
 // cg_effects.c
 //
-localEntity_t *CG_SmokePuff( const vec3_t p, 
-				   const vec3_t vel, 
+localEntity_t *CG_SmokePuff( const vec3_t p,
+				   const vec3_t vel,
 				   float radius,
 				   float r, float g, float b, float a,
 				   float duration,
@@ -1423,10 +2174,15 @@ localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
 								qhandle_t hModel, qhandle_t shader, int msec,
 								qboolean isSprite );
 
+void CG_Lightning_Discharge (vec3_t origin, int msec);  // The SARACEN's Lightning Discharge
+
 //
 // cg_snapshot.c
 //
 void CG_ProcessSnapshots( void );
+//unlagged - early transitioning
+//void CG_TransitionEntity( centity_t *cent );
+//unlagged - early transitioning
 
 //
 // cg_info.c
@@ -1455,6 +2211,7 @@ void CG_ExecuteNewServerCommands( int latestSequence );
 void CG_ParseServerinfo( void );
 void CG_SetConfigValues( void );
 void CG_ShaderStateChanged(void);
+void CG_AddToHUDInfo( int hudBox, const char *str, int emoticon, int hideInfo );
 #ifdef MISSIONPACK
 void CG_LoadVoiceChats( void );
 void CG_VoiceChatLocal( int mode, qboolean voiceOnly, int clientNum, int color, const char *cmd );
@@ -1545,7 +2302,7 @@ void		trap_CM_TransformedCapsuleTrace( trace_t *results, const vec3_t start, con
 					  const vec3_t origin, const vec3_t angles );
 
 // Returns the projection of a polygon onto the solid brushes in the world
-int			trap_CM_MarkFragments( int numPoints, const vec3_t *points, 
+int			trap_CM_MarkFragments( int numPoints, const vec3_t *points,
 			const vec3_t projection,
 			int maxPoints, vec3_t pointBuffer,
 			int maxFragments, markFragment_t *fragmentBuffer );
@@ -1593,10 +2350,10 @@ void		trap_R_AddAdditiveLightToScene( const vec3_t org, float intensity, float r
 int			trap_R_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir );
 void		trap_R_RenderScene( const refdef_t *fd );
 void		trap_R_SetColor( const float *rgba );	// NULL = 1,1,1,1
-void		trap_R_DrawStretchPic( float x, float y, float w, float h, 
+void		trap_R_DrawStretchPic( float x, float y, float w, float h,
 			float s1, float t1, float s2, float t2, qhandle_t hShader );
 void		trap_R_ModelBounds( clipHandle_t model, vec3_t mins, vec3_t maxs );
-int			trap_R_LerpTag( orientation_t *tag, clipHandle_t mod, int startFrame, int endFrame, 
+int			trap_R_LerpTag( orientation_t *tag, clipHandle_t mod, int startFrame, int endFrame,
 					   float frac, const char *tagName );
 void		trap_R_RemapShader( const char *oldShader, const char *newShader, const char *timeOffset );
 qboolean	trap_R_inPVS( const vec3_t p1, const vec3_t p2 );
@@ -1629,12 +2386,12 @@ qboolean	trap_GetServerCommand( int serverCommandNumber );
 // this will always be at least one higher than the number in the current
 // snapshot, and it may be quite a few higher if it is a fast computer on
 // a lagged connection
-int			trap_GetCurrentCmdNumber( void );	
+int			trap_GetCurrentCmdNumber( void );
 
 qboolean	trap_GetUserCmd( int cmdNumber, usercmd_t *ucmd );
 
 // used for the weapon select and zoom
-void		trap_SetUserCmdValue( int stateValue, float sensitivityScale );
+void		trap_SetUserCmdValue( int stateValue, float sensitivityScale, int flags );
 
 // aids for VM testing
 void		testPrintInt( char *string, int i );

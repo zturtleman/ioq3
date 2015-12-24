@@ -123,9 +123,9 @@ static void UI_SetupMenu_Event( void *ptr, int event ) {
 		UI_PreferencesMenu();
 		break;
 
-	case ID_CDKEY:
+/*	case ID_CDKEY:
 		UI_CDKeyMenu();
-		break;
+		break;*/
 
 //	case ID_LOAD:
 //		UI_LoadConfigMenu();
@@ -136,7 +136,8 @@ static void UI_SetupMenu_Event( void *ptr, int event ) {
 //		break;
 
 	case ID_DEFAULTS:
-		UI_ConfirmMenu( "SET TO DEFAULTS?", Setup_ResetDefaults_Draw, Setup_ResetDefaults_Action );
+//		UI_ConfirmMenu( "SET TO DEFAULTS?", Setup_ResetDefaults_Draw, Setup_ResetDefaults_Action );
+		UI_ConfirmMenu( "RESET CONFIGS?", Setup_ResetDefaults_Draw, Setup_ResetDefaults_Action );
 		break;
 
 	case ID_BACK:
@@ -228,7 +229,7 @@ static void UI_SetupMenu_Init( void ) {
 	setupMenuInfo.game.style						= UI_CENTER;
 
 	y += SETUP_MENU_VERTICAL_SPACING;
-	setupMenuInfo.cdkey.generic.type				= MTYPE_PTEXT;
+	/*setupMenuInfo.cdkey.generic.type				= MTYPE_PTEXT;
 	setupMenuInfo.cdkey.generic.flags				= QMF_CENTER_JUSTIFY|QMF_PULSEIFFOCUS;
 	setupMenuInfo.cdkey.generic.x					= 320;
 	setupMenuInfo.cdkey.generic.y					= y;
@@ -236,7 +237,7 @@ static void UI_SetupMenu_Init( void ) {
 	setupMenuInfo.cdkey.generic.callback			= UI_SetupMenu_Event; 
 	setupMenuInfo.cdkey.string						= "CD Key";
 	setupMenuInfo.cdkey.color						= color_red;
-	setupMenuInfo.cdkey.style						= UI_CENTER;
+	setupMenuInfo.cdkey.style						= UI_CENTER;*/
 
 	if( !trap_Cvar_VariableValue( "cl_paused" ) ) {
 #if 0
@@ -270,7 +271,8 @@ static void UI_SetupMenu_Init( void ) {
 		setupMenuInfo.defaults.generic.y				= y;
 		setupMenuInfo.defaults.generic.id				= ID_DEFAULTS;
 		setupMenuInfo.defaults.generic.callback			= UI_SetupMenu_Event; 
-		setupMenuInfo.defaults.string					= "DEFAULTS";
+//		setupMenuInfo.defaults.string					= "DEFAULTS";
+		setupMenuInfo.defaults.string					= "RESET CONFIGS";
 		setupMenuInfo.defaults.color					= color_red;
 		setupMenuInfo.defaults.style					= UI_CENTER;
 	}
@@ -293,7 +295,7 @@ static void UI_SetupMenu_Init( void ) {
 	Menu_AddItem( &setupMenuInfo.menu, &setupMenuInfo.setupcontrols );
 	Menu_AddItem( &setupMenuInfo.menu, &setupMenuInfo.setupsystem );
 	Menu_AddItem( &setupMenuInfo.menu, &setupMenuInfo.game );
-	Menu_AddItem( &setupMenuInfo.menu, &setupMenuInfo.cdkey );
+//	Menu_AddItem( &setupMenuInfo.menu, &setupMenuInfo.cdkey );
 //	Menu_AddItem( &setupMenuInfo.menu, &setupMenuInfo.load );
 //	Menu_AddItem( &setupMenuInfo.menu, &setupMenuInfo.save );
 	if( !trap_Cvar_VariableValue( "cl_paused" ) ) {

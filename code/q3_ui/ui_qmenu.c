@@ -39,7 +39,9 @@ static qhandle_t	sliderButton_0;
 static qhandle_t	sliderButton_1;
 
 vec4_t menu_text_color	    = {1.0f, 1.0f, 1.0f, 1.0f};
-vec4_t menu_dim_color       = {0.0f, 0.0f, 0.0f, 0.75f};
+vec4_t menu_dim_color		= {0.0f, 0.0f, 0.0f, 0.75f};
+vec4_t menu_option_color	= {1.0f, 0.43f, 0.0f, 1.0f};
+vec4_t menu_select_color	= {1.0f, 1.0f, 0.0f, 1.0f};
 vec4_t color_black	    = {0.00f, 0.00f, 0.00f, 1.00f};
 vec4_t color_white	    = {1.00f, 1.00f, 1.00f, 1.00f};
 vec4_t color_yellow	    = {1.00f, 1.00f, 0.00f, 1.00f};
@@ -83,6 +85,10 @@ static void Text_Draw( menutext_s *b );
 // scrolllist widget
 static void	ScrollList_Init( menulist_s *l );
 sfxHandle_t ScrollList_Key( menulist_s *l, int key );
+
+// proportional menu text widget
+static void MText_Init( menutext_s *b );
+static void MText_Draw( menutext_s *b );
 
 // proportional text widget
 static void PText_Init( menutext_s *b );
@@ -132,7 +138,8 @@ static void Text_Draw( menutext_s *t )
 	else
 		color = t->color;
 
-	UI_DrawString( x, y, buff, t->style, color );
+	/*UI_DrawString( x, y, buff, t->style, color );*/
+	UI_DrawProportionalString( x, y + OPTION_YPOS_ALIGN, buff, t->style, color );
 }
 
 /*
@@ -165,6 +172,73 @@ static void BText_Draw( menutext_s *t )
 		color = t->color;
 
 	UI_DrawBannerString( x, y, t->string, t->style, color );
+}
+
+
+/*
+=================
+MText_Init
+=================
+*/
+static void MText_Init( menutext_s *t )
+{
+	int	x;
+	int	y;
+	int	w;
+	int	h;
+	float	sizeScale;
+
+	sizeScale = UI_ProportionalSizeScale( t->style );
+
+	x = t->generic.x;
+	y = t->generic.y;
+	w = UI_ProportionalStringWidth( t->string ) * sizeScale;
+	h =	PROP_HEIGHT * sizeScale;
+
+	if( t->generic.flags & QMF_RIGHT_JUSTIFY ) {
+		x -= w;
+	}
+	else if( t->generic.flags & QMF_CENTER_JUSTIFY ) {
+		x -= w / 2;
+	}
+
+	t->generic.left   = x - PROP_GAP_WIDTH * sizeScale;
+	t->generic.right  = x + w + PROP_GAP_WIDTH * sizeScale;
+	t->generic.top    = y;
+	t->generic.bottom = y + h;
+}
+
+/*
+=================
+MText_Draw
+=================
+*/
+static void MText_Draw( menutext_s *t )
+{
+	int		x;
+	int		y;
+	float *	color;
+	int		style;
+
+	x = t->generic.x;
+	y = t->generic.y;
+
+	if (t->generic.flags & QMF_GRAYED)
+		color = text_color_disabled;
+	else
+		color = t->color;
+
+	style = t->style;
+	if( t->generic.flags & QMF_PULSEIFFOCUS ) {
+		if( Menu_ItemAtCursor( t->generic.parent ) == t ) {
+			style |= UI_PULSE;
+		}
+		else {
+			style |= UI_INVERSE;
+		}
+	}
+
+	UI_DrawProportionalString( x, y, t->string, style, color );
 }
 
 /*
@@ -436,13 +510,15 @@ static void RadioButton_Init( menuradiobutton_s *rb )
 	int	len;
 
 	// calculate bounds
-	if (rb->generic.name)
+	/*if (rb->generic.name)
 		len = strlen(rb->generic.name);
 	else
-		len = 0;
+		len = 0;*/
 
-	rb->generic.left   = rb->generic.x - (len+1)*SMALLCHAR_WIDTH;
-	rb->generic.right  = rb->generic.x + 6*SMALLCHAR_WIDTH;
+	/*rb->generic.left   = rb->generic.x - (len+1)*SMALLCHAR_WIDTH;
+	rb->generic.right  = rb->generic.x + 6*SMALLCHAR_WIDTH;*/
+	rb->generic.left   = rb->generic.x - 304;
+	rb->generic.right  = rb->generic.x + 304;
 	rb->generic.top    = rb->generic.y;
 	rb->generic.bottom = rb->generic.y + SMALLCHAR_HEIGHT;
 }
@@ -492,6 +568,7 @@ static void RadioButton_Draw( menuradiobutton_s *rb )
 	int y;
 	float *color;
 	int	style;
+	int	styleLeft;
 	qboolean focus;
 
 	x = rb->generic.x;
@@ -503,37 +580,45 @@ static void RadioButton_Draw( menuradiobutton_s *rb )
 	{
 		color = text_color_disabled;
 		style = UI_LEFT|UI_SMALLFONT;
+		styleLeft = UI_RIGHT|UI_SMALLFONT;
 	}
 	else if ( focus )
 	{
 		color = text_color_highlight;
 		style = UI_LEFT|UI_PULSE|UI_SMALLFONT;
+		styleLeft = UI_RIGHT|UI_PULSE|UI_SMALLFONT;
 	}
 	else
 	{
 		color = text_color_normal;
 		style = UI_LEFT|UI_SMALLFONT;
+		styleLeft = UI_RIGHT|UI_SMALLFONT;
 	}
 
-	if ( focus )
+	/*if ( focus )
 	{
 		// draw cursor
+		// TODO: rework the fill rect.
 		UI_FillRect( rb->generic.left, rb->generic.top, rb->generic.right-rb->generic.left+1, rb->generic.bottom-rb->generic.top+1, listbar_color ); 
 		UI_DrawChar( x, y, 13, UI_CENTER|UI_BLINK|UI_SMALLFONT, color);
-	}
+	}*/
 
 	if ( rb->generic.name )
-		UI_DrawString( x - SMALLCHAR_WIDTH, y, rb->generic.name, UI_RIGHT|UI_SMALLFONT, color );
+	{
+		/*UI_DrawString( x - SMALLCHAR_WIDTH, y, rb->generic.name, UI_RIGHT|UI_SMALLFONT, color );*/
+		UI_DrawProportionalString( x - SMALLCHAR_WIDTH, y + OPTION_YPOS_ALIGN, rb->generic.name,
+							styleLeft, color );
+	}
 
 	if ( !rb->curvalue )
 	{
-		UI_DrawHandlePic( x + SMALLCHAR_WIDTH, y + 2, 16, 16, uis.rb_off);
-		UI_DrawString( x + SMALLCHAR_WIDTH + 16, y, "off", style, color );
+		UI_DrawHandlePic( x + SMALLCHAR_WIDTH, y /*+ 2*/, 32, 16, uis.rb_off); // was 16 x 16
+		/*UI_DrawString( x + SMALLCHAR_WIDTH + 16, y, "off", style, color );*/
 	}
 	else
 	{
-		UI_DrawHandlePic( x + SMALLCHAR_WIDTH, y + 2, 16, 16, uis.rb_on );
-		UI_DrawString( x + SMALLCHAR_WIDTH + 16, y, "on", style, color );
+		UI_DrawHandlePic( x + SMALLCHAR_WIDTH, y /*+ 2*/, 32, 16, uis.rb_on ); // was 16 x 16
+		/*UI_DrawString( x + SMALLCHAR_WIDTH + 16, y, "on", style, color );*/
 	}
 }
 
@@ -652,7 +737,9 @@ static void Slider_Draw( menuslider_s *s ) {
 	}
 
 	// draw label
-	UI_DrawString( x - SMALLCHAR_WIDTH, y, s->generic.name, UI_RIGHT|style, color );
+	/*UI_DrawString( x - SMALLCHAR_WIDTH, y, s->generic.name, UI_RIGHT|style, color );*/
+	UI_DrawProportionalString( x - SMALLCHAR_WIDTH, y + OPTION_YPOS_ALIGN, s->generic.name,
+							UI_RIGHT|style, color );
 
 	// draw slider
 	UI_SetColor( color );
@@ -858,12 +945,18 @@ static void SpinControl_Draw( menulist_s *s )
 	if ( focus )
 	{
 		// draw cursor
-		UI_FillRect( s->generic.left, s->generic.top, s->generic.right-s->generic.left+1, s->generic.bottom-s->generic.top+1, listbar_color ); 
-		UI_DrawChar( x, y, 13, UI_CENTER|UI_BLINK|UI_SMALLFONT, color);
+		// TODO: rework this
+		/*UI_FillRect( s->generic.left, s->generic.top, s->generic.right-s->generic.left+1, s->generic.bottom-s->generic.top+1, listbar_color ); 
+		UI_DrawChar( x, y, 13, UI_CENTER|UI_BLINK|UI_SMALLFONT, color);*/
 	}
 
-	UI_DrawString( x - SMALLCHAR_WIDTH, y, s->generic.name, style|UI_RIGHT, color );
-	UI_DrawString( x + SMALLCHAR_WIDTH, y, s->itemnames[s->curvalue], style|UI_LEFT, color );
+	/*UI_DrawString( x - SMALLCHAR_WIDTH, y, s->generic.name, style|UI_RIGHT, color );
+	UI_DrawString( x + SMALLCHAR_WIDTH, y, s->itemnames[s->curvalue], style|UI_LEFT, color );*/
+
+	UI_DrawProportionalString( x - SMALLCHAR_WIDTH, y + OPTION_YPOS_ALIGN, s->generic.name,
+							UI_RIGHT|style, color );
+	UI_DrawProportionalString( x + SMALLCHAR_WIDTH, y + OPTION_YPOS_ALIGN, s->itemnames[s->curvalue],
+							UI_LEFT|style, color );
 }
 
 /*
@@ -1300,6 +1393,10 @@ void Menu_AddItem( menuframework_s *menu, void *item )
 				ScrollList_Init((menulist_s*)item);
 				break;
 
+			case MTYPE_MENUTEXT:
+				MText_Init((menutext_s*)item);
+				break;
+
 			case MTYPE_PTEXT:
 				PText_Init((menutext_s*)item);
 				break;
@@ -1490,6 +1587,10 @@ void Menu_Draw( menuframework_s *menu )
 
 				case MTYPE_SCROLLLIST:
 					ScrollList_Draw( (menulist_s*)itemptr );
+					break;
+
+				case MTYPE_MENUTEXT:
+					MText_Draw( (menutext_s*)itemptr );
 					break;
 				
 				case MTYPE_PTEXT:
@@ -1700,22 +1801,31 @@ Menu_Cache
 */
 void Menu_Cache( void )
 {
-	uis.charset			= trap_R_RegisterShaderNoMip( "gfx/2d/bigchars" );
+	/*uis.charset			= trap_R_RegisterShaderNoMip( "gfx/2d/bigchars" );
 	uis.charsetProp		= trap_R_RegisterShaderNoMip( "menu/art/font1_prop.tga" );
 	uis.charsetPropGlow	= trap_R_RegisterShaderNoMip( "menu/art/font1_prop_glo.tga" );
 	uis.charsetPropB	= trap_R_RegisterShaderNoMip( "menu/art/font2_prop.tga" );
 	uis.cursor          = trap_R_RegisterShaderNoMip( "menu/art/3_cursor2" );
 	uis.rb_on           = trap_R_RegisterShaderNoMip( "menu/art/switch_on" );
-	uis.rb_off          = trap_R_RegisterShaderNoMip( "menu/art/switch_off" );
+	uis.rb_off          = trap_R_RegisterShaderNoMip( "menu/art/switch_off" );*/
+
+	uis.charset		= trap_R_RegisterShaderNoMip( "gfx/2d/conchar.tga" );
+	uis.charsetProp		= trap_R_RegisterShaderNoMip( "menu/art/propfont1.tga" );
+	uis.charsetPropGlow	= trap_R_RegisterShaderNoMip( "menu/art/propfont1g.tga" );
+	uis.charsetPropB	= trap_R_RegisterShaderNoMip( "menu/art/propfont2.tga" );
+	uis.cursor		= trap_R_RegisterShaderNoMip( "menu/art/cursor" );
+	uis.rb_on		= trap_R_RegisterShaderNoMip( "menu/art/switch_on" );
+	uis.rb_off		= trap_R_RegisterShaderNoMip( "menu/art/switch_off" );
 
 	uis.whiteShader = trap_R_RegisterShaderNoMip( "white" );
-	if ( uis.glconfig.hardwareType == GLHW_RAGEPRO ) {
+	/*if ( uis.glconfig.hardwareType == GLHW_RAGEPRO ) {
 		// the blend effect turns to shit with the normal 
 		uis.menuBackShader	= trap_R_RegisterShaderNoMip( "menubackRagePro" );
 	} else {
 		uis.menuBackShader	= trap_R_RegisterShaderNoMip( "menuback" );
-	}
-	uis.menuBackNoLogoShader = trap_R_RegisterShaderNoMip( "menubacknologo" );
+	}*/
+	uis.menuBackShader		= trap_R_RegisterShaderNoMip( "mfmenuback" );
+	uis.menuBackNoLogoShader	= trap_R_RegisterShaderNoMip( "mfmenubacknologo" );
 
 	menu_in_sound	= trap_S_RegisterSound( "sound/misc/menu1.wav", qfalse );
 	menu_move_sound	= trap_S_RegisterSound( "sound/misc/menu2.wav", qfalse );

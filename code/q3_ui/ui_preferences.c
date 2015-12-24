@@ -49,7 +49,7 @@ GAME OPTIONS MENU
 #define ID_SYNCEVERYFRAME		134
 #define ID_FORCEMODEL			135
 #define ID_DRAWTEAMOVERLAY		136
-#define ID_ALLOWDOWNLOAD			137
+#define ID_ALLOWDOWNLOAD		137
 #define ID_BACK					138
 
 #define	NUM_CROSSHAIRS			10
@@ -210,7 +210,8 @@ static void Crosshair_Draw( void *self ) {
 	if( !s->curvalue ) {
 		return;
 	}
-	UI_DrawHandlePic( x + SMALLCHAR_WIDTH, y - 4, 24, 24, s_preferences.crosshairShader[s->curvalue] );
+	/*UI_DrawHandlePic( x + SMALLCHAR_WIDTH, y - 4, 24, 24, s_preferences.crosshairShader[s->curvalue] );*/
+	UI_DrawHandlePic( x + SMALLCHAR_WIDTH, y - 2, 20, 20, s_preferences.crosshairShader[s->curvalue] );
 }
 
 
@@ -248,8 +249,8 @@ static void Preferences_MenuInit( void ) {
 	s_preferences.framer.height  	   = 334;
 
 	y = 144;
-	s_preferences.crosshair.generic.type		= MTYPE_SPINCONTROL;
-	s_preferences.crosshair.generic.flags		= QMF_PULSEIFFOCUS|QMF_SMALLFONT|QMF_NODEFAULTINIT|QMF_OWNERDRAW;
+	/*s_preferences.crosshair.generic.type		= MTYPE_SPINCONTROL;
+	s_preferences.crosshair.generic.flags		= QMF_PULSEIFFOCUS|QMF_SMALLFONT|QMF_NODEFAULTINIT|QMF_OWNERDRAW|QMF_INACTIVE;
 	s_preferences.crosshair.generic.x			= PREFERENCES_X_POS;
 	s_preferences.crosshair.generic.y			= y;
 	s_preferences.crosshair.generic.name		= "Crosshair:";
@@ -262,7 +263,7 @@ static void Preferences_MenuInit( void ) {
 	s_preferences.crosshair.generic.right		= PREFERENCES_X_POS + 48;
 	s_preferences.crosshair.numitems			= NUM_CROSSHAIRS;
 
-	y += BIGCHAR_HEIGHT+2+4;
+	y += BIGCHAR_HEIGHT+2;*/
 	s_preferences.simpleitems.generic.type        = MTYPE_RADIOBUTTON;
 	s_preferences.simpleitems.generic.name	      = "Simple Items:";
 	s_preferences.simpleitems.generic.flags	      = QMF_PULSEIFFOCUS|QMF_SMALLFONT;
@@ -271,7 +272,7 @@ static void Preferences_MenuInit( void ) {
 	s_preferences.simpleitems.generic.x	          = PREFERENCES_X_POS;
 	s_preferences.simpleitems.generic.y	          = y;
 
-	y += BIGCHAR_HEIGHT;
+	y += BIGCHAR_HEIGHT+2;
 	s_preferences.wallmarks.generic.type          = MTYPE_RADIOBUTTON;
 	s_preferences.wallmarks.generic.name	      = "Marks on Walls:";
 	s_preferences.wallmarks.generic.flags	      = QMF_PULSEIFFOCUS|QMF_SMALLFONT;
@@ -298,14 +299,14 @@ static void Preferences_MenuInit( void ) {
 	s_preferences.dynamiclights.generic.x	      = PREFERENCES_X_POS;
 	s_preferences.dynamiclights.generic.y	      = y;
 
-	y += BIGCHAR_HEIGHT+2;
+	/*y += BIGCHAR_HEIGHT+2;
 	s_preferences.identifytarget.generic.type     = MTYPE_RADIOBUTTON;
 	s_preferences.identifytarget.generic.name	  = "Identify Target:";
 	s_preferences.identifytarget.generic.flags    = QMF_PULSEIFFOCUS|QMF_SMALLFONT;
 	s_preferences.identifytarget.generic.callback = Preferences_Event;
 	s_preferences.identifytarget.generic.id       = ID_IDENTIFYTARGET;
 	s_preferences.identifytarget.generic.x	      = PREFERENCES_X_POS;
-	s_preferences.identifytarget.generic.y	      = y;
+	s_preferences.identifytarget.generic.y	      = y;*/
 
 	y += BIGCHAR_HEIGHT+2;
 	s_preferences.highqualitysky.generic.type     = MTYPE_RADIOBUTTON;
@@ -325,7 +326,7 @@ static void Preferences_MenuInit( void ) {
 	s_preferences.synceveryframe.generic.x	      = PREFERENCES_X_POS;
 	s_preferences.synceveryframe.generic.y	      = y;
 
-	y += BIGCHAR_HEIGHT+2;
+	/*y += BIGCHAR_HEIGHT+2;
 	s_preferences.forcemodel.generic.type     = MTYPE_RADIOBUTTON;
 	s_preferences.forcemodel.generic.name	  = "Force Player Models:";
 	s_preferences.forcemodel.generic.flags	  = QMF_PULSEIFFOCUS|QMF_SMALLFONT;
@@ -342,7 +343,7 @@ static void Preferences_MenuInit( void ) {
 	s_preferences.drawteamoverlay.generic.id       = ID_DRAWTEAMOVERLAY;
 	s_preferences.drawteamoverlay.generic.x	       = PREFERENCES_X_POS;
 	s_preferences.drawteamoverlay.generic.y	       = y;
-	s_preferences.drawteamoverlay.itemnames			= teamoverlay_names;
+	s_preferences.drawteamoverlay.itemnames			= teamoverlay_names;*/
 
 	y += BIGCHAR_HEIGHT+2;
 	s_preferences.allowdownload.generic.type     = MTYPE_RADIOBUTTON;
@@ -368,16 +369,16 @@ static void Preferences_MenuInit( void ) {
 	Menu_AddItem( &s_preferences.menu, &s_preferences.framel );
 	Menu_AddItem( &s_preferences.menu, &s_preferences.framer );
 
-	Menu_AddItem( &s_preferences.menu, &s_preferences.crosshair );
+	/*Menu_AddItem( &s_preferences.menu, &s_preferences.crosshair );*/
 	Menu_AddItem( &s_preferences.menu, &s_preferences.simpleitems );
 	Menu_AddItem( &s_preferences.menu, &s_preferences.wallmarks );
 	Menu_AddItem( &s_preferences.menu, &s_preferences.brass );
 	Menu_AddItem( &s_preferences.menu, &s_preferences.dynamiclights );
-	Menu_AddItem( &s_preferences.menu, &s_preferences.identifytarget );
+	//Menu_AddItem( &s_preferences.menu, &s_preferences.identifytarget );
 	Menu_AddItem( &s_preferences.menu, &s_preferences.highqualitysky );
 	Menu_AddItem( &s_preferences.menu, &s_preferences.synceveryframe );
-	Menu_AddItem( &s_preferences.menu, &s_preferences.forcemodel );
-	Menu_AddItem( &s_preferences.menu, &s_preferences.drawteamoverlay );
+	//Menu_AddItem( &s_preferences.menu, &s_preferences.forcemodel );
+	//Menu_AddItem( &s_preferences.menu, &s_preferences.drawteamoverlay );
 	Menu_AddItem( &s_preferences.menu, &s_preferences.allowdownload );
 
 	Menu_AddItem( &s_preferences.menu, &s_preferences.back );

@@ -55,6 +55,14 @@ void SP_info_player_start(gentity_t *ent) {
 	SP_info_player_deathmatch( ent );
 }
 
+/*QUAKED info_player_start (1 0 0) (-16 -16 -24) (16 16 32)
+alternative spawning position for info_player_deathmatch
+when no spawning position is available
+*/
+void SP_info_player_deathmatch_alt(gentity_t *ent) {
+
+}
+
 /*QUAKED info_player_intermission (1 0 1) (-16 -16 -24) (16 16 32)
 The intermission will be viewed from this point.  Target an info_notnull for the view direction.
 */
@@ -105,6 +113,7 @@ qboolean SpotWouldTelefrag( gentity_t *spot ) {
 SelectNearestDeathmatchSpawnPoint
 
 Find the spot that we DON'T want to use
+*** NOT USED -- mmp
 ================
 */
 #define	MAX_SPAWN_POINTS	128
@@ -137,6 +146,7 @@ gentity_t *SelectNearestDeathmatchSpawnPoint( vec3_t from ) {
 SelectRandomDeathmatchSpawnPoint
 
 go to a random point that doesn't telefrag
+*** NOT USED - mmp
 ================
 */
 #define	MAX_SPAWN_POINTS	128
@@ -187,9 +197,17 @@ gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, ve
 	float		list_dist[MAX_SPAWN_POINTS];
 	gentity_t	*list_spot[MAX_SPAWN_POINTS];
 	int			numSpots, rnd, i, j;
+	qboolean	randomSpawn;
 
 	numSpots = 0;
 	spot = NULL;
+
+	// TODO: code this randomspawn check better
+	if ( (level.time - level.startTime) < 1000 || level.rs_randomSpawn ) {
+		randomSpawn = qtrue;
+	} else {
+		randomSpawn = qfalse;
+	}
 
 	while((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL)
 	{
@@ -206,41 +224,78 @@ gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, ve
 		VectorSubtract( spot->s.origin, avoidPoint, delta );
 		dist = VectorLength( delta );
 
-		for (i = 0; i < numSpots; i++)
-		{
-			if(dist > list_dist[i])
+		if ( randomSpawn == qfalse ) {
+
+			for (i = 0; i < numSpots; i++)
 			{
-				if (numSpots >= MAX_SPAWN_POINTS)
-					numSpots = MAX_SPAWN_POINTS - 1;
-					
-				for(j = numSpots; j > i; j--)
+				if(dist > list_dist[i])
 				{
-					list_dist[j] = list_dist[j-1];
-					list_spot[j] = list_spot[j-1];
+					if (numSpots >= MAX_SPAWN_POINTS)
+						numSpots = MAX_SPAWN_POINTS - 1;
+
+					for(j = numSpots; j > i; j--)
+					{
+						list_dist[j] = list_dist[j-1];
+						list_spot[j] = list_spot[j-1];
+					}
+
+					list_dist[i] = dist;
+					list_spot[i] = spot;
+
+					numSpots++;
+					break;
 				}
-				
-				list_dist[i] = dist;
-				list_spot[i] = spot;
-				
+			}
+
+			if(i >= numSpots && numSpots < MAX_SPAWN_POINTS)
+			{
+				list_dist[numSpots] = dist;
+				list_spot[numSpots] = spot;
 				numSpots++;
-				break;
+			}
+
+		} else {
+			if (numSpots < MAX_SPAWN_POINTS) {
+				list_dist[numSpots] = dist;
+				list_spot[numSpots] = spot;
+				numSpots++;
 			}
 		}
-		
-		if(i >= numSpots && numSpots < MAX_SPAWN_POINTS)
+	}
+
+	// if no slots were found, use alternative spawning points
+	//spot = NULL;
+	if( !numSpots ) {
+		while((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch_alt")) != NULL)
 		{
-			list_dist[numSpots] = dist;
-			list_spot[numSpots] = spot;
-			numSpots++;
+			if(SpotWouldTelefrag(spot))
+				continue;
+
+			VectorSubtract( spot->s.origin, avoidPoint, delta );
+			dist = VectorLength( delta );
+
+			if(i >= numSpots && numSpots < MAX_SPAWN_POINTS)
+			{
+				list_dist[numSpots] = dist;
+				list_spot[numSpots] = spot;
+				numSpots++;
+			}
 		}
 	}
-	
+
+	// if still no slots were found, use last resort
 	if(!numSpots)
 	{
 		spot = G_Find(NULL, FOFS(classname), "info_player_deathmatch");
 
-		if (!spot)
-			G_Error( "Couldn't find a spawn point" );
+		// if all else fails... well, fuck it
+		if (!spot) {
+			G_Printf( "*the map creator forgot to put in a spawn point...  what an asshole!\n" );
+			spot = &g_entities[0];
+		}
+
+		/*if (!spot)
+			G_Error( "Couldn't find a spawn point" );*/
 
 		VectorCopy (spot->s.origin, origin);
 		origin[2] += 9;
@@ -248,8 +303,16 @@ gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, ve
 		return spot;
 	}
 
-	// select a random spot from the spawn points furthest away
-	rnd = random() * (numSpots / 2);
+	if ( randomSpawn == qfalse ) {
+		// select a random spot from the spawn points furthest away
+		rnd = random() * (numSpots / 2);
+	} else {
+		// simply select a random spot, and don't give a fuck
+		rnd = random() * numSpots;
+		/*rnd = ( ( random() * numSpots ) + g_randomByte.integer );
+		rnd %= numSpots;*/
+		/*G_Printf ("^8DEBUG: rnd=%i, rb=%i, max=%i\n", rnd, g_randomByte.integer, numSpots);*/
+	}
 
 	VectorCopy (list_spot[rnd]->s.origin, origin);
 	origin[2] += 9;
@@ -263,6 +326,7 @@ gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, ve
 SelectSpawnPoint
 
 Chooses a player start, deathmatch start, etc
+TODO - make this cleaner - mmp
 ============
 */
 gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, vec3_t origin, vec3_t angles, qboolean isbot ) {
@@ -281,7 +345,7 @@ gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, vec3_t origin, vec3_t angles, q
 		if ( spot == nearestSpot ) {
 			// last try
 			spot = SelectRandomDeathmatchSpawnPoint ( );
-		}		
+		}
 	}
 
 	// find a single player start spot
@@ -309,7 +373,7 @@ gentity_t *SelectInitialSpawnPoint( vec3_t origin, vec3_t angles, qboolean isbot
 	gentity_t	*spot;
 
 	spot = NULL;
-	
+
 	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL)
 	{
 		if(((spot->flags & FL_NO_BOTS) && isbot) ||
@@ -317,7 +381,7 @@ gentity_t *SelectInitialSpawnPoint( vec3_t origin, vec3_t angles, qboolean isbot
 		{
 			continue;
 		}
-		
+
 		if((spot->spawnflags & 0x01))
 			break;
 	}
@@ -385,7 +449,7 @@ void BodySink( gentity_t *ent ) {
 		// the body ques are never actually freed, they are just unlinked
 		trap_UnlinkEntity( ent );
 		ent->physicsObject = qfalse;
-		return;	
+		return;
 	}
 	ent->nextthink = level.time + 100;
 	ent->s.pos.trBase[2] -= 1;
@@ -426,7 +490,7 @@ void CopyToBodyQue( gentity_t *ent ) {
 		body->s.eFlags |= EF_KAMIKAZE;
 
 		// check if there is a kamikaze timer around for this owner
-		for (i = 0; i < level.num_entities; i++) {
+		for (i = 0; i < MAX_GENTITIES; i++) {
 			e = &g_entities[i];
 			if (!e->inuse)
 				continue;
@@ -540,7 +604,7 @@ TeamCount
 Returns number of players on a team
 ================
 */
-int TeamCount( int ignoreClientNum, team_t team ) {
+team_t TeamCount( int ignoreClientNum, int team ) {
 	int		i;
 	int		count = 0;
 
@@ -595,17 +659,28 @@ team_t PickTeam( int ignoreClientNum ) {
 	counts[TEAM_BLUE] = TeamCount( ignoreClientNum, TEAM_BLUE );
 	counts[TEAM_RED] = TeamCount( ignoreClientNum, TEAM_RED );
 
+	// check which team has less players
 	if ( counts[TEAM_BLUE] > counts[TEAM_RED] ) {
 		return TEAM_RED;
 	}
 	if ( counts[TEAM_RED] > counts[TEAM_BLUE] ) {
 		return TEAM_BLUE;
 	}
+
 	// equal team count, so join the team with the lowest score
-	if ( level.teamScores[TEAM_BLUE] > level.teamScores[TEAM_RED] ) {
+	/*if ( level.teamScores[TEAM_BLUE] > level.teamScores[TEAM_RED] {
 		return TEAM_RED;
-	}
-	return TEAM_BLUE;
+	}*/
+	if ( level.teamScores[TEAM_BLUE] > level.teamScores[TEAM_RED] )
+		return TEAM_RED;
+	else if ( level.teamScores[TEAM_BLUE] < level.teamScores[TEAM_RED] )
+		return TEAM_BLUE;
+;
+	// if all else fails, randomly choose a team
+	if ( rand()&1 )
+		return TEAM_BLUE;
+	else
+		return TEAM_RED;
 }
 
 /*
@@ -630,62 +705,111 @@ static void ForceClientSkin( gclient_t *client, char *model, const char *skin ) 
 
 /*
 ===========
-ClientCleanName
+ClientCleanName (ClientCheckName)
 ============
 */
 static void ClientCleanName(const char *in, char *out, int outSize)
 {
-	int outpos = 0, colorlessLen = 0, spaces = 0;
+	int		outpos = 0, spaces = 1;
 
 	// discard leading spaces
 	for(; *in == ' '; in++);
-	
-	for(; *in && outpos < outSize - 1; in++)
+
+	for(; *in && outpos < outSize - 1 && outpos < MAX_NAME_LENGTH; in++)
 	{
 		out[outpos] = *in;
 
 		if(*in == ' ')
 		{
 			// don't allow too many consecutive spaces
-			if(spaces > 2)
+			if(spaces > 1)
 				continue;
-			
+
 			spaces++;
 		}
-		else if(outpos > 0 && out[outpos - 1] == Q_COLOR_ESCAPE)
+		else
+		if (*in < ' ' || *in == 0x7F)
 		{
-			if(Q_IsColorString(&out[outpos - 1]))
-			{
-				colorlessLen--;
-				
-				if(ColorIndex(*in) == 0)
-				{
-					// Disallow color black in names to prevent players
-					// from getting advantage playing in front of black backgrounds
-					outpos--;
-					continue;
-				}
-			}
-			else
-			{
-				spaces = 0;
-				colorlessLen++;
-			}
+			// don't allow wackie-nunu characters
+			continue;
 		}
 		else
 		{
 			spaces = 0;
-			colorlessLen++;
 		}
-		
+
 		outpos++;
 	}
 
 	out[outpos] = '\0';
 
 	// don't allow empty names
-	if( *out == '\0' || colorlessLen == 0)
+	if( *out == '\0')
 		Q_strncpyz(out, "UnnamedPlayer", outSize );
+
+	// name filters
+	// TODO: code this better
+	// UPDATE 150403: yes, this really needs to be put on a fucking table ffs
+	// UPDATE 150602: have we come to the point where everyone is listed in the name filter?
+	// UPDATE 151210: ok, i removed most of the names, no need for bloat that was nothing more than a quick joke  ;)
+	else if (!Q_stricmpf( out, "Sasparillo", outSize )) // from QL
+		Q_strncpyz(out, "Corpo" FORCE_NAME_2 "ate " FORCE_NAME_1 FORCE_NAME_0 FORCE_NAME_3 FORCE_NAME_2, outSize );
+	else if (!Q_stricmpf( out, "Yakumo", outSize )) // from QL
+		Q_strncpyz(out, "Corpo" FORCE_NAME_2 "ate " FORCE_NAME_1 FORCE_NAME_0 FORCE_NAME_3 FORCE_NAME_2, outSize );
+
+	else if (!Q_stricmpf( out, "Sponge", outSize )) // from QL
+		Q_strncpyz(out, S_COLOR_PINK "Sponge-", outSize );
+	else if (!Q_stricmpf( out, "SyncError", outSize )) // from QL
+		Q_strncpyz(out, "Corpo" FORCE_NAME_2 "ate " FORCE_NAME_1 FORCE_NAME_0 FORCE_NAME_3 FORCE_NAME_2, outSize );
+
+}
+
+
+/*
+===========
+ClientCleanClan (ClientCheckClan)
+============
+*/
+static void ClientCleanClan(const char *in, char *out, int outSize)
+{
+	int		outpos = 0, spaces = 1;
+	int		charPos = 0;
+
+	// discard leading spaces
+	for(; *in == ' '; in++);
+
+	for(; *in && outpos < outSize - 1 && outpos < MAX_NAME_LENGTH && charPos < MAX_CLAN_CHAR_LENGTH; in++)
+	{
+		out[outpos] = *in;
+
+		if(*in == ' ')
+		{
+			// don't allow too many consecutive spaces
+			if(spaces > 1)
+				continue;
+
+			spaces++;
+		}
+		else
+		if (*in < ' ' || *in == 0x7F)
+		{
+			// don't allow wackie-nunu characters
+			continue;
+		}
+		else
+		{
+			spaces = 0;
+		}
+
+		if ( Q_IsColorString( in ) ) {
+			charPos--;
+		} else {
+			charPos++;
+		}
+		outpos++;
+	}
+
+	out[outpos] = '\0';
 }
 
 
@@ -707,12 +831,14 @@ void ClientUserinfoChanged( int clientNum ) {
 	char	model[MAX_QPATH];
 	char	headModel[MAX_QPATH];
 	char	oldname[MAX_STRING_CHARS];
+	char	oldclan[MAX_STRING_CHARS];
 	gclient_t	*client;
 	char	c1[MAX_INFO_STRING];
 	char	c2[MAX_INFO_STRING];
 	char	redTeam[MAX_INFO_STRING];
 	char	blueTeam[MAX_INFO_STRING];
 	char	userinfo[MAX_INFO_STRING];
+	//char	ipAdd[MAX_INFO_STRING]
 
 	ent = g_entities + clientNum;
 	client = ent->client;
@@ -721,7 +847,7 @@ void ClientUserinfoChanged( int clientNum ) {
 
 	// check for malformed or illegal info strings
 	if ( !Info_Validate(userinfo) ) {
-		strcpy (userinfo, "\\name\\badinfo");
+		strcpy (userinfo, "\\name\\badinfo"); // badd apple
 		// don't keep those clients and userinfo
 		trap_DropClient(clientNum, "Invalid userinfo");
 	}
@@ -732,6 +858,9 @@ void ClientUserinfoChanged( int clientNum ) {
 		client->pers.localClient = qtrue;
 	}
 
+	Q_strncpyz ( client->pers.ip, s, sizeof( client->pers.ip ) );
+	// ^ keep an eye on this, it was used before with ClientConnect(...), and caused issues such as changing varibles
+
 	// check the item prediction
 	s = Info_ValueForKey( userinfo, "cg_predictItems" );
 	if ( !atoi( s ) ) {
@@ -740,10 +869,56 @@ void ClientUserinfoChanged( int clientNum ) {
 		client->pers.predictItemPickup = qtrue;
 	}
 
+//unlagged - client options
+	// see if the player has opted out
+	s = Info_ValueForKey( userinfo, "cg_delag" );
+	if ( !atoi( s ) ) {
+		client->pers.delag = 0;
+	} else {
+		client->pers.delag = atoi( s );
+	}
+
+	// see if the player is nudging his shots
+	s = Info_ValueForKey( userinfo, "cg_cmdTimeNudge" );
+	client->pers.cmdTimeNudge = atoi( s );
+
+	// see if the player wants to debug the backward reconciliation
+	/*s = Info_ValueForKey( userinfo, "cg_debugDelag" );
+	if ( !atoi( s ) ) {
+		client->pers.debugDelag = qfalse;
+	}
+	else {
+		client->pers.debugDelag = qtrue;
+	}*/
+
+	// see if the player is simulating incoming latency
+	//s = Info_ValueForKey( userinfo, "cg_latentSnaps" );
+	//client->pers.latentSnaps = atoi( s );
+
+	// see if the player is simulating outgoing latency
+	//s = Info_ValueForKey( userinfo, "cg_latentCmds" );
+	//client->pers.latentCmds = atoi( s );
+
+	// see if the player is simulating outgoing packet loss
+	//s = Info_ValueForKey( userinfo, "cg_plOut" );
+	//client->pers.plOut = atoi( s );
+//unlagged - client options
+
 	// set name
+	// TODO: disable name changing when muted
 	Q_strncpyz ( oldname, client->pers.netname, sizeof( oldname ) );
 	s = Info_ValueForKey (userinfo, "name");
 	ClientCleanName( s, client->pers.netname, sizeof(client->pers.netname) );
+
+	// mmp - clan info is a WIP, and currently incomplete
+	s = Info_ValueForKey (userinfo, "tag");
+	ClientCleanClan( s, client->pers.clan, sizeof(client->pers.clan) );
+
+	// mmp - chat color
+	s = Info_ValueForKey (userinfo, "chatColorCode");
+	client->pers.chatColor = *s;
+	s = Info_ValueForKey (userinfo, "teamchatColorCode");
+	client->pers.teamchatColor = *s;
 
 	if ( client->sess.sessionTeam == TEAM_SPECTATOR ) {
 		if ( client->sess.spectatorState == SPECTATOR_SCOREBOARD ) {
@@ -753,8 +928,10 @@ void ClientUserinfoChanged( int clientNum ) {
 
 	if ( client->pers.connected == CON_CONNECTED ) {
 		if ( strcmp( oldname, client->pers.netname ) ) {
-			trap_SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " renamed to %s\n\"", oldname, 
-				client->pers.netname) );
+			/*trap_SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " renamed to %s\n\"", oldname,
+				client->pers.netname) );*/
+			trap_SendServerCommand( -1, va("notify %i\\\"%s" S_COLOR_WHITE " is now known as %s\n\"",
+				NF_NAMECHANGES, oldname, client->pers.netname) );
 		}
 	}
 
@@ -807,14 +984,14 @@ void ClientUserinfoChanged( int clientNum ) {
 
 	// team
 	switch( team ) {
-	case TEAM_RED:
-		ForceClientSkin(client, model, "red");
-//		ForceClientSkin(client, headModel, "red");
-		break;
-	case TEAM_BLUE:
-		ForceClientSkin(client, model, "blue");
-//		ForceClientSkin(client, headModel, "blue");
-		break;
+		case TEAM_RED:
+			ForceClientSkin(client, model, "red");
+//			ForceClientSkin(client, headModel, "red");
+			break;
+		case TEAM_BLUE:
+			ForceClientSkin(client, model, "blue");
+//			ForceClientSkin(client, headModel, "blue");
+			break;
 	}
 	// don't ever use a default skin in teamplay, it would just waste memory
 	// however bots will always join a team but they spawn in as spectator
@@ -859,33 +1036,52 @@ void ClientUserinfoChanged( int clientNum ) {
 	// team Leader (1 = leader, 0 is normal player)
 	teamLeader = client->sess.teamLeader;
 
+	// mmp - color info is not used in MFA, MFA will also create another way of suppling team names
+
+	/*
 	// colors
 	strcpy(c1, Info_ValueForKey( userinfo, "color1" ));
 	strcpy(c2, Info_ValueForKey( userinfo, "color2" ));
+	*/
 
+	/*
+	// team arena team names
 	strcpy(redTeam, Info_ValueForKey( userinfo, "g_redteam" ));
 	strcpy(blueTeam, Info_ValueForKey( userinfo, "g_blueteam" ));
-	
+	*/
+
 	// send over a subset of the userinfo keys so other clients can
 	// print scoreboards, display models, and play custom sounds
 	if (ent->r.svFlags & SVF_BOT)
 	{
-		s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\c1\\%s\\c2\\%s\\hc\\%i\\w\\%i\\l\\%i\\skill\\%s\\tt\\%d\\tl\\%d",
-			client->pers.netname, team, model, headModel, c1, c2, 
+		s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\hc\\%i\\w\\%i\\l\\%i\\skill\\%s\\tt\\%d\\tl\\%d",
+			client->pers.netname, team, model, headModel,
 			client->pers.maxHealth, client->sess.wins, client->sess.losses,
 			Info_ValueForKey( userinfo, "skill" ), teamTask, teamLeader );
+/*		s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\c1\\%s\\c2\\%s\\hc\\%i\\w\\%i\\l\\%i\\skill\\%s\\tt\\%d\\tl\\%d",
+			client->pers.netname, team, model, headModel, c1, c2,
+			client->pers.maxHealth, client->sess.wins, client->sess.losses,
+			Info_ValueForKey( userinfo, "skill" ), teamTask, teamLeader );*/
 	}
 	else
 	{
-		s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\g_redteam\\%s\\g_blueteam\\%s\\c1\\%s\\c2\\%s\\hc\\%i\\w\\%i\\l\\%i\\tt\\%d\\tl\\%d",
-			client->pers.netname, client->sess.sessionTeam, model, headModel, redTeam, blueTeam, c1, c2, 
+		s = va("n\\%s\\c\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\hc\\%i\\w\\%i\\l\\%i\\tt\\%d\\tl\\%d",
+			client->pers.netname, client->pers.clan, client->sess.sessionTeam, model, headModel,
 			client->pers.maxHealth, client->sess.wins, client->sess.losses, teamTask, teamLeader);
+/*		s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\g_redteam\\%s\\g_blueteam\\%s\\c1\\%s\\c2\\%s\\hc\\%i\\w\\%i\\l\\%i\\tt\\%d\\tl\\%d",
+			client->pers.netname, client->sess.sessionTeam, model, headModel, redTeam, blueTeam, c1, c2,
+			client->pers.maxHealth, client->sess.wins, client->sess.losses, teamTask, teamLeader);*/
 	}
 
 	trap_SetConfigstring( CS_PLAYERS+clientNum, s );
 
 	// this is not the userinfo, more like the configstring actually
-	G_LogPrintf( "ClientUserinfoChanged: %i %s\n", clientNum, s );
+	G_LogPrintf( "ClientUserinfoChanged: No. %i %s\n", clientNum, s );
+
+	if ( client->pers.connected == CON_CONNECTED ) {
+		level.updateRuleset = qtrue;
+	}
+
 }
 
 
@@ -894,7 +1090,7 @@ void ClientUserinfoChanged( int clientNum ) {
 ClientConnect
 
 Called when a player begins connecting to the server.
-Called again for every map change or tournement restart.
+Called again for every map change or tournament restart.
 
 The session information will be valid after exit.
 
@@ -905,12 +1101,13 @@ Otherwise, the client will be sent the current gamestate
 and will eventually get to ClientBegin.
 
 firstTime will be qtrue the very first time a client connects
-to the server machine, but qfalse on map changes and tournement
+to the server machine, but qfalse on map changes and tournament
 restarts.
 ============
 */
 char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	char		*value;
+	char		*ipadd;
 //	char		*areabits;
 	gclient_t	*client;
 	char		userinfo[MAX_INFO_STRING];
@@ -920,24 +1117,43 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 
 	trap_GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
 
+ 	/*value = Info_ValueForKey( userinfo, "ip" );
+ 	Q_strncpyz( client->pers.ip, value, sizeof( client->pers.ip ) ); <-- incorrect use? */
+
  	// IP filtering
  	// https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=500
+	// TODO: web address doesn't seem valid anymore ^
  	// recommanding PB based IP / GUID banning, the builtin system is pretty limited
+	// NOTE: PB will not work with mfarena
+	//
  	// check to see if they are on the banned IP list
-	value = Info_ValueForKey (userinfo, "ip");
-	if ( G_FilterPacket( value ) ) {
-		return "You are banned from this server.";
+	ipadd = Info_ValueForKey (userinfo, "ip");
+ 	//Q_strncpyz( client->pers.ip, ipadd, sizeof( client->pers.ip ) ); // FIXME: make check to prevent server crash from possible null string
+	if ( G_FilterPacket( ipadd ) ) {
+		//return "You are banned from this server.";
+
+		//G_LogPrintf("ClientBlocked: No.%i - (%s) %s\n", clientNum, ipadd, client->pers.netname );
+		G_LogPrintf("ClientBlocked: No. %i - (%s)\n", clientNum, ipadd );
+
+		// TODO: keep from spamming server with blacklisted messages
+		/*trap_SendServerCommand( -1, va("notify %i\\\"%s" S_COLOR_WHITE " attempted to connect, but is using an IP address that's blacklisted\n\"", NF_CONNECTION, client->pers.netname) );*/
+
+		return "Your current IP address is blacklisted on this server, sorry.";
 	}
 
-  // we don't check password for bots and local client
-  // NOTE: local client <-> "ip" "localhost"
-  //   this means this client is not running in our current process
-	if ( !isBot && (strcmp(value, "localhost") != 0)) {
+	// we don't check password for bots and local client
+	// NOTE: local client <-> "ip" "localhost"
+	//   this means this client is not running in our current process
+	if ( !isBot && (strcmp(ipadd, "localhost") != 0)) {
 		// check for a password
 		value = Info_ValueForKey (userinfo, "password");
 		if ( g_password.string[0] && Q_stricmp( g_password.string, "none" ) &&
 			strcmp( g_password.string, value) != 0) {
-			return "Invalid password";
+			if ( strlen(value) ) {
+				return "Invalid password";
+			} else {
+				return "Password required";
+			}
 		}
 	}
 	// if a player reconnects quickly after a disconnect, the client disconnect may never be called, thus flag can get lost in the ether
@@ -971,12 +1187,24 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	}
 
 	// get and distribute relevent paramters
-	G_LogPrintf( "ClientConnect: %i\n", clientNum );
+	/*G_LogPrintf( "ClientConnect: %i\n", clientNum );*/
+	/*if (isBot) {
+		G_LogPrintf("ClientConnect: No.%i - %s\n", clientNum, client->pers.netname );
+	} else {
+		G_LogPrintf("ClientConnect: No.%i - (%s) \"%s\"\n", clientNum, ipadd, client->pers.netname );
+	}*/
+	if (isBot) {
+		G_LogPrintf("ClientConnect: No. %i\n", clientNum );
+	} else {
+		G_LogPrintf("ClientConnect: No. %i - (%s)\n", clientNum, ipadd );
+	}
 	ClientUserinfoChanged( clientNum );
 
 	// don't do the "xxx connected" messages if they were caried over from previous level
 	if ( firstTime ) {
-		trap_SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " connected\n\"", client->pers.netname) );
+//		trap_SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " connected\n\"", client->pers.netname) );
+		trap_SendServerCommand( -1, va("notify %i\\\"%s" S_COLOR_WHITE " connected\n\"", NF_CONNECTION, client->pers.netname) );
+		trap_SendServerCommand( -1, va("sndCall \"%i\"", SC_CONNECT ) );
 	}
 
 	if ( g_gametype.integer >= GT_TEAM &&
@@ -1007,7 +1235,10 @@ and on transition between teams, but doesn't happen on respawns
 void ClientBegin( int clientNum ) {
 	gentity_t	*ent;
 	gclient_t	*client;
-	int			flags;
+	int		flags;
+	int		miscFlags;
+	int		activePlayers, totalClients;
+	int		i;
 
 	ent = g_entities + clientNum;
 
@@ -1025,6 +1256,13 @@ void ClientBegin( int clientNum ) {
 	client->pers.enterTime = level.time;
 	client->pers.teamState.state = TEAM_BEGIN;
 
+	// clear player stats
+	client->pers.kills = 0;
+	client->pers.teamKills = 0;
+	client->pers.deaths = 0;
+	client->pers.suicides = 0;
+	client->pers.captures = 0;
+
 	// save eflags around this, because changing teams will
 	// cause this to happen with a valid entity, and we
 	// want to make sure the teleport bit is set right
@@ -1037,15 +1275,140 @@ void ClientBegin( int clientNum ) {
 	// locate ent at a spawn point
 	ClientSpawn( ent );
 
-	if ( client->sess.sessionTeam != TEAM_SPECTATOR ) {
-		if ( g_gametype.integer != GT_TOURNAMENT  ) {
-			trap_SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " entered the game\n\"", client->pers.netname) );
+	// mmp - update misc info
+	//       all of this use to be called 'g_physicsMode'
+	if (g_proMode.integer == 1) {
+		// promode physics
+		client->ps.persistant[PERS_MISC] &= (~PMSC_RESTRICTED_PHYSICS);
+		// bots don't like vq1 physics, so switch to vq3
+		if (ent->r.svFlags & SVF_BOT) {
+			client->ps.persistant[PERS_MISC] |= PMSC_PHYSICS_SELECTION;
 		}
+	} else {
+		// restricted physics
+		client->ps.persistant[PERS_MISC] |= PMSC_RESTRICTED_PHYSICS;
+		client->ps.persistant[PERS_MISC] &= (~PMSC_PHYSICS_SELECTION);
 	}
-	G_LogPrintf( "ClientBegin: %i\n", clientNum );
+
+	// weapon mode client flags
+	if ( level.rs_matchMode > MM_PICKUP_ONCE ) {
+		if ( level.rs_matchMode >= MM_ALLWEAPONS_MAXAMMO ) {
+			client->ps.persistant[PERS_MISC] |= PMSC_NEVER_PICKUP_WEAPONS;
+			if ( level.rs_matchMode == MM_ALLWEAPONS_MAXAMMO ) {
+				client->ps.persistant[PERS_MISC] |= PMSC_NEVER_PICKUP_AMMO;
+			} else {
+				client->ps.persistant[PERS_MISC] &= (~PMSC_NEVER_PICKUP_AMMO);
+			}
+		} else {
+			client->ps.persistant[PERS_MISC] |= PMSC_ALWAYS_PICKUP_WEAPONS;
+			client->ps.persistant[PERS_MISC] &= (~PMSC_NEVER_PICKUP_WEAPONS);
+			client->ps.persistant[PERS_MISC] &= (~PMSC_NEVER_PICKUP_AMMO);
+		}
+	} else {
+		client->ps.persistant[PERS_MISC] &= (~PMSC_ALWAYS_PICKUP_WEAPONS);
+		client->ps.persistant[PERS_MISC] &= (~PMSC_NEVER_PICKUP_WEAPONS);
+		client->ps.persistant[PERS_MISC] &= (~PMSC_NEVER_PICKUP_AMMO);
+	}
+
+	// enemies in AA1 cannot pickup items
+	if ( g_gametype.integer == GT_AA1 && client->sess.sessionTeam == TEAM_RED ) {
+		client->ps.persistant[PERS_MISC] |= PMSC_NEVER_PICKUP_ANY_ITEM | PMSC_SLOW_RELOAD;
+	} else {
+		client->ps.persistant[PERS_MISC] &= (~PMSC_NEVER_PICKUP_ANY_ITEM);
+		client->ps.persistant[PERS_MISC] &= (~PMSC_SLOW_RELOAD);
+	}
+
+	/*if ( client->sess.sessionTeam == TEAM_FREE ) {
+		trap_SendServerCommand( -1, va("notify %i\\\"%s" S_COLOR_WHITE " entered the game\n\"", NF_GAMEINFO, client->pers.netname) );
+	} else {
+		trap_SendServerCommand( -1, va("notify %i\\\"%s" S_COLOR_WHITE " is spectating\n\"", NF_GAMEINFO, client->pers.netname) );
+	}*/
+
+	// TODO: prevent spectating message, if client is a bot
+	switch (client->sess.sessionTeam) {
+		case TEAM_SPECTATOR:
+			trap_SendServerCommand( -1,
+				va("notify %i\\\"%s" S_COLOR_WHITE " is spectating\n\"",
+				NF_GAMEINFO, client->pers.netname) );
+			break;
+		case TEAM_RED:
+			trap_SendServerCommand( -1,
+				va("notify %i\\\"%s" S_COLOR_WHITE " joins the " S_COLOR_RED "RED" S_COLOR_WHITE " team\n\"",
+				NF_GAMEINFO, client->pers.netname) );
+			break;
+		case TEAM_BLUE:
+			trap_SendServerCommand( -1,
+				va("notify %i\\\"%s" S_COLOR_WHITE " joins the " S_COLOR_BLUE "BLUE" S_COLOR_WHITE " team\n\"",
+				NF_GAMEINFO, client->pers.netname) );
+			break;
+		default:
+			trap_SendServerCommand( -1,
+				va("notify %i\\\"%s" S_COLOR_WHITE " enters the game\n\"",
+				NF_GAMEINFO, client->pers.netname) );
+			break;
+	}
+	G_LogPrintf( "ClientBegin: No. %i\n", clientNum );
+	/*if( ent->r.svFlags & SVF_BOT ) {
+		G_LogPrintf("ClientBegin: No.%i - %s\n", clientNum, client->pers.netname );
+	} else {
+		G_LogPrintf("ClientBegin: No.%i - (%s) %s\n", clientNum, client->pers.ip, client->pers.netname );
+	}*/
+
+	// update warmup ready status
+	SendReadymask( ent-g_entities, 1 );
+
+	// send ruleset info to client
+	/*trap_SendServerCommand( -1, va("ruleSet %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+					g_ruleset.integer,
+					level.rs_timelimit, level.rs_overtime, level.rs_scorelimit, g_proMode.integer, level.rs_friendlyFire,
+					level.rs_weaponRespawn, level.rs_forceRespawn, level.rs_teamLocOverlay, level.rs_hitSound, level.rs_scoreBalance,
+					level.rs_quadMode, level.rs_selfDamage, level.rs_doubleAmmo, level.rs_keycardRespawn, level.rs_keycardDropable,
+					level.rs_randomSpawn
+					) );*/
+
+	/*trap_SendServerCommand( ent-g_entities, va("ruleSet %i %i %i %i %i",
+						level.rs_timelimit, level.rs_overtime, level.rs_scorelimit,
+						level.rs_teamLocOverlay, level.rs_hitSound ) );*/
+
+	// FIXME: mmp - i don't believe this is needed anymore
+	// send overtime report, for new client
+	if ( level.overtime > 0 ) {
+		trap_SetConfigstring( CS_OVERTIME, va("%i", level.overtime ) );
+	}
 
 	// count current clients and rank for scoreboard
 	CalculateRanks();
+
+	// update client count
+	G_ClientCount();
+
+	// update team count
+	if ( g_gametype.integer >= GT_TEAM ) {
+		G_TeamCount();
+	}
+
+	// TODO: remove this recount, since it was just done about 7 lines ago
+	activePlayers = totalClients = 0;
+	/*humanPlayers = trap_Cvar_VariableIntegerValue( "sv_realHumanPlayers" );*/
+	for ( i = 0 ; i < level.maxclients ; i++ ) {
+		if ( level.clients[i].pers.connected != CON_DISCONNECTED ) {
+			if (!(g_entities[i].r.svFlags & SVF_BOT) ) {
+				if ( level.clients[i].sess.sessionTeam != TEAM_SPECTATOR ) {
+					activePlayers ++;
+				}
+				totalClients ++;
+			}
+		}
+	}
+
+	// update bookkeeping max player amount
+	if (activePlayers > level.maxPlayersAchieved) {
+		level.maxPlayersAchieved = activePlayers;
+	}
+	if (totalClients > level.maxClientsAchieved) {
+		level.maxClientsAchieved = totalClients;
+	}
+
 }
 
 /*
@@ -1058,21 +1421,25 @@ Initializes all non-persistant parts of playerState
 ============
 */
 void ClientSpawn(gentity_t *ent) {
-	int		index;
-	vec3_t	spawn_origin, spawn_angles;
-	gclient_t	*client;
-	int		i;
+	int				index;
+	vec3_t			spawn_origin, spawn_angles;
+	gclient_t		*client;
+	int				i;
+	int				healthSet;
+	int				rnd;
 	clientPersistant_t	saved;
 	clientSession_t		savedSess;
-	int		persistant[MAX_PERSISTANT];
-	gentity_t	*spawnPoint;
-	gentity_t *tent;
-	int		flags;
-	int		savedPing;
-//	char	*savedAreaBits;
-	int		accuracy_hits, accuracy_shots;
-	int		eventSequence;
-	char	userinfo[MAX_INFO_STRING];
+	int				persistant[MAX_PERSISTANT];
+	gentity_t		*spawnPoint;
+	gentity_t 		*tent;
+	int				flags;
+	int				savedPing;
+//	char			*savedAreaBits;
+	int				accuracy_hits, accuracy_shots;
+	int				eventSequence;
+	char			userinfo[MAX_INFO_STRING];
+
+	int				miscFlags;
 
 	index = ent - g_entities;
 	client = ent->client;
@@ -1083,13 +1450,13 @@ void ClientSpawn(gentity_t *ent) {
 	// do it before setting health back up, so farthest
 	// ranging doesn't count this client
 	if ( client->sess.sessionTeam == TEAM_SPECTATOR ) {
-		spawnPoint = SelectSpectatorSpawnPoint ( 
+		spawnPoint = SelectSpectatorSpawnPoint (
 						spawn_origin, spawn_angles);
-	} else if (g_gametype.integer >= GT_CTF ) {
+	} else if (g_gametype.integer >= GT_CTF && g_gametype.integer != GT_AA1 ) {
 		// all base oriented team games use the CTF spawn points
-		spawnPoint = SelectCTFSpawnPoint ( 
-						client->sess.sessionTeam, 
-						client->pers.teamState.state, 
+		spawnPoint = SelectCTFSpawnPoint (
+						client->sess.sessionTeam,
+						client->pers.teamState.state,
 						spawn_origin, spawn_angles,
 						!!(ent->r.svFlags & SVF_BOT));
 	}
@@ -1105,8 +1472,8 @@ void ClientSpawn(gentity_t *ent) {
 		else
 		{
 			// don't spawn near existing origin if possible
-			spawnPoint = SelectSpawnPoint ( 
-				client->ps.origin, 
+			spawnPoint = SelectSpawnPoint (
+				client->ps.origin,
 				spawn_origin, spawn_angles, !!(ent->r.svFlags & SVF_BOT));
 		}
 	}
@@ -1119,6 +1486,13 @@ void ClientSpawn(gentity_t *ent) {
 	// and never clear the voted flag
 	flags = ent->client->ps.eFlags & (EF_TELEPORT_BIT | EF_VOTED | EF_TEAMVOTED);
 	flags ^= EF_TELEPORT_BIT;
+
+//unlagged - backward reconciliation #3
+	// we don't want players being backward-reconciled to the place they died
+	G_ResetHistory( ent );
+	// and this is as good a time as any to clear the saved state
+	ent->client->saved.leveltime = 0;
+//unlagged - backward reconciliation #3
 
 	// clear everything but the persistant data
 
@@ -1174,25 +1548,166 @@ void ClientSpawn(gentity_t *ent) {
 	ent->waterlevel = 0;
 	ent->watertype = 0;
 	ent->flags = 0;
-	
+
 	VectorCopy (playerMins, ent->r.mins);
 	VectorCopy (playerMaxs, ent->r.maxs);
 
 	client->ps.clientNum = index;
 
-	client->ps.stats[STAT_WEAPONS] = ( 1 << WP_MACHINEGUN );
-	if ( g_gametype.integer == GT_TEAM ) {
-		client->ps.ammo[WP_MACHINEGUN] = 50;
+	// mmp - update misc info
+	if (g_proMode.integer == 1) {
+		// promode physics
+		client->ps.persistant[PERS_MISC] = client->ps.persistant[PERS_MISC] & (~PMSC_RESTRICTED_PHYSICS);
+//		client->ps.persistant[PERS_MISC] ~= PMSC_RESTRICTED_PHYSICS;
 	} else {
-		client->ps.ammo[WP_MACHINEGUN] = 100;
+		// restricted physics
+		client->ps.persistant[PERS_MISC] |= PMSC_RESTRICTED_PHYSICS;
 	}
 
-	client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_GAUNTLET );
-	client->ps.ammo[WP_GAUNTLET] = -1;
-	client->ps.ammo[WP_GRAPPLING_HOOK] = -1;
+	// set up default weapon
+	client->ps.stats[STAT_WEAPONS] = ( 1 << WP_BLASTER );
+	client->ps.ammo[AT_INFINITY] = -1; // infinity ammo should be infinity
 
-	// health will count down towards max_health
-	ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH] + 25;
+	if ( client->sess.sessionTeam != TEAM_SPECTATOR ) {
+
+//		client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SUPER_SHOTGUN ); // test
+//		client->ps.ammo[AT_SHELLS] = -1; // test
+
+		if ( g_gametype.integer == GT_AA1 && client->sess.sessionTeam == TEAM_RED ) {
+
+				// AA1 enemy (red), they start with some weapons, with infinite ammo
+
+				// shotgun, random weapon and max ammo
+				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SHOTGUN );
+				client->ps.ammo[AT_SHELLS] = -1;
+
+				rnd = random() * 3;
+				switch (rnd) {
+					case 0:
+						client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_GRENADE_LAUNCHER );
+						client->ps.ammo[AT_ROCKETS] = -1;
+						break;
+					case 1:
+						client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_ROCKET_LAUNCHER );
+						client->ps.ammo[AT_ROCKETS] = -1;
+						break;
+					case 2:
+					default:
+						client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_PLASMAGUN );
+						client->ps.ammo[AT_CELLS] = -1;
+						break;
+				}
+
+				client->ps.stats[STAT_INVENTORY] |= 7; // start with all keycards
+
+				// start health at 30, unless the player gave themself a handicap
+				healthSet = client->ps.stats[STAT_MAX_HEALTH] * .3;
+				if ( healthSet < 1 ) {
+					healthSet = 1; // just so they won't start with 0 health
+				}
+				ent->health = client->ps.stats[STAT_HEALTH] = healthSet;
+
+				// no armor for enemies
+				client->ps.stats[STAT_ARMOR] = 0;
+				client->ps.stats[STAT_ARMORTIER] = 1; // armor_body protection
+
+		} else {
+
+			/*
+			client->ps.powerups[PW_PENT] = level.time + 30000; // test pent
+			client->ps.powerups[PW_QUAD] = level.time + 30000; // test quad
+			*/
+
+			// give player a fighting chance in AA1
+			if ( g_gametype.integer == GT_AA1 ) {
+				client->ps.powerups[PW_PENT] = level.time + 3000; // test pent
+			}
+
+			if ( level.rs_matchMode == MM_ALLWEAPONS_MAXAMMO ) {
+				// all weapons + max ammo, but no major spam weapons including grenade launcher
+				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SHOTGUN );
+				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SUPER_SHOTGUN );
+				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_ROCKET_LAUNCHER );
+				if (!level.rs_noArenaLightningGun) {
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_LIGHTNING );
+				}
+				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_PLASMAGUN );
+				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_CHAINGUN );
+
+				client->ps.ammo[AT_SHELLS] = -1;
+				client->ps.ammo[AT_ROCKETS] = -1;
+				client->ps.ammo[AT_CELLS] = -1;
+				client->ps.ammo[AT_BULLETS] = -1;
+
+				// start player with pent, since this mode can be spammy
+				client->ps.powerups[PW_PENT] = level.time + 3000;
+
+				// start health at 250, unless the player gave themself a handicap
+				ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH] * 2.5;
+
+				// start with tier 3 armor at 200
+				client->ps.stats[STAT_ARMOR] = AR_TIER3MAXPOINT;
+				client->ps.stats[STAT_ARMORTIER] = 3; // armor_body protection
+
+				client->disallowItemPickUp = 1; // meant to delay pickup on items when spawning on them
+			} else if ( level.rs_matchMode == MM_ALLWEAPONS ) {
+				// all weapons + max ammo, but no major spam weapons including grenade launcher
+				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SHOTGUN );
+				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SUPER_SHOTGUN );
+				if (!level.rs_noArenaGrenades) {
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_GRENADE_LAUNCHER );
+				}
+				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_ROCKET_LAUNCHER );
+				if (!level.rs_noArenaLightningGun) {
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_LIGHTNING );
+				}
+				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_PLASMAGUN );
+				/*client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SPREADSHOT );*/
+				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_CHAINGUN );
+				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_FLAMETHROWER );
+
+				if ( level.warmupTime ) {
+					client->ps.ammo[AT_SHELLS] = -1;
+					client->ps.ammo[AT_ROCKETS] = -1;
+					client->ps.ammo[AT_CELLS] = -1;
+					client->ps.ammo[AT_BULLETS] = -1;
+					client->ps.ammo[AT_GAS] = -1;
+				} else {
+				// ammo amounts based on quake's deathmatch mode 5, with exceptions to the cell ammo
+					client->ps.ammo[AT_SHELLS] = 30;
+					client->ps.ammo[AT_ROCKETS] = 10;
+					client->ps.ammo[AT_CELLS] = 120;
+					client->ps.ammo[AT_BULLETS] = 80;
+					client->ps.ammo[AT_GAS] = 100;
+				}
+
+				// start health at 200, unless the player gave themself a handicap
+				ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH] * 2;
+
+				// start wither tier 3 armor at 200
+				client->ps.stats[STAT_ARMOR] = AR_TIER3MAXPOINT;
+				client->ps.stats[STAT_ARMORTIER] = 3; // armor_body protection
+
+				client->disallowItemPickUp = 1; // meant to delay pickup on items when spawning on them
+			} else {
+				// start health at 100, unless the player gave themself a handicap
+				ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH];
+			}
+		}
+	} else {
+		// start health at 100, unless the player gave themself a handicap
+		ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH];
+	}
+
+	// time until health starts to decay
+	client->healthDecayTime = level.time + HEALTH_DECAY_TIME * 1000;
+
+	// reference
+	/*if ( level.warmupTime )
+		client->ps.ammo[WP_MACHINEGUN] = -1; // don't care about ammo in warmup
+	else
+		client->ps.ammo[WP_MACHINEGUN] = 100;
+	*/
 
 	G_SetOrigin( ent, spawn_origin );
 	VectorCopy( spawn_origin, client->ps.origin );
@@ -1218,7 +1733,7 @@ void ClientSpawn(gentity_t *ent) {
 		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR) {
 			G_KillBox(ent);
 			// force the base weapon up
-			client->ps.weapon = WP_MACHINEGUN;
+			client->ps.weapon = WP_GAUNTLET;
 			client->ps.weaponstate = WEAPON_READY;
 			// fire the targets of the spawn point
 			G_UseTargets(spawnPoint, ent);
@@ -1294,8 +1809,12 @@ void ClientDisconnect( int clientNum ) {
 		}
 	}
 
+	// update warmup ready status
+	ent->client->pers.ready = qfalse;
+	SendReadymask( -1, 1 );
+
 	// send effect if they were completely connected
-	if ( ent->client->pers.connected == CON_CONNECTED 
+	if ( ent->client->pers.connected == CON_CONNECTED
 		&& ent->client->sess.sessionTeam != TEAM_SPECTATOR ) {
 		tent = G_TempEntity( ent->client->ps.origin, EV_PLAYER_TELEPORT_OUT );
 		tent->s.clientNum = ent->s.clientNum;
@@ -1312,7 +1831,9 @@ void ClientDisconnect( int clientNum ) {
 
 	}
 
-	G_LogPrintf( "ClientDisconnect: %i\n", clientNum );
+	G_LogPrintf( "ClientDisconnect: No. %i\n", clientNum );
+	/*trap_SendServerCommand( -1, va("notify %i\\\"%s" S_COLOR_WHITE " dropped\n\"", NF_CONNECTION, ent->client->pers.netname) );*/
+	trap_SendServerCommand( -1, va("sndCall \"%i\"", SC_DISCONNECT ) );
 
 	// if we are playing in tourney mode and losing, give a win to the other player
 	if ( (g_gametype.integer == GT_TOURNAMENT )
@@ -1342,7 +1863,11 @@ void ClientDisconnect( int clientNum ) {
 
 	trap_SetConfigstring( CS_PLAYERS + clientNum, "");
 
+	// count current clients and rank for scoreboard
 	CalculateRanks();
+
+	// update client count
+	G_ClientCount();
 
 	if ( ent->r.svFlags & SVF_BOT ) {
 		BotAIShutdownClient( clientNum, qfalse );

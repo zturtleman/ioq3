@@ -44,14 +44,21 @@ void G_WriteClientSessionData( gclient_t *client ) {
 	const char	*s;
 	const char	*var;
 
-	s = va("%i %i %i %i %i %i %i", 
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i", 
 		client->sess.sessionTeam,
 		client->sess.spectatorNum,
 		client->sess.spectatorState,
 		client->sess.spectatorClient,
 		client->sess.wins,
 		client->sess.losses,
-		client->sess.teamLeader
+		client->sess.teamLeader,
+
+		client->sess.mute,
+		client->sess.suspended,
+		client->sess.admin,
+		client->sess.adminReqFails,
+		client->sess.demerits,
+		client->sess.specMode
 		);
 
 	var = va( "session%i", (int)(client - level.clients) );
@@ -69,26 +76,41 @@ Called on a reconnect
 void G_ReadSessionData( gclient_t *client ) {
 	char	s[MAX_STRING_CHARS];
 	const char	*var;
-	int teamLeader;
-	int spectatorState;
-	int sessionTeam;
+	int	teamLeader;
+	int	spectatorState;
+	int	sessionTeam;
+
+	int	admin;
+	int	mute;
+	int	suspended;
 
 	var = va( "session%i", (int)(client - level.clients) );
 	trap_Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
-	sscanf( s, "%i %i %i %i %i %i %i",
+	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %i",
 		&sessionTeam,
 		&client->sess.spectatorNum,
 		&spectatorState,
 		&client->sess.spectatorClient,
 		&client->sess.wins,
 		&client->sess.losses,
-		&teamLeader
+		&teamLeader,
+
+		&mute,
+		&suspended,
+		&admin,
+		&client->sess.adminReqFails,
+		&client->sess.demerits,
+		&client->sess.specMode
 		);
 
 	client->sess.sessionTeam = (team_t)sessionTeam;
 	client->sess.spectatorState = (spectatorState_t)spectatorState;
 	client->sess.teamLeader = (qboolean)teamLeader;
+
+	client->sess.admin = (qboolean)admin;
+	client->sess.mute = (qboolean)mute;
+	client->sess.suspended = (qboolean)suspended;
 }
 
 
@@ -99,21 +121,28 @@ G_InitSessionData
 Called on a first-time connect
 ================
 */
+
+// TODO: clean this mess up
 void G_InitSessionData( gclient_t *client, char *userinfo ) {
 	clientSession_t	*sess;
 	const char		*value;
+//	char	*s;
 
 	sess = &client->sess;
 
+//	s = Info_ValueForKey( userinfo, "ip" );
+
 	// initial team determination
 	if ( g_gametype.integer >= GT_TEAM ) {
-		if ( g_teamAutoJoin.integer && !(g_entities[ client - level.clients ].r.svFlags & SVF_BOT) ) {
+		/*if ( g_teamAutoJoin.integer && !(g_entities[ client - level.clients ].r.svFlags & SVF_BOT) ) {
 			sess->sessionTeam = PickTeam( -1 );
 			BroadcastTeamChange( client, -1 );
 		} else {
 			// always spawn as spectator in team games
-			sess->sessionTeam = TEAM_SPECTATOR;	
-		}
+			sess->sessionTeam = TEAM_SPECTATOR;
+		}*/
+		// always spawn as spectator in team games
+		sess->sessionTeam = TEAM_SPECTATOR;
 	} else {
 		value = Info_ValueForKey( userinfo, "team" );
 		if ( value[0] == 's' ) {
@@ -121,30 +150,32 @@ void G_InitSessionData( gclient_t *client, char *userinfo ) {
 			sess->sessionTeam = TEAM_SPECTATOR;
 		} else {
 			switch ( g_gametype.integer ) {
-			default:
-			case GT_FFA:
 			case GT_SINGLE_PLAYER:
-				if ( g_maxGameClients.integer > 0 && 
+				/*if ( g_maxGameClients.integer > 0 && 
 					level.numNonSpectatorClients >= g_maxGameClients.integer ) {
 					sess->sessionTeam = TEAM_SPECTATOR;
 				} else {
 					sess->sessionTeam = TEAM_FREE;
 				}
+				break;*/
+				sess->sessionTeam = TEAM_FREE;
 				break;
-			case GT_TOURNAMENT:
-				// if the game is full, go into a waiting mode
-				if ( level.numNonSpectatorClients >= 2 ) {
+			/*case GT_FFA:
+				//if ( !strcmp( s, "localhost" ) )
+				if ( g_dedicated.integer )
 					sess->sessionTeam = TEAM_SPECTATOR;
-				} else {
+				else
 					sess->sessionTeam = TEAM_FREE;
-				}
+				break;*/
+			default:
+				sess->sessionTeam = TEAM_SPECTATOR;
 				break;
 			}
 		}
 	}
 
 	sess->spectatorState = SPECTATOR_FREE;
-	AddTournamentQueue(client);
+//	AddTournamentQueue(client);
 
 	G_WriteClientSessionData( client );
 }

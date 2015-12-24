@@ -201,6 +201,30 @@ void CG_SpawnEffect( vec3_t org ) {
 #endif
 }
 
+/*
+====================
+CG_Lightning_Discharge by The SARACEN
+====================
+*/
+void CG_Lightning_Discharge (vec3_t origin, int msec)
+{
+	localEntity_t           *le;
+
+	if (msec <= 0) CG_Error ("CG_Lightning_Discharge: msec = %i", msec);
+
+	le = CG_SmokePuff (     origin,                 // where
+				vec3_origin,                    // where to
+				((48 + (msec * 10)) / 16),      // radius
+				1, 1, 1, 1,                     // RGBA color shift
+				300 + msec,                     // duration
+				cg.time,                        // start when?
+				0,                                      // fade in time
+				0,                              // flags (?)
+				trap_R_RegisterShader ("models/weaphits/electric.tga"));
+
+	le->leType = LE_SCALE_FADE;
+}
+
 
 #ifdef MISSIONPACK
 /*
@@ -640,7 +664,7 @@ void CG_GibPlayer( vec3_t playerOrigin ) {
 
 /*
 ==================
-CG_LaunchExplode
+CG_LaunchGib
 ==================
 */
 void CG_LaunchExplode( vec3_t origin, vec3_t velocity, qhandle_t hModel ) {
@@ -673,7 +697,7 @@ void CG_LaunchExplode( vec3_t origin, vec3_t velocity, qhandle_t hModel ) {
 #define	EXP_JUMP		150
 /*
 ===================
-CG_BigExplode
+CG_GibPlayer
 
 Generated a bunch of gibs launching out from the bodies location
 ===================

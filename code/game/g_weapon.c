@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 //
-// g_weapon.c 
+// g_weapon.c
 // perform the server side effects of a weapon firing
 
 #include "g_local.h"
@@ -29,7 +29,9 @@ static	float	s_quadFactor;
 static	vec3_t	forward, right, up;
 static	vec3_t	muzzle;
 
-#define NUM_NAILSHOTS 15
+#define NUM_NAILSHOTS			15
+#define BLASTER_CHARGE_UP		500 //1000
+#define BLASTER_CHARGE_RATE		0.005 //0.001
 
 /*
 ================
@@ -48,6 +50,37 @@ void G_BounceProjectile( vec3_t start, vec3_t impact, vec3_t dir, vec3_t endout 
 	VectorMA(impact, 8192, newv, endout);
 }
 
+
+/*
+======================================================================
+
+BLASTER
+
+======================================================================
+*/
+
+void Weapon_Blaster_Fire (gentity_t *ent) {
+	gentity_t	*m;
+	float		extDmg = 1.0;
+
+	m = fire_blaster (ent, muzzle, forward);
+	m->damage *= s_quadFactor * GetDamageLevel( ent );
+	// determine if blaster is charged
+	if ( level.time > ( ent->client->lastBlasterShot + BLASTER_CHARGE_UP ) ) {
+		extDmg = 1.0 + ((level.time - ( ent->client->lastBlasterShot + BLASTER_CHARGE_UP )) * BLASTER_CHARGE_RATE);
+		if ( extDmg > 2.5 )
+			extDmg = 2.5;
+		/*trap_SendServerCommand( -1,
+			va("notify %i\\\"" S_COLOR_RED "DEBUG: %i = %f\n\"",
+			NF_GAMEINFO, level.time - ( ent->client->lastBlasterShot + BLASTER_CHARGE_UP ), extDmg) );*/
+		m->damage *= extDmg;
+	}
+	m->splashDamage *= s_quadFactor * GetDamageLevel( ent );
+
+	ent->client->lastBlasterShot = level.time;
+
+//	VectorAdd( m->s.pos.trDelta, ent->client->ps.velocity, m->s.pos.trDelta );	// "real" physics
+}
 
 /*
 ======================================================================
@@ -71,7 +104,7 @@ qboolean CheckGauntletAttack( gentity_t *ent ) {
 	vec3_t		end;
 	gentity_t	*tent;
 	gentity_t	*traceEnt;
-	int			damage;
+	int		damage;
 
 	// set aiming directions
 	AngleVectors (ent->client->ps.viewangles, forward, right, up);
@@ -80,7 +113,18 @@ qboolean CheckGauntletAttack( gentity_t *ent ) {
 
 	VectorMA (muzzle, 32, forward, end);
 
+//unlagged - backward reconciliation #2
+	// backward-reconcile the other clients
+	G_DoTimeShiftFor( ent );
+//unlagged - backward reconciliation #2
+
 	trap_Trace (&tr, muzzle, NULL, NULL, end, ent->s.number, MASK_SHOT);
+
+//unlagged - backward reconciliation #2
+	// put them back
+	G_UndoTimeShiftFor( ent );
+//unlagged - backward reconciliation #2
+
 	if ( tr.surfaceFlags & SURF_NOIMPACT ) {
 		return qfalse;
 	}
@@ -103,7 +147,7 @@ qboolean CheckGauntletAttack( gentity_t *ent ) {
 		return qfalse;
 	}
 
-	if (ent->client->ps.powerups[PW_QUAD] ) {
+	if (ent->client->ps.powerups[PW_QUAD] || level.rs_quadMode ) {
 		G_AddEvent( ent, EV_POWERUP_QUAD, 0 );
 		s_quadFactor = g_quadfactor.value;
 	} else {
@@ -115,7 +159,7 @@ qboolean CheckGauntletAttack( gentity_t *ent ) {
 	}
 #endif
 
-	damage = 50 * s_quadFactor;
+	damage = 50 * s_quadFactor * GetDamageLevel( ent ); // was 10 earlier, 100 in mf, and 50 in vq3
 	G_Damage( traceEnt, ent, ent, forward, tr.endpos,
 		damage, 0, MOD_GAUNTLET );
 
@@ -137,7 +181,7 @@ SnapVectorTowards
 
 Round a vector to integers for more efficient network
 transmission, but make sure that it rounds towards a given point
-rather than blindly truncating.  This prevents it from truncating 
+rather than blindly truncating.  This prevents it from truncating
 into a wall.
 ======================
 */
@@ -153,13 +197,14 @@ void SnapVectorTowards( vec3_t v, vec3_t to ) {
 	}
 }
 
-#ifdef MISSIONPACK
 #define CHAINGUN_SPREAD		600
 #define CHAINGUN_DAMAGE		7
-#endif
+
+/*
 #define MACHINEGUN_SPREAD	200
 #define	MACHINEGUN_DAMAGE	7
 #define	MACHINEGUN_TEAM_DAMAGE	5		// wimpier MG in teamplay
+*/
 
 void Bullet_Fire (gentity_t *ent, float spread, int damage, int mod ) {
 	trace_t		tr;
@@ -173,11 +218,24 @@ void Bullet_Fire (gentity_t *ent, float spread, int damage, int mod ) {
 	gentity_t	*traceEnt;
 	int			i, passent;
 
-	damage *= s_quadFactor;
+//unlagged - attack prediction #2
+	// we have to use something now that the client knows in advance
+	int			seed = ent->client->attackTime % 256;
+//unlagged - attack prediction #2
 
+	damage *= s_quadFactor * GetDamageLevel( ent );
+
+//unlagged - attack prediction #2
+/*
 	r = random() * M_PI * 2.0f;
 	u = sin(r) * crandom() * spread * 16;
 	r = cos(r) * crandom() * spread * 16;
+*/
+	r = Q_random(&seed) * M_PI * 2.0f;
+	u = sin(r) * Q_crandom(&seed) * spread * 16;
+	r = cos(r) * Q_crandom(&seed) * spread * 16;
+//unlagged - attack prediction #2
+
 	VectorMA (muzzle, 8192*16, forward, end);
 	VectorMA (end, r, right, end);
 	VectorMA (end, u, up, end);
@@ -185,7 +243,18 @@ void Bullet_Fire (gentity_t *ent, float spread, int damage, int mod ) {
 	passent = ent->s.number;
 	for (i = 0; i < 10; i++) {
 
+//unlagged - backward reconciliation #2
+		// backward-reconcile the other clients
+		G_DoTimeShiftFor( ent );
+//unlagged - backward reconciliation #2
+
 		trap_Trace (&tr, muzzle, NULL, NULL, end, passent, MASK_SHOT);
+
+//unlagged - backward reconciliation #2
+		// put them back
+		G_UndoTimeShiftFor( ent );
+//unlagged - backward reconciliation #2
+
 		if ( tr.surfaceFlags & SURF_NOIMPACT ) {
 			return;
 		}
@@ -199,12 +268,22 @@ void Bullet_Fire (gentity_t *ent, float spread, int damage, int mod ) {
 		if ( traceEnt->takedamage && traceEnt->client ) {
 			tent = G_TempEntity( tr.endpos, EV_BULLET_HIT_FLESH );
 			tent->s.eventParm = traceEnt->s.number;
+//unlagged - attack prediction #2
+			// we need the client number to determine whether or not to
+			// suppress this event
+			tent->s.clientNum = ent->s.clientNum;
+//unlagged - attack prediction #2
 			if( LogAccuracyHit( traceEnt, ent ) ) {
 				ent->client->accuracy_hits++;
 			}
 		} else {
 			tent = G_TempEntity( tr.endpos, EV_BULLET_HIT_WALL );
 			tent->s.eventParm = DirToByte( tr.plane.normal );
+//unlagged - attack prediction #2
+			// we need the client number to determine whether or not to
+			// suppress this event
+			tent->s.clientNum = ent->s.clientNum;
+//unlagged - attack prediction #2
 		}
 		tent->s.otherEntityNum = ent->s.number;
 
@@ -239,25 +318,6 @@ void Bullet_Fire (gentity_t *ent, float spread, int damage, int mod ) {
 /*
 ======================================================================
 
-BFG
-
-======================================================================
-*/
-
-void BFG_Fire ( gentity_t *ent ) {
-	gentity_t	*m;
-
-	m = fire_bfg (ent, muzzle, forward);
-	m->damage *= s_quadFactor;
-	m->splashDamage *= s_quadFactor;
-
-//	VectorAdd( m->s.pos.trDelta, ent->client->ps.velocity, m->s.pos.trDelta );	// "real" physics
-}
-
-
-/*
-======================================================================
-
 SHOTGUN
 
 ======================================================================
@@ -265,11 +325,13 @@ SHOTGUN
 
 // DEFAULT_SHOTGUN_SPREAD and DEFAULT_SHOTGUN_COUNT	are in bg_public.h, because
 // client predicts same spreads
-#define	DEFAULT_SHOTGUN_DAMAGE	10
+#define	DEFAULT_SHOTGUN_DAMAGE		10
+#define	DEFAULT_SHOTGUN_DAMAGE_HI	20
+#define	DEFAULT_SHOTGUN_DAMAGE_LO	10
 
-qboolean ShotgunPellet( vec3_t start, vec3_t end, gentity_t *ent ) {
+qboolean ShotgunPellet( vec3_t start, vec3_t end, gentity_t *ent, int damage, qboolean superSG ) {
 	trace_t		tr;
-	int			damage, i, passent;
+	int		/*damage, */i, passent;
 	gentity_t	*traceEnt;
 #ifdef MISSIONPACK
 	vec3_t		impactpoint, bouncedir;
@@ -289,7 +351,8 @@ qboolean ShotgunPellet( vec3_t start, vec3_t end, gentity_t *ent ) {
 		}
 
 		if ( traceEnt->takedamage) {
-			damage = DEFAULT_SHOTGUN_DAMAGE * s_quadFactor;
+			//damage = DEFAULT_SHOTGUN_DAMAGE * s_quadFactor * GetDamageLevel( ent );
+/*
 #ifdef MISSIONPACK
 			if ( traceEnt->client && traceEnt->client->invulnerabilityTime > level.time ) {
 				if (G_InvulnerabilityEffect( traceEnt, forward, tr.endpos, impactpoint, bouncedir )) {
@@ -312,11 +375,20 @@ qboolean ShotgunPellet( vec3_t start, vec3_t end, gentity_t *ent ) {
 				}
 			}
 #else
+*/
+			if ( superSG == qtrue ) {
+				G_Damage( traceEnt, ent, ent, forward, tr.endpos,	damage, 0, MOD_SUPER_SHOTGUN);
+					if( LogAccuracyHit( traceEnt, ent ) ) {
+						return qtrue;
+					}
+			}
 			G_Damage( traceEnt, ent, ent, forward, tr.endpos,	damage, 0, MOD_SHOTGUN);
 				if( LogAccuracyHit( traceEnt, ent ) ) {
 					return qtrue;
 				}
+/*
 #endif
+*/
 		}
 		return qfalse;
 	}
@@ -330,6 +402,7 @@ void ShotgunPattern( vec3_t origin, vec3_t origin2, int seed, gentity_t *ent ) {
 	vec3_t		end;
 	vec3_t		forward, right, up;
 	qboolean	hitClient = qfalse;
+	int			damage;
 
 	// derive the right and up vectors from the forward vector, because
 	// the client won't have any other information
@@ -337,32 +410,122 @@ void ShotgunPattern( vec3_t origin, vec3_t origin2, int seed, gentity_t *ent ) {
 	PerpendicularVector( right, forward );
 	CrossProduct( forward, right, up );
 
+//unlagged - backward reconciliation #2
+	// backward-reconcile the other clients
+	G_DoTimeShiftFor( ent );
+//unlagged - backward reconciliation #2
+
 	// generate the "random" spread pattern
+	damage = DEFAULT_SHOTGUN_DAMAGE * s_quadFactor * GetDamageLevel( ent );
 	for ( i = 0 ; i < DEFAULT_SHOTGUN_COUNT ; i++ ) {
 		r = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD * 16;
 		u = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD * 16;
 		VectorMA( origin, 8192 * 16, forward, end);
 		VectorMA (end, r, right, end);
 		VectorMA (end, u, up, end);
-		if( ShotgunPellet( origin, end, ent ) && !hitClient ) {
+		if( ShotgunPellet( origin, end, ent, damage, qfalse ) && !hitClient ) {
 			hitClient = qtrue;
 			ent->client->accuracy_hits++;
 		}
 	}
+
+//unlagged - backward reconciliation #2
+	// put them back
+	G_UndoTimeShiftFor( ent );
+//unlagged - backward reconciliation #2
+
 }
 
-
-void weapon_supershotgun_fire (gentity_t *ent) {
+void weapon_shotgun_fire (gentity_t *ent) {
 	gentity_t		*tent;
 
 	// send shotgun blast
 	tent = G_TempEntity( muzzle, EV_SHOTGUN );
 	VectorScale( forward, 4096, tent->s.origin2 );
 	SnapVector( tent->s.origin2 );
+
+//unlagged - attack prediction #2
+	// this has to be something the client can predict now
+	//tent->s.eventParm = rand() & 255;		// seed for spread pattern
+	tent->s.eventParm = ent->client->attackTime % 256; // seed for spread pattern
+//unlagged - attack prediction #2
+
 	tent->s.eventParm = rand() & 255;		// seed for spread pattern
 	tent->s.otherEntityNum = ent->s.number;
 
 	ShotgunPattern( tent->s.pos.trBase, tent->s.origin2, tent->s.eventParm, ent );
+}
+
+// this should match CG_SuperShotgunPattern
+void SuperShotgunPattern( vec3_t origin, vec3_t origin2, int seed, gentity_t *ent ) {
+	int			i;
+	float		r, u;
+	vec3_t		end;
+	vec3_t		forward, right, up;
+	qboolean	hitClient = qfalse;
+	int			damage;
+
+	// derive the right and up vectors from the forward vector, because
+	// the client won't have any other information
+	VectorNormalize2( origin2, forward );
+	PerpendicularVector( right, forward );
+	CrossProduct( forward, right, up );
+
+//unlagged - backward reconciliation #2
+	// backward-reconcile the other clients
+	G_DoTimeShiftFor( ent );
+//unlagged - backward reconciliation #2
+
+	// generate the "random" spread pattern
+	damage = DEFAULT_SHOTGUN_DAMAGE_HI * s_quadFactor * GetDamageLevel( ent );
+	for ( i = 0 ; i < DEFAULT_SHOTGUN_COUNT ; i++ ) {
+		r = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;
+		u = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;
+		VectorMA( origin, 8192 * 16, forward, end);
+		VectorMA (end, r, right, end);
+		VectorMA (end, u, up, end);
+		if( ShotgunPellet( origin, end, ent, damage, qtrue ) && !hitClient ) {
+			hitClient = qtrue;
+			ent->client->accuracy_hits++;
+		}
+	}
+	damage = DEFAULT_SHOTGUN_DAMAGE_LO * s_quadFactor * GetDamageLevel( ent );
+	for ( i = 0 ; i < DEFAULT_SHOTGUN_COUNT ; i++ ) {
+		r = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_LO * 16;
+		u = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_LO * 16;
+		VectorMA( origin, 8192 * 16, forward, end);
+		VectorMA (end, r, right, end);
+		VectorMA (end, u, up, end);
+		if( ShotgunPellet( origin, end, ent, damage, qtrue ) && !hitClient ) {
+			hitClient = qtrue;
+			ent->client->accuracy_hits++;
+		}
+	}
+
+//unlagged - backward reconciliation #2
+	// put them back
+	G_UndoTimeShiftFor( ent );
+//unlagged - backward reconciliation #2
+}
+
+void weapon_super_shotgun_fire (gentity_t *ent) {
+	gentity_t		*tent;
+
+	// send shotgun blast
+	tent = G_TempEntity( muzzle, EV_SUPER_SHOTGUN );
+	VectorScale( forward, 4096, tent->s.origin2 );
+	SnapVector( tent->s.origin2 );
+
+//unlagged - attack prediction #2
+	// this has to be something the client can predict now
+	//tent->s.eventParm = rand() & 255;		// seed for spread pattern
+	tent->s.eventParm = ent->client->attackTime % 256; // seed for spread pattern
+//unlagged - attack prediction #2
+
+	tent->s.eventParm = rand() & 255;		// seed for spread pattern
+	tent->s.otherEntityNum = ent->s.number;
+
+	SuperShotgunPattern( tent->s.pos.trBase, tent->s.origin2, tent->s.eventParm, ent );
 }
 
 
@@ -382,8 +545,16 @@ void weapon_grenadelauncher_fire (gentity_t *ent) {
 	VectorNormalize( forward );
 
 	m = fire_grenade (ent, muzzle, forward);
-	m->damage *= s_quadFactor;
-	m->splashDamage *= s_quadFactor;
+
+	// add quad factor and player's current damage level
+	m->damage *= s_quadFactor * GetDamageLevel( ent );
+	m->splashDamage *= s_quadFactor * GetDamageLevel( ent );
+
+	// extend radius if player has quad
+	/*if ( s_quadFactor > 1 ) {
+		//m->splashRadius += m->splashRadius; // double radius
+		m->splashRadius *= 1.5; // increase radius
+	}*/
 
 //	VectorAdd( m->s.pos.trDelta, ent->client->ps.velocity, m->s.pos.trDelta );	// "real" physics
 }
@@ -400,8 +571,35 @@ void Weapon_RocketLauncher_Fire (gentity_t *ent) {
 	gentity_t	*m;
 
 	m = fire_rocket (ent, muzzle, forward);
-	m->damage *= s_quadFactor;
-	m->splashDamage *= s_quadFactor;
+
+	// add quad factor and player's current damage level
+	m->damage *= s_quadFactor * GetDamageLevel( ent );
+	m->splashDamage *= s_quadFactor * GetDamageLevel( ent );
+
+	// extend radius if player has quad
+	/*if ( s_quadFactor > 1 ) {
+		//m->splashRadius += m->splashRadius; // double radius
+		m->splashRadius *= 1.5; // increase radius
+	}*/
+
+//	VectorAdd( m->s.pos.trDelta, ent->client->ps.velocity, m->s.pos.trDelta );	// "real" physics
+}
+
+
+/*
+======================================================================
+
+FLAME
+
+======================================================================
+*/
+
+void Weapon_Flamethrower_fire (gentity_t *ent) {
+	gentity_t	*m;
+
+	m = fire_flame (ent, muzzle, forward, right, up);
+	m->damage *= s_quadFactor * GetDamageLevel( ent );
+	m->splashDamage *= s_quadFactor * GetDamageLevel( ent );
 
 //	VectorAdd( m->s.pos.trDelta, ent->client->ps.velocity, m->s.pos.trDelta );	// "real" physics
 }
@@ -419,12 +617,53 @@ void Weapon_Plasmagun_Fire (gentity_t *ent) {
 	gentity_t	*m;
 
 	m = fire_plasma (ent, muzzle, forward);
+	m->damage *= s_quadFactor * GetDamageLevel( ent );
+	m->splashDamage *= s_quadFactor * GetDamageLevel( ent );
+
+//	VectorAdd( m->s.pos.trDelta, ent->client->ps.velocity, m->s.pos.trDelta );	// "real" physics
+}
+
+
+/*
+======================================================================
+
+SPREADSHOT
+
+======================================================================
+*/
+
+void Weapon_Spreadshot_Fire (gentity_t *ent) {
+	gentity_t	*m;
+	vec3_t		newforward;
+
+	m = fire_spread (ent, muzzle, forward);
+	m->damage *= s_quadFactor;
+	m->splashDamage *= s_quadFactor;
+
+	VectorMA(forward, 0.15, right, newforward);
+	m = fire_spread (ent, muzzle, newforward);
+	m->damage *= s_quadFactor;
+	m->splashDamage *= s_quadFactor;
+
+	VectorMA(forward, 0.3, right, newforward);
+	m = fire_spread (ent, muzzle, newforward);
+	m->damage *= s_quadFactor;
+	m->splashDamage *= s_quadFactor;
+
+	VectorMA(forward, -0.15, right, newforward);
+	m = fire_spread (ent, muzzle, newforward);
+	m->damage *= s_quadFactor;
+	m->splashDamage *= s_quadFactor;
+
+	VectorMA(forward, -0.3, right, newforward);
+	m = fire_spread (ent, muzzle, newforward);
 	m->damage *= s_quadFactor;
 	m->splashDamage *= s_quadFactor;
 
 //	VectorAdd( m->s.pos.trDelta, ent->client->ps.velocity, m->s.pos.trDelta );	// "real" physics
 }
 
+#ifdef MISSIONPACK
 /*
 ======================================================================
 
@@ -432,7 +671,6 @@ RAILGUN
 
 ======================================================================
 */
-
 
 /*
 =================
@@ -442,9 +680,9 @@ weapon_railgun_fire
 #define	MAX_RAIL_HITS	4
 void weapon_railgun_fire (gentity_t *ent) {
 	vec3_t		end;
-#ifdef MISSIONPACK
+//#ifdef MISSIONPACK
 	vec3_t impactpoint, bouncedir;
-#endif
+//#endif
 	trace_t		trace;
 	gentity_t	*tent;
 	gentity_t	*traceEnt;
@@ -455,9 +693,14 @@ void weapon_railgun_fire (gentity_t *ent) {
 	int			passent;
 	gentity_t	*unlinkedEntities[MAX_RAIL_HITS];
 
-	damage = 100 * s_quadFactor;
+	damage = 80 * s_quadFactor * GetDamageLevel( ent ); // mmp - is 100 in q3a
 
 	VectorMA (muzzle, 8192, forward, end);
+
+//unlagged - backward reconciliation #2
+	// backward-reconcile the other clients
+	G_DoTimeShiftFor( ent );
+//unlagged - backward reconciliation #2
 
 	// trace only against the solids, so the railgun will go through people
 	unlinked = 0;
@@ -470,7 +713,7 @@ void weapon_railgun_fire (gentity_t *ent) {
 		}
 		traceEnt = &g_entities[ trace.entityNum ];
 		if ( traceEnt->takedamage ) {
-#ifdef MISSIONPACK
+//#ifdef MISSIONPACK
 			if ( traceEnt->client && traceEnt->client->invulnerabilityTime > level.time ) {
 				if ( G_InvulnerabilityEffect( traceEnt, forward, trace.endpos, impactpoint, bouncedir ) ) {
 					G_BounceProjectile( muzzle, impactpoint, bouncedir, end );
@@ -497,12 +740,13 @@ void weapon_railgun_fire (gentity_t *ent) {
 				}
 				G_Damage (traceEnt, ent, ent, forward, trace.endpos, damage, 0, MOD_RAILGUN);
 			}
-#else
-				if( LogAccuracyHit( traceEnt, ent ) ) {
+//#else
+/*				if( LogAccuracyHit( traceEnt, ent ) ) {
 					hits++;
 				}
 				G_Damage (traceEnt, ent, ent, forward, trace.endpos, damage, 0, MOD_RAILGUN);
-#endif
+*/
+//#endif
 		}
 		if ( trace.contents & CONTENTS_SOLID ) {
 			break;		// we hit something solid enough to stop the beam
@@ -512,6 +756,11 @@ void weapon_railgun_fire (gentity_t *ent) {
 		unlinkedEntities[unlinked] = traceEnt;
 		unlinked++;
 	} while ( unlinked < MAX_RAIL_HITS );
+
+//unlagged - backward reconciliation #2
+	// put them back
+	G_UndoTimeShiftFor( ent );
+//unlagged - backward reconciliation #2
 
 	// link back in any entities we unlinked
 	for ( i = 0 ; i < unlinked ; i++ ) {
@@ -561,6 +810,7 @@ void weapon_railgun_fire (gentity_t *ent) {
 	}
 
 }
+#endif
 
 
 /*
@@ -620,13 +870,57 @@ void Weapon_LightningFire( gentity_t *ent ) {
 	gentity_t	*traceEnt, *tent;
 	int			damage, i, passent;
 
-	damage = 8 * s_quadFactor;
+	damage = 8 * s_quadFactor * GetDamageLevel( ent );// is 8 in vq3
 
 	passent = ent->s.number;
+	// TODO - remove the loop, since we're not using the invulnerability sphere
 	for (i = 0; i < 10; i++) {
 		VectorMA( muzzle, LIGHTNING_RANGE, forward, end );
 
+		// The SARACEN's Lightning Discharge - START
+		if (trap_PointContents (muzzle, -1) & MASK_WATER && !level.warmupTime)
+		{
+			int		zaps;
+			gentity_t *tent;
+
+			// FIXME - having 2 cells will not cause a discharge
+			zaps = ent->client->ps.ammo[AT_CELLS];	// determines size/power of discharge
+			if ( zaps < 0 ) {
+				//if we have infinite ammo, just say we have 200 ammo for max discharge
+				zaps = 200;
+			} else
+			if (!zaps) {
+				return;					// prevents any subsequent frames causing second discharge + error
+			} else {
+				zaps+=2;					// pmove does an ammo[gun]-=2, so we must compensate
+			}
+			SnapVectorTowards (muzzle, ent->s.origin);      // save bandwidth
+
+			tent = G_TempEntity (muzzle, EV_LIGHTNING_DISCHARGE);
+			tent->s.eventParm = zaps;			// duration / size of explosion graphic
+
+			ent->client->ps.ammo[AT_CELLS] = 0;		// drain ent's lightning count
+			/*if (G_WaterRadiusDamage (muzzle, ent, damage * zaps,
+						(damage * zaps) + 16, NULL, MOD_LIGHTNING_DISCHARGE))
+				g_entities[ent->r.ownerNum].client->ps.persistant[PERS_ACCURACY_HITS]++;*/
+			G_WaterRadiusDamage (muzzle, ent, (float)(damage * zaps),
+						(float)(zaps * 2) + 100, NULL, MOD_LIGHTNING_DISCHARGE);
+
+			return;
+		}
+		// The SARACEN's Lightning Discharge - END
+
+//unlagged - backward reconciliation #2
+		// backward-reconcile the other clients
+		G_DoTimeShiftFor( ent );
+//unlagged - backward reconciliation #2
+
 		trap_Trace( &tr, muzzle, NULL, NULL, end, passent, MASK_SHOT );
+
+//unlagged - backward reconciliation #2
+		// put them back
+		G_UndoTimeShiftFor( ent );
+//unlagged - backward reconciliation #2
 
 #ifdef MISSIONPACK
 		// if not the first trace (the lightning bounced of an invulnerability sphere)
@@ -705,8 +999,8 @@ void Weapon_Nailgun_Fire (gentity_t *ent) {
 
 	for( count = 0; count < NUM_NAILSHOTS; count++ ) {
 		m = fire_nail (ent, muzzle, forward, right, up );
-		m->damage *= s_quadFactor;
-		m->splashDamage *= s_quadFactor;
+		m->damage *= s_quadFactor * GetDamageLevel( ent );
+		m->splashDamage *= s_quadFactor * GetDamageLevel( ent );
 	}
 
 //	VectorAdd( m->s.pos.trDelta, ent->client->ps.velocity, m->s.pos.trDelta );	// "real" physics
@@ -729,8 +1023,8 @@ void weapon_proxlauncher_fire (gentity_t *ent) {
 	VectorNormalize( forward );
 
 	m = fire_prox (ent, muzzle, forward);
-	m->damage *= s_quadFactor;
-	m->splashDamage *= s_quadFactor;
+	m->damage *= s_quadFactor * GetDamageLevel( ent );
+	m->splashDamage *= s_quadFactor * GetDamageLevel( ent );
 
 //	VectorAdd( m->s.pos.trDelta, ent->client->ps.velocity, m->s.pos.trDelta );	// "real" physics
 }
@@ -812,7 +1106,7 @@ FireWeapon
 ===============
 */
 void FireWeapon( gentity_t *ent ) {
-	if (ent->client->ps.powerups[PW_QUAD] ) {
+	if (ent->client->ps.powerups[PW_QUAD] || level.rs_quadMode ) {
 		s_quadFactor = g_quadfactor.value;
 	} else {
 		s_quadFactor = 1;
@@ -843,6 +1137,9 @@ void FireWeapon( gentity_t *ent ) {
 
 	// fire the specific weapon
 	switch( ent->s.weapon ) {
+	case WP_BLASTER:
+		Weapon_Blaster_Fire( ent );
+		break;
 	case WP_GAUNTLET:
 		Weapon_Gauntlet( ent );
 		break;
@@ -850,14 +1147,10 @@ void FireWeapon( gentity_t *ent ) {
 		Weapon_LightningFire( ent );
 		break;
 	case WP_SHOTGUN:
-		weapon_supershotgun_fire( ent );
+		weapon_shotgun_fire( ent );
 		break;
-	case WP_MACHINEGUN:
-		if ( g_gametype.integer != GT_TEAM ) {
-			Bullet_Fire( ent, MACHINEGUN_SPREAD, MACHINEGUN_DAMAGE, MOD_MACHINEGUN );
-		} else {
-			Bullet_Fire( ent, MACHINEGUN_SPREAD, MACHINEGUN_TEAM_DAMAGE, MOD_MACHINEGUN );
-		}
+	case WP_SUPER_SHOTGUN:
+		weapon_super_shotgun_fire( ent );
 		break;
 	case WP_GRENADE_LAUNCHER:
 		weapon_grenadelauncher_fire( ent );
@@ -868,28 +1161,21 @@ void FireWeapon( gentity_t *ent ) {
 	case WP_PLASMAGUN:
 		Weapon_Plasmagun_Fire( ent );
 		break;
-	case WP_RAILGUN:
-		weapon_railgun_fire( ent );
-		break;
-	case WP_BFG:
-		BFG_Fire( ent );
+	case WP_SPREADSHOT:
+		Weapon_Spreadshot_Fire( ent );
 		break;
 	case WP_GRAPPLING_HOOK:
 		Weapon_GrapplingHook_Fire( ent );
 		break;
-#ifdef MISSIONPACK
-	case WP_NAILGUN:
-		Weapon_Nailgun_Fire( ent );
-		break;
-	case WP_PROX_LAUNCHER:
-		weapon_proxlauncher_fire( ent );
-		break;
 	case WP_CHAINGUN:
 		Bullet_Fire( ent, CHAINGUN_SPREAD, CHAINGUN_DAMAGE, MOD_CHAINGUN );
 		break;
-#endif
+	case WP_FLAMETHROWER:
+		Weapon_Flamethrower_fire( ent );
+		break;
 	default:
-// FIXME		G_Error( "Bad ent->s.weapon" );
+// FIXME?
+		//G_Error( "Bad ent->s.weapon" );
 		break;
 	}
 }

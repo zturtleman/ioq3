@@ -107,7 +107,7 @@ endif
 export CROSS_COMPILING
 
 ifndef VERSION
-VERSION=1.36
+VERSION=16XXXX.m
 endif
 
 ifndef CLIENTBIN
@@ -135,7 +135,7 @@ MISSIONPACK_CFLAGS=-DMISSIONPACK
 endif
 
 ifndef COPYDIR
-COPYDIR="/usr/local/games/quake3"
+COPYDIR="/usr/local/games/mfarena"
 endif
 
 ifndef COPYBINDIR
@@ -322,11 +322,13 @@ MKDIR=mkdir
 EXTRA_FILES=
 CLIENT_EXTRA_FILES=
 
+
 ifneq (,$(findstring "$(COMPILE_PLATFORM)", "linux" "gnu_kfreebsd" "kfreebsd-gnu" "gnu"))
   TOOLS_CFLAGS += -DARCH_STRING=\"$(COMPILE_ARCH)\"
 endif
 
 ifneq (,$(findstring "$(PLATFORM)", "linux" "gnu_kfreebsd" "kfreebsd-gnu" "gnu"))
+
   BASE_CFLAGS = -Wall -fno-strict-aliasing -Wimplicit -Wstrict-prototypes \
     -pipe -DUSE_ICON -DARCH_STRING=\\\"$(ARCH)\\\"
   CLIENT_CFLAGS += $(SDL_CFLAGS)
@@ -1109,6 +1111,8 @@ else
 endif
 
 BASE_CFLAGS += -DPRODUCT_VERSION=\\\"$(VERSION)\\\"
+#BASE_CFLAGS += -DSVINFO_VERSION_YR=\\\"$(SVINFO_VERSION_YR)\\\"
+#BASE_CFLAGS += -DSVINFO_VERSION_SV=\\\"$(SVINFO_VERSION_SV)\\\"
 BASE_CFLAGS += -Wformat=2 -Wno-format-zero-length -Wformat-security -Wno-format-nonliteral
 BASE_CFLAGS += -Wstrict-aliasing=2 -Wmissing-format-attribute
 BASE_CFLAGS += -Wdisabled-optimization
@@ -1261,7 +1265,7 @@ endif
 
 NAKED_TARGETS=$(shell echo $(TARGETS) | sed -e "s!$(B)/!!g")
 
-print_list=-@for i in $(1); \
+print_list=@for i in $(1); \
      do \
              echo "    $$i"; \
      done
@@ -1664,7 +1668,6 @@ Q3R2OBJ = \
   $(B)/renderergl2/tr_image_pcx.o \
   $(B)/renderergl2/tr_image_png.o \
   $(B)/renderergl2/tr_image_tga.o \
-  $(B)/renderergl2/tr_image_dds.o \
   $(B)/renderergl2/tr_init.o \
   $(B)/renderergl2/tr_light.o \
   $(B)/renderergl2/tr_main.o \
@@ -2292,6 +2295,8 @@ Q3CGOBJ_ = \
   $(B)/$(BASEGAME)/cgame/cg_info.o \
   $(B)/$(BASEGAME)/cgame/cg_localents.o \
   $(B)/$(BASEGAME)/cgame/cg_marks.o \
+  $(B)/$(BASEGAME)/cgame/hud_megadraw.o \
+  $(B)/$(BASEGAME)/cgame/hud_megaboard.o \
   $(B)/$(BASEGAME)/cgame/cg_particles.o \
   $(B)/$(BASEGAME)/cgame/cg_players.o \
   $(B)/$(BASEGAME)/cgame/cg_playerstate.o \
@@ -2299,6 +2304,7 @@ Q3CGOBJ_ = \
   $(B)/$(BASEGAME)/cgame/cg_scoreboard.o \
   $(B)/$(BASEGAME)/cgame/cg_servercmds.o \
   $(B)/$(BASEGAME)/cgame/cg_snapshot.o \
+  $(B)/$(BASEGAME)/cgame/cg_unlagged.o \
   $(B)/$(BASEGAME)/cgame/cg_view.o \
   $(B)/$(BASEGAME)/cgame/cg_weapons.o \
   \
@@ -2336,6 +2342,8 @@ MPCGOBJ_ = \
   $(B)/$(MISSIONPACK)/cgame/cg_info.o \
   $(B)/$(MISSIONPACK)/cgame/cg_localents.o \
   $(B)/$(MISSIONPACK)/cgame/cg_marks.o \
+  $(B)/$(MISSIONPACK)/cgame/hud_megadraw.o \
+  $(B)/$(MISSIONPACK)/cgame/hud_megaboard.o \
   $(B)/$(MISSIONPACK)/cgame/cg_particles.o \
   $(B)/$(MISSIONPACK)/cgame/cg_players.o \
   $(B)/$(MISSIONPACK)/cgame/cg_playerstate.o \
@@ -2343,6 +2351,7 @@ MPCGOBJ_ = \
   $(B)/$(MISSIONPACK)/cgame/cg_scoreboard.o \
   $(B)/$(MISSIONPACK)/cgame/cg_servercmds.o \
   $(B)/$(MISSIONPACK)/cgame/cg_snapshot.o \
+  $(B)/$(MISSIONPACK)/cgame/cg_unlagged.o \
   $(B)/$(MISSIONPACK)/cgame/cg_view.o \
   $(B)/$(MISSIONPACK)/cgame/cg_weapons.o \
   $(B)/$(MISSIONPACK)/ui/ui_shared.o \
@@ -2397,6 +2406,7 @@ Q3GOBJ_ = \
   $(B)/$(BASEGAME)/game/g_target.o \
   $(B)/$(BASEGAME)/game/g_team.o \
   $(B)/$(BASEGAME)/game/g_trigger.o \
+  $(B)/$(BASEGAME)/game/g_unlagged.o \
   $(B)/$(BASEGAME)/game/g_utils.o \
   $(B)/$(BASEGAME)/game/g_weapon.o \
   \
@@ -2448,6 +2458,7 @@ MPGOBJ_ = \
   $(B)/$(MISSIONPACK)/game/g_target.o \
   $(B)/$(MISSIONPACK)/game/g_team.o \
   $(B)/$(MISSIONPACK)/game/g_trigger.o \
+  $(B)/$(MISSIONPACK)/game/g_unlagged.o \
   $(B)/$(MISSIONPACK)/game/g_utils.o \
   $(B)/$(MISSIONPACK)/game/g_weapon.o \
   \
@@ -2483,6 +2494,7 @@ Q3UIOBJ_ = \
   $(B)/$(BASEGAME)/ui/ui_connect.o \
   $(B)/$(BASEGAME)/ui/ui_controls2.o \
   $(B)/$(BASEGAME)/ui/ui_credits.o \
+  $(B)/$(BASEGAME)/ui/ui_customrules.o \
   $(B)/$(BASEGAME)/ui/ui_demo2.o \
   $(B)/$(BASEGAME)/ui/ui_display.o \
   $(B)/$(BASEGAME)/ui/ui_gameinfo.o \
@@ -2490,6 +2502,7 @@ Q3UIOBJ_ = \
   $(B)/$(BASEGAME)/ui/ui_loadconfig.o \
   $(B)/$(BASEGAME)/ui/ui_menu.o \
   $(B)/$(BASEGAME)/ui/ui_mfield.o \
+  $(B)/$(BASEGAME)/ui/ui_mftest.o \
   $(B)/$(BASEGAME)/ui/ui_mods.o \
   $(B)/$(BASEGAME)/ui/ui_network.o \
   $(B)/$(BASEGAME)/ui/ui_options.o \

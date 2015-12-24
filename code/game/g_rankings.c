@@ -187,9 +187,6 @@ void G_RankFireWeapon( int self, int weapon )
 	
 	switch( weapon )
 	{
-	case WP_MACHINEGUN:
-		trap_RankReportInt( self, -1, QGR_KEY_SHOT_FIRED_MACHINEGUN, 1, 1 );
-		break;
 	case WP_SHOTGUN:
 		trap_RankReportInt( self, -1, QGR_KEY_SHOT_FIRED_SHOTGUN, 1, 1 );
 		break;
@@ -202,14 +199,13 @@ void G_RankFireWeapon( int self, int weapon )
 	case WP_LIGHTNING:
 		trap_RankReportInt( self, -1, QGR_KEY_SHOT_FIRED_LIGHTNING, 1, 1 );
 		break;
+#ifdef MISSIONPACK
 	case WP_RAILGUN:
 		trap_RankReportInt( self, -1, QGR_KEY_SHOT_FIRED_RAILGUN, 1, 1 );
 		break;
+#endif
 	case WP_PLASMAGUN:
 		trap_RankReportInt( self, -1, QGR_KEY_SHOT_FIRED_PLASMA, 1, 1 );
-		break;
-	case WP_BFG:
-		trap_RankReportInt( self, -1, QGR_KEY_SHOT_FIRED_BFG, 1, 1 );
 		break;
 	case WP_GRAPPLING_HOOK:
 		trap_RankReportInt( self, -1, QGR_KEY_SHOT_FIRED_GRAPPLE, 1, 1 );
@@ -285,7 +281,6 @@ void G_RankDamage( int self, int attacker, int damage, int means_of_death )
 	case MOD_GRENADE_SPLASH:
 	case MOD_ROCKET_SPLASH:
 	case MOD_PLASMA_SPLASH:
-	case MOD_BFG_SPLASH:
 		splash = damage;
 		break;
 	default:
@@ -327,19 +322,15 @@ void G_RankDamage( int self, int attacker, int damage, int means_of_death )
 		key_damage = QGR_KEY_DAMAGE_TAKEN_PLASMA;
 		key_splash = QGR_KEY_SPLASH_TAKEN_PLASMA;
 		break;
+#ifdef MISSIONPACK
 	case MOD_RAILGUN:
 		key_hit = QGR_KEY_HIT_TAKEN_RAILGUN;
 		key_damage = QGR_KEY_DAMAGE_TAKEN_RAILGUN;
 		break;
+#endif
 	case MOD_LIGHTNING:
 		key_hit = QGR_KEY_HIT_TAKEN_LIGHTNING;
 		key_damage = QGR_KEY_DAMAGE_TAKEN_LIGHTNING;
-		break;
-	case MOD_BFG:
-	case MOD_BFG_SPLASH:
-		key_hit = QGR_KEY_HIT_TAKEN_BFG;
-		key_damage = QGR_KEY_DAMAGE_TAKEN_BFG;
-		key_splash = QGR_KEY_SPLASH_TAKEN_BFG;
 		break;
 	case MOD_GRAPPLE:
 		key_hit = QGR_KEY_HIT_TAKEN_GRAPPLE;
@@ -404,19 +395,15 @@ void G_RankDamage( int self, int attacker, int damage, int means_of_death )
 			key_damage = QGR_KEY_DAMAGE_GIVEN_PLASMA;
 			key_splash = QGR_KEY_SPLASH_GIVEN_PLASMA;
 			break;
+#ifdef MISSIONPACK
 		case MOD_RAILGUN:
 			key_hit = QGR_KEY_HIT_GIVEN_RAILGUN;
 			key_damage = QGR_KEY_DAMAGE_GIVEN_RAILGUN;
 			break;
+#endif
 		case MOD_LIGHTNING:
 			key_hit = QGR_KEY_HIT_GIVEN_LIGHTNING;
 			key_damage = QGR_KEY_DAMAGE_GIVEN_LIGHTNING;
-			break;
-		case MOD_BFG:
-		case MOD_BFG_SPLASH:
-			key_hit = QGR_KEY_HIT_GIVEN_BFG;
-			key_damage = QGR_KEY_DAMAGE_GIVEN_BFG;
-			key_splash = QGR_KEY_SPLASH_GIVEN_BFG;
 			break;
 		case MOD_GRAPPLE:
 			key_hit = QGR_KEY_HIT_GIVEN_GRAPPLE;
@@ -566,15 +553,13 @@ void G_RankPlayerDie( int self, int attacker, int means_of_death )
 		case MOD_PLASMA_SPLASH:
 			trap_RankReportInt( p1, p2, QGR_KEY_SUICIDE_PLASMA, 1, 1 );
 			break;
+#ifdef MISSIONPACK
 		case MOD_RAILGUN:
 			trap_RankReportInt( p1, p2, QGR_KEY_SUICIDE_RAILGUN, 1, 1 );
 			break;
+#endif
 		case MOD_LIGHTNING:
 			trap_RankReportInt( p1, p2, QGR_KEY_SUICIDE_LIGHTNING, 1, 1 );
-			break;
-		case MOD_BFG:
-		case MOD_BFG_SPLASH:
-			trap_RankReportInt( p1, p2, QGR_KEY_SUICIDE_BFG, 1, 1 );
 			break;
 		case MOD_GRAPPLE:
 			trap_RankReportInt( p1, p2, QGR_KEY_SUICIDE_GRAPPLE, 1, 1 );
@@ -614,15 +599,13 @@ void G_RankPlayerDie( int self, int attacker, int means_of_death )
 		case MOD_PLASMA_SPLASH:
 			trap_RankReportInt( p1, p2, QGR_KEY_FRAG_PLASMA, 1, 1 );
 			break;
+#ifdef MISSIONPACK
 		case MOD_RAILGUN:
 			trap_RankReportInt( p1, p2, QGR_KEY_FRAG_RAILGUN, 1, 1 );
 			break;
+#endif
 		case MOD_LIGHTNING:
 			trap_RankReportInt( p1, p2, QGR_KEY_FRAG_LIGHTNING, 1, 1 );
-			break;
-		case MOD_BFG:
-		case MOD_BFG_SPLASH:
-			trap_RankReportInt( p1, p2, QGR_KEY_FRAG_BFG, 1, 1 );
 			break;
 		case MOD_GRAPPLE:
 			trap_RankReportInt( p1, p2, QGR_KEY_FRAG_GRAPPLE, 1, 1 );
@@ -666,9 +649,6 @@ void G_RankWeaponTime( int self, int weapon )
 	case WP_GAUNTLET:
 		trap_RankReportInt( self, -1, QGR_KEY_TIME_GAUNTLET, time, 1 );
 		break;
-	case WP_MACHINEGUN:
-		trap_RankReportInt( self, -1, QGR_KEY_TIME_MACHINEGUN, time, 1 );
-		break;
 	case WP_SHOTGUN:
 		trap_RankReportInt( self, -1, QGR_KEY_TIME_SHOTGUN, time, 1 );
 		break;
@@ -681,14 +661,13 @@ void G_RankWeaponTime( int self, int weapon )
 	case WP_LIGHTNING:
 		trap_RankReportInt( self, -1, QGR_KEY_TIME_LIGHTNING, time, 1 );
 		break;
+#ifdef MISSIONPACK
 	case WP_RAILGUN:
 		trap_RankReportInt( self, -1, QGR_KEY_TIME_RAILGUN, time, 1 );
 		break;
+#endif
 	case WP_PLASMAGUN:
 		trap_RankReportInt( self, -1, QGR_KEY_TIME_PLASMA, time, 1 );
-		break;
-	case WP_BFG:
-		trap_RankReportInt( self, -1, QGR_KEY_TIME_BFG, time, 1 );
 		break;
 	case WP_GRAPPLING_HOOK:
 		trap_RankReportInt( self, -1, QGR_KEY_TIME_GRAPPLE, time, 1 );
@@ -717,9 +696,6 @@ void G_RankPickupWeapon( int self, int weapon )
 	case WP_GAUNTLET:
 		trap_RankReportInt( self, -1, QGR_KEY_PICKUP_GAUNTLET, 1, 1 );
 		break;
-	case WP_MACHINEGUN:
-		trap_RankReportInt( self, -1, QGR_KEY_PICKUP_MACHINEGUN, 1, 1 );
-		break;
 	case WP_SHOTGUN:
 		trap_RankReportInt( self, -1, QGR_KEY_PICKUP_SHOTGUN, 1, 1 );
 		break;
@@ -732,14 +708,13 @@ void G_RankPickupWeapon( int self, int weapon )
 	case WP_LIGHTNING:
 		trap_RankReportInt( self, -1, QGR_KEY_PICKUP_LIGHTNING, 1, 1 );
 		break;
+#ifdef MISSIONPACK
 	case WP_RAILGUN:
 		trap_RankReportInt( self, -1, QGR_KEY_PICKUP_RAILGUN, 1, 1 );
 		break;
+#endif
 	case WP_PLASMAGUN:
 		trap_RankReportInt( self, -1, QGR_KEY_PICKUP_PLASMA, 1, 1 );
-		break;
-	case WP_BFG:
-		trap_RankReportInt( self, -1, QGR_KEY_PICKUP_BFG, 1, 1 );
 		break;
 	case WP_GRAPPLING_HOOK:
 		trap_RankReportInt( self, -1, QGR_KEY_PICKUP_GRAPPLE, 1, 1 );
@@ -767,10 +742,6 @@ void G_RankPickupAmmo( int self, int weapon, int quantity )
 	
 	switch( weapon )
 	{
-	case WP_MACHINEGUN:
-		trap_RankReportInt( self, -1, QGR_KEY_BOXES_BULLETS, 1, 1 );
-		trap_RankReportInt( self, -1, QGR_KEY_ROUNDS_BULLETS, quantity, 1 );
-		break;
 	case WP_SHOTGUN:
 		trap_RankReportInt( self, -1, QGR_KEY_BOXES_SHELLS, 1, 1 );
 		trap_RankReportInt( self, -1, QGR_KEY_ROUNDS_SHELLS, quantity, 1 );
@@ -787,17 +758,15 @@ void G_RankPickupAmmo( int self, int weapon, int quantity )
 		trap_RankReportInt( self, -1, QGR_KEY_BOXES_LG_AMMO, 1, 1 );
 		trap_RankReportInt( self, -1, QGR_KEY_ROUNDS_LG_AMMO, quantity, 1 );
 		break;
+#ifdef MISSIONPACK
 	case WP_RAILGUN:
 		trap_RankReportInt( self, -1, QGR_KEY_BOXES_SLUGS, 1, 1 );
 		trap_RankReportInt( self, -1, QGR_KEY_ROUNDS_SLUGS, quantity, 1 );
 		break;
+#endif
 	case WP_PLASMAGUN:
 		trap_RankReportInt( self, -1, QGR_KEY_BOXES_CELLS, 1, 1 );
 		trap_RankReportInt( self, -1, QGR_KEY_ROUNDS_CELLS, quantity, 1 );
-		break;
-	case WP_BFG:
-		trap_RankReportInt( self, -1, QGR_KEY_BOXES_BFG_AMMO, 1, 1 );
-		trap_RankReportInt( self, -1, QGR_KEY_ROUNDS_BFG_AMMO, quantity, 1 );
 		break;
 	default:
 		break;
@@ -898,8 +867,8 @@ void G_RankPickupPowerup( int self, int powerup )
 	case PW_QUAD:
 		trap_RankReportInt( self, -1, QGR_KEY_QUAD, 1, 1 );
 		break;
-	case PW_BATTLESUIT:
-		trap_RankReportInt( self, -1, QGR_KEY_SUIT, 1, 1 );
+	case PW_PENT:
+		trap_RankReportInt( self, -1, QGR_KEY_PENT, 1, 1 );
 		break;
 	case PW_HASTE:
 		trap_RankReportInt( self, -1, QGR_KEY_HASTE, 1, 1 );

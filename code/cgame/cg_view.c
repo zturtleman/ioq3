@@ -35,7 +35,7 @@ enhanced into a single model testing facility.
 
 Model viewing can begin with either "testmodel <modelname>" or "testgun <modelname>".
 
-The names must be the full pathname after the basedir, like 
+The names must be the full pathname after the basedir, like
 "models/weapons/v_launch/tris.md3" or "players/male/tris.md3"
 
 Testmodel will create a fake entity 100 units in front of the current view
@@ -269,7 +269,7 @@ static void CG_OffsetThirdPersonView( void ) {
 			VectorCopy( trace.endpos, view );
 			view[2] += (1.0 - trace.fraction) * 32;
 			// try another trace to this position, because a tunnel may have the ceiling
-			// close enough that this is poking out
+			// close enogh that this is poking out
 
 			CG_Trace( &trace, cg.refdef.vieworg, mins, maxs, view, cg.predictedPlayerState.clientNum, MASK_SOLID );
 			VectorCopy( trace.endpos, view );
@@ -293,13 +293,23 @@ static void CG_OffsetThirdPersonView( void ) {
 // this causes a compiler bug on mac MrC compiler
 static void CG_StepOffset( void ) {
 	int		timeDelta;
-	
+
 	// smooth out stair climbing
 	timeDelta = cg.time - cg.stepTime;
 	if ( timeDelta < STEP_TIME ) {
-		cg.refdef.vieworg[2] -= cg.stepChange 
+		cg.refdef.vieworg[2] -= cg.stepChange
 			* (STEP_TIME - timeDelta) / STEP_TIME;
 	}
+}
+
+/*
+===============
+CG_ScreenBobbing
+
+===============
+*/
+static void CG_ScreenBobbing( void ) {
+
 }
 
 /*
@@ -313,12 +323,13 @@ static void CG_OffsetFirstPersonView( void ) {
 	float			*angles;
 	float			bob;
 	float			ratio;
+/*	int				intRatio;*/
 	float			delta;
 	float			speed;
 	float			f;
 	vec3_t			predictedVelocity;
 	int				timeDelta;
-	
+
 	if ( cg.snap->ps.pm_type == PM_INTERMISSION ) {
 		return;
 	}
@@ -335,21 +346,46 @@ static void CG_OffsetFirstPersonView( void ) {
 		return;
 	}
 
-	// add angles based on damage kick
-	if ( cg.damageTime ) {
-		ratio = cg.time - cg.damageTime;
-		if ( ratio < DAMAGE_DEFLECT_TIME ) {
-			ratio /= DAMAGE_DEFLECT_TIME;
-			angles[PITCH] += ratio * cg.v_dmg_pitch;
-			angles[ROLL] += ratio * cg.v_dmg_roll;
-		} else {
-			ratio = 1.0 - ( ratio - DAMAGE_DEFLECT_TIME ) / DAMAGE_RETURN_TIME;
-			if ( ratio > 0 ) {
+	if (cg_damageKick.integer) {
+
+		// add angles based on damage kick
+		if ( cg.damageTime ) {
+			ratio = cg.time - cg.damageTime;
+			if ( ratio < DAMAGE_DEFLECT_TIME ) {
+				ratio /= DAMAGE_DEFLECT_TIME;
 				angles[PITCH] += ratio * cg.v_dmg_pitch;
 				angles[ROLL] += ratio * cg.v_dmg_roll;
+			} else {
+				ratio = 1.0 - ( ratio - DAMAGE_DEFLECT_TIME ) / DAMAGE_RETURN_TIME;
+				if ( ratio > 0 ) {
+					angles[PITCH] += ratio * cg.v_dmg_pitch;
+					angles[ROLL] += ratio * cg.v_dmg_roll;
+				}
 			}
 		}
+
 	}
+
+	// test
+	/*
+	intRatio = cg.time % 6660;
+	if (intRatio >= 3330)
+		intRatio = 3330-(intRatio % 3330);
+	intRatio -= 1665;
+	angles[ROLL] += ((float)intRatio) * .0000666;
+
+	intRatio = cg.time % 4000;
+	if (intRatio >= 2000)
+		intRatio = 2000-(intRatio % 2000);
+	intRatio -= 1000;
+	angles[YAW] += ((float)intRatio) * .000069;
+
+	intRatio = cg.time & 0x3FFF;
+	if (intRatio >= 0x2000)
+		intRatio = 0x2000-(intRatio & 0x1FFF);
+	intRatio -= 0x1000;
+	angles[PITCH] += ((float)intRatio) * .000069;
+	*/
 
 	// add pitch based on fall kick
 #if 0
@@ -364,7 +400,7 @@ static void CG_OffsetFirstPersonView( void ) {
 
 	delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[0]);
 	angles[PITCH] += delta * cg_runpitch.value;
-	
+
 	delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[1]);
 	angles[ROLL] -= delta * cg_runroll.value;
 
@@ -392,7 +428,7 @@ static void CG_OffsetFirstPersonView( void ) {
 	// smooth out duck height changes
 	timeDelta = cg.time - cg.duckTime;
 	if ( timeDelta < DUCK_TIME) {
-		cg.refdef.vieworg[2] -= cg.duckChange 
+		cg.refdef.vieworg[2] -= cg.duckChange
 			* (DUCK_TIME - timeDelta) / DUCK_TIME;
 	}
 
@@ -424,7 +460,7 @@ static void CG_OffsetFirstPersonView( void ) {
 	{
 #define	NECK_LENGTH		8
 	vec3_t			forward, up;
- 
+
 	cg.refdef.vieworg[2] -= NECK_LENGTH;
 	AngleVectors( cg.refdefViewAngles, forward, NULL, up );
 	VectorMA( cg.refdef.vieworg, 3, forward, cg.refdef.vieworg );
@@ -435,7 +471,7 @@ static void CG_OffsetFirstPersonView( void ) {
 
 //======================================================================
 
-void CG_ZoomDown_f( void ) { 
+void CG_ZoomDown_f( void ) {
 	if ( cg.zoomed ) {
 		return;
 	}
@@ -443,7 +479,7 @@ void CG_ZoomDown_f( void ) {
 	cg.zoomTime = cg.time;
 }
 
-void CG_ZoomUp_f( void ) { 
+void CG_ZoomUp_f( void ) {
 	if ( !cg.zoomed ) {
 		return;
 	}
@@ -462,6 +498,8 @@ Fixed fov at intermissions, otherwise account for fov variable and zooms.
 #define	WAVE_AMPLITUDE	1
 #define	WAVE_FREQUENCY	0.4
 
+#define STD_AR ((float)SCREEN_WIDTH / (float)SCREEN_HEIGHT)
+
 static int CG_CalcFov( void ) {
 	float	x;
 	float	phase;
@@ -476,8 +514,23 @@ static int CG_CalcFov( void ) {
 		// if in intermission, use a fixed value
 		fov_x = 90;
 	} else {
-		// user selectable
-		if ( cgs.dmflags & DF_FIXED_FOV ) {
+		// user selectable fov
+		/*if ( cg_fovMode.integer && hud_aspectRatioScale.value > 0 ) {
+			// adjust fov for widescreen monitors, giving the same amount of vertical fov compared to a 4:3 monitor
+			// TODO: make this work correctly
+			fov_x = cg_fov.value * (hud_aspectRatioScale.value * 0.5 + 0.5 );
+		} else {
+			fov_x = cg_fov.value;
+		}*/
+		fov_x = cg_fov.value;
+
+		if ( fov_x < 1 ) {
+			fov_x = 1;
+		} else if ( fov_x > MAX_FOV ) {
+			fov_x = MAX_FOV;
+		}
+
+		/*if ( cgs.dmflags & DF_FIXED_FOV ) {
 			// dmflag to prevent wide fov for all clients
 			fov_x = 90;
 		} else {
@@ -487,14 +540,14 @@ static int CG_CalcFov( void ) {
 			} else if ( fov_x > 160 ) {
 				fov_x = 160;
 			}
-		}
+		}*/
 
 		// account for zooms
 		zoomFov = cg_zoomFov.value;
 		if ( zoomFov < 1 ) {
 			zoomFov = 1;
-		} else if ( zoomFov > 160 ) {
-			zoomFov = 160;
+		} else if ( zoomFov > MAX_FOV ) {
+			zoomFov = MAX_FOV;
 		}
 
 		if ( cg.zoomed ) {
@@ -509,6 +562,15 @@ static int CG_CalcFov( void ) {
 			if ( f <= 1.0 ) {
 				fov_x = zoomFov + f * ( fov_x - zoomFov );
 			}
+		}
+	}
+
+	if ( cg_fovMode.integer && hud_aspectRatioScale.value > 0 ) {
+		// [Slipyx] Added widescreen fov fix (from kmquake2)
+		x = (float)cg.refdef.width / (float)cg.refdef.height;
+		if ( x > STD_AR ) {
+			fov_x = RAD2DEG( 2 * atan2( (x / STD_AR) * tan( DEG2RAD( fov_x ) * 0.5f ), 1 ) );
+			fov_x = MIN( fov_x, 160 );
 		}
 	}
 
@@ -607,6 +669,8 @@ Sets cg.refdef view values
 */
 static int CG_CalcViewValues( void ) {
 	playerState_t	*ps;
+	int				msec;
+	int				intRatio;
 
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
 
@@ -634,8 +698,32 @@ static int CG_CalcViewValues( void ) {
 */
 	// intermission view
 	if ( ps->pm_type == PM_INTERMISSION ) {
+
 		VectorCopy( ps->origin, cg.refdef.vieworg );
 		VectorCopy( ps->viewangles, cg.refdefViewAngles );
+
+		// add bobbing effect - mmp
+		intRatio = cg.time % 6660;
+		if (intRatio >= 3330)
+			intRatio = 3330-(intRatio % 3330);
+		intRatio -= 1665;
+		cg.refdefViewAngles[ROLL] += ((float)intRatio) * .0002;
+
+		intRatio = cg.time % 4000;
+		if (intRatio >= 2000)
+			intRatio = 2000-(intRatio % 2000);
+		intRatio -= 1000;
+		cg.refdefViewAngles[YAW] += ((float)intRatio) * .0002;
+
+		intRatio = cg.time & 0x3FFF;
+		if (intRatio >= 0x2000)
+			intRatio = 0x2000-(intRatio & 0x1FFF);
+		intRatio -= 0x1000;
+		cg.refdefViewAngles[PITCH] += ((float)intRatio) * .0002;
+
+		if ( cg_intermissionEffect.integer )
+			cg.refdefViewAngles[PITCH] += random() * 0.25; // this is used with the old film effect
+
 		AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
 		return CG_CalcFov();
 	}
@@ -643,7 +731,7 @@ static int CG_CalcViewValues( void ) {
 	cg.bobcycle = ( ps->bobCycle & 128 ) >> 7;
 	cg.bobfracsin = fabs( sin( ( ps->bobCycle & 127 ) / 127.0 * M_PI ) );
 	cg.xyspeed = sqrt( ps->velocity[0] * ps->velocity[0] +
-		ps->velocity[1] * ps->velocity[1] );
+					ps->velocity[1] * ps->velocity[1] );
 
 
 	VectorCopy( ps->origin, cg.refdef.vieworg );
@@ -787,7 +875,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	}
 
 	// let the client system know what our weapon and zoom settings are
-	trap_SetUserCmdValue( cg.weaponSelect, cg.zoomSensitivity );
+	trap_SetUserCmdValue( cg.weaponSelect, cg.zoomSensitivity, 0 );
 
 	// this counter will be bumped for every valid scene we generate
 	cg.clientFrame++;
@@ -796,6 +884,8 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	CG_PredictPlayerState();
 
 	// decide on third person view
+/*	cg.renderingThirdPerson = (cg_thirdPerson.integer && (cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR) ) ||
+							(cg.snap->ps.stats[STAT_HEALTH] <= 0);*/
 	cg.renderingThirdPerson = cg_thirdPerson.integer || (cg.snap->ps.stats[STAT_HEALTH] <= 0);
 
 	// build cg.refdef
@@ -843,7 +933,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 			cg.frametime = 0;
 		}
 		cg.oldTime = cg.time;
-		CG_AddLagometerFrameInfo();
+		HUD_AddLagometerFrameInfo(); // was CG_AddLagometerFrameInfo()
 	}
 	if (cg_timescale.value != cg_timescaleFadeEnd.value) {
 		if (cg_timescale.value < cg_timescaleFadeEnd.value) {

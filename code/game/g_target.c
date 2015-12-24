@@ -45,6 +45,7 @@ void Use_Target_Give( gentity_t *ent, gentity_t *other, gentity_t *activator ) {
 		if ( !t->item ) {
 			continue;
 		}
+
 		Touch_Item( t, activator, &trace );
 
 		// make sure it isn't going to respawn or show any events
@@ -141,21 +142,25 @@ If "private", only the activator gets the message.  If no checks, all clients ge
 */
 void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator) {
 	if ( activator->client && ( ent->spawnflags & 4 ) ) {
-		trap_SendServerCommand( activator-g_entities, va("cp \"%s\"", ent->message ));
+		trap_SendServerCommand( activator-g_entities, va("notify %i\\\"%s\n\"", NF_MESSAGE, ent->message ));
+		//trap_SendServerCommand( activator-g_entities, va("cp \"%s\"", ent->message ));
 		return;
 	}
 
 	if ( ent->spawnflags & 3 ) {
 		if ( ent->spawnflags & 1 ) {
-			G_TeamCommand( TEAM_RED, va("cp \"%s\"", ent->message) );
+			G_TeamCommand( TEAM_RED, va("notify %i\\\"%s\n\"", NF_MESSAGE, ent->message) );
+			//G_TeamCommand( TEAM_RED, va("cp \"%s\"", ent->message) );
 		}
 		if ( ent->spawnflags & 2 ) {
-			G_TeamCommand( TEAM_BLUE, va("cp \"%s\"", ent->message) );
+			G_TeamCommand( TEAM_BLUE, va("notify %i\\\"%s\n\"", NF_MESSAGE, ent->message) );
+			//G_TeamCommand( TEAM_BLUE, va("cp \"%s\"", ent->message) );
 		}
 		return;
 	}
 
-	trap_SendServerCommand( -1, va("cp \"%s\"", ent->message ));
+	trap_SendServerCommand( -1, va("notify %i\\\"%s\n\"", NF_MESSAGE, ent->message ));
+	//trap_SendServerCommand( -1, va("cp \"%s\"", ent->message ));
 }
 
 void SP_target_print( gentity_t *ent ) {
@@ -464,4 +469,186 @@ void SP_target_location( gentity_t *self ){
 
 	G_SetOrigin( self, self->s.origin );
 }
+
+
+// mmp
+//==========================================================
+
+/*QUAKED target_startTimer (1 0 0) (-8 -8 -8) (8 8 8)
+Timer Start
+*/
+void Use_Target_StartTimer( gentity_t *ent, gentity_t *other, gentity_t *activator ) {
+	gentity_t	*t;
+
+	if ( !activator->client ) {
+		return;
+	}
+
+	// check if timer is active
+	if ( activator->client->race_startTime ) {
+		return;
+	}
+
+	activator->client->race_startTime = level.time;
+
+	/*trap_SendServerCommand( -1, va("notify %i\\\"^2target_startTimer\n\"",
+					NF_GAMEINFO ) );*/
+
+	trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_GREEN "TIME START!\n\"",
+					NF_GAMEINFO ) );
+
+}
+
+void SP_target_startTimer( gentity_t *ent ) {
+	ent->use = Use_Target_StartTimer;
+}
+
+//==========================================================
+
+/*QUAKED target_stopTimer (1 0 0) (-8 -8 -8) (8 8 8)
+Timer Stop
+-------- KEYS --------
+target: stopTimer triggers its targets when a best time occurs.
+*/
+void Use_Target_StopTimer( gentity_t *ent, gentity_t *other, gentity_t *activator ) {
+	gentity_t	*t;
+	int			timeMin, timeTen, timeSec, timeTenth, timeHnth, timeThth, timeFinish;
+
+	if ( !activator->client ) {
+		return;
+	}
+
+	// set up digits for time stamp
+	timeFinish = level.time - activator->client->race_startTime;
+	timeThth = timeFinish;
+	if (timeThth >= 6000000) {
+		timeThth = 5999999;
+	}
+	timeMin = timeThth / 60000;
+	timeThth -= timeMin * 60000;
+	timeTen = timeThth / 10000;
+	timeThth -= timeTen * 10000;
+	timeSec = timeThth / 1000;
+	timeThth -= timeSec * 1000;
+	timeTenth = timeThth / 100;
+	timeThth -= timeTenth * 100;
+	timeHnth = timeThth / 10;
+	timeThth -= timeHnth * 10;
+
+	// activator-g_entities
+	// activator->client->pers.netname
+
+	/*trap_SendServerCommand( -1, va("notify %i\\\"^1target_stopTimer^7 %2i:%i%i.%i%i%i\n\"",
+					NF_GAMEINFO, timeMin, timeTen, timeSec, timeTenth, timeHnth, timeThth ) );*/
+	trap_SendServerCommand( -1, va("notify %i\\\"%s" S_COLOR_WHITE " FINISHED IN:" S_COLOR_GRAY " %2i:%i%i.%i%i%i\n\"",
+					NF_GAMEINFO, activator->client->pers.netname, timeMin, timeTen, timeSec, timeTenth, timeHnth, timeThth ) );
+
+	if ( timeFinish < 6000000 && ( timeFinish < level.race_topTime || !level.race_topTime ) ) {
+			if ( level.race_topTime > 0 ) {
+				trap_SendServerCommand( -1, va("notify %i\\\"%s" S_COLOR_AMBER " SETS A NEW RECORD TIME:" S_COLOR_YELLOW " %2i:%i%i.%i%i%i\n\"",
+								NF_GAMEINFO, activator->client->pers.netname, timeMin, timeTen, timeSec, timeTenth, timeHnth, timeThth ) );
+			} else {
+				trap_SendServerCommand( -1, va("notify %i\\\"%s" S_COLOR_AMBER " SETS THE RECORD TIME:" S_COLOR_YELLOW " %2i:%i%i.%i%i%i\n\"",
+								NF_GAMEINFO, activator->client->pers.netname, timeMin, timeTen, timeSec, timeTenth, timeHnth, timeThth ) );
+			}
+			level.race_topTime = timeFinish;
+	} else {
+			timeThth = level.race_topTime;
+			if ( timeThth > 0 ) {
+
+				timeMin = timeThth / 60000;
+				timeThth -= timeMin * 60000;
+				timeTen = timeThth / 10000;
+				timeThth -= timeTen * 10000;
+				timeSec = timeThth / 1000;
+				timeThth -= timeSec * 1000;
+				timeTenth = timeThth / 100;
+				timeThth -= timeTenth * 100;
+				timeHnth = timeThth / 10;
+				timeThth -= timeHnth * 10;
+
+				trap_SendServerCommand( activator-g_entities, va("notify %i\\\"" S_COLOR_RED "YOU DID NOT BEAT THE RECORD TIME:" S_COLOR_AMBER " %2i:%i%i.%i%i%i\n\"",
+								NF_GAMEINFO, timeMin, timeTen, timeSec, timeTenth, timeHnth, timeThth ) );
+			} else {
+				trap_SendServerCommand( activator-g_entities, va("notify %i\\\"" S_COLOR_RED "YOU SUCK!\n\"",
+								NF_GAMEINFO ) );
+			}
+	}
+
+}
+
+void SP_target_stopTimer( gentity_t *ent ) {
+	ent->use = Use_Target_StopTimer;
+}
+
+
+//==========================================================
+
+/*QUAKED target_checkpoint (1 0 0) (-8 -8 -8) (8 8 8)
+Checkpoint
+*/
+void Use_Target_Checkpoint( gentity_t *ent, gentity_t *other, gentity_t *activator ) {
+	gentity_t	*t;
+	int			timeMin, timeTen, timeSec, timeTenth, timeHnth, timeThth;
+
+	if ( !activator->client ) {
+		return;
+	}
+
+	// set up digits for time stamp
+	timeThth = level.time - activator->client->race_startTime;
+	if (timeThth >= 6000000) {
+		timeThth = 5999999;
+	}
+	/*timeSec = timeMil / 1000;
+	timeMil -= timeSec * 1000;*/
+	//timeThth = 1234567; // test
+
+	timeMin = timeThth / 60000;
+	timeThth -= timeMin * 60000;
+	timeTen = timeThth / 10000;
+	timeThth -= timeTen * 10000;
+	timeSec = timeThth / 1000;
+	timeThth -= timeSec * 1000;
+	timeTenth = timeThth / 100;
+	timeThth -= timeTenth * 100;
+	timeHnth = timeThth / 10;
+	timeThth -= timeHnth * 10;
+
+	/*timeMin = timeSec / 60;
+	timeSec -= timeMin * 60;
+	timeTen = timeSec / 10;
+	timeSec -= timeTen * 10;*/
+
+	/*trap_SendServerCommand( -1, va("notify %i\\\"^6target_checkpoint^7 %2i:%i%i.%i%i%i\n\"",
+					NF_GAMEINFO, timeMin, timeTen, timeSec, timeTenth, timeHnth, timeThth ) );*/
+
+	trap_SendServerCommand( activator-g_entities, va("notify %i\\\"" S_COLOR_MAGENTA "Check point:" S_COLOR_PINK " %2i:%i%i.%i%i%i\n\"",
+					NF_GAMEINFO, timeMin, timeTen, timeSec, timeTenth, timeHnth, timeThth ) );
+
+}
+
+void SP_target_checkpoint( gentity_t *ent ) {
+	ent->use = Use_Target_Checkpoint;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -38,7 +38,7 @@ int demo_protocols[] =
 
 #define MIN_DEDICATED_COMHUNKMEGS 1
 #define MIN_COMHUNKMEGS		56
-#define DEF_COMHUNKMEGS 	128
+#define DEF_COMHUNKMEGS		128
 #define DEF_COMZONEMEGS		24
 #define DEF_COMHUNKMEGS_S	XSTRING(DEF_COMHUNKMEGS)
 #define DEF_COMZONEMEGS_S	XSTRING(DEF_COMZONEMEGS)
@@ -160,7 +160,7 @@ A raw string should NEVER be passed as fmt, because of "%f" type crashers.
 void QDECL Com_Printf( const char *fmt, ... ) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
-  static qboolean opening_qconsole = qfalse;
+	static qboolean opening_qconsole = qfalse;
 
 
 	va_start (argptr,fmt);
@@ -173,7 +173,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 			*rd_buffer = 0;
 		}
 		Q_strcat(rd_buffer, rd_buffersize, msg);
-    // TTimo nooo .. that would defeat the purpose
+		// TTimo nooo .. that would defeat the purpose
 		//rd_flush(rd_buffer);			
 		//*rd_buffer = 0;
 		return;
@@ -188,13 +188,13 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 
 	// logfile
 	if ( com_logfile && com_logfile->integer ) {
-    // TTimo: only open the qconsole.log if the filesystem is in an initialized state
-    //   also, avoid recursing in the qconsole.log opening (i.e. if fs_debug is on)
+		// TTimo: only open the qconsole.log if the filesystem is in an initialized state
+		//   also, avoid recursing in the qconsole.log opening (i.e. if fs_debug is on)
 		if ( !logfile && FS_Initialized() && !opening_qconsole) {
 			struct tm *newtime;
 			time_t aclock;
 
-      opening_qconsole = qtrue;
+			opening_qconsole = qtrue;
 
 			time( &aclock );
 			newtime = localtime( &aclock );
@@ -218,7 +218,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 				Cvar_SetValue("logfile", 0);
 			}
 
-      opening_qconsole = qfalse;
+			opening_qconsole = qfalse;
 		}
 		if ( logfile && FS_Initialized()) {
 			FS_Write(msg, strlen(msg), logfile);
@@ -887,6 +887,9 @@ void Z_Free( void *ptr ) {
 		block->size += other->size;
 		block->next = other->next;
 		block->next->prev = block;
+		/*if (other == zone->rover) {
+			zone->rover = block;
+		}*/
 	}
 }
 
@@ -1411,6 +1414,8 @@ void Com_InitSmallZoneMemory( void ) {
 		Com_Error( ERR_FATAL, "Small zone data failed to allocate %1.1f megs", (float)s_smallZoneTotal / (1024*1024) );
 	}
 	Z_ClearZone( smallzone, s_smallZoneTotal );
+	
+	return;
 }
 
 void Com_InitZoneMemory( void ) {
@@ -1519,7 +1524,7 @@ void Hunk_SmallLog( void) {
 
 /*
 =================
-Com_InitHunkZoneMemory
+Com_InitZoneMemory
 =================
 */
 void Com_InitHunkMemory( void ) {
@@ -2247,7 +2252,7 @@ Just throw a fatal error to
 test error shutdown procedures
 =============
 */
-static void __attribute__((__noreturn__)) Com_Error_f (void) {
+static void Com_Error_f (void) {
 	if ( Cmd_Argc() > 1 ) {
 		Com_Error( ERR_DROP, "Testing drop error" );
 	} else {
@@ -2340,7 +2345,7 @@ void Com_ExecuteCfg(void)
 	if(!Com_SafeMode())
 	{
 		// skip the q3config.cfg and autoexec.cfg if "safe" is on the command line
-		Cbuf_ExecuteText(EXEC_NOW, "exec " Q3CONFIG_CFG "\n");
+		Cbuf_ExecuteText(EXEC_NOW, "exec " MFCONFIG_CFG "\n");
 		Cbuf_Execute();
 		Cbuf_ExecuteText(EXEC_NOW, "exec autoexec.cfg\n");
 		Cbuf_Execute();
@@ -2540,9 +2545,8 @@ static void Com_WriteCDKey( const char *filename, const char *ikey ) {
 out:
 #ifndef _WIN32
 	umask(savedumask);
-#else
-	;
 #endif
+	return;
 }
 #endif
 
@@ -2758,17 +2762,22 @@ void Com_Init( char *commandLine ) {
 
 	s = va("%s %s %s", Q3_VERSION, PLATFORM_STRING, __DATE__ );
 	com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
-	com_gamename = Cvar_Get("com_gamename", GAMENAME_FOR_MASTER, CVAR_SERVERINFO | CVAR_INIT);
-	com_protocol = Cvar_Get("com_protocol", va("%i", PROTOCOL_VERSION), CVAR_SERVERINFO | CVAR_INIT);
+	/*com_gamename = Cvar_Get("com_gamename", GAMENAME_FOR_MASTER, CVAR_SERVERINFO | CVAR_INIT);
+	com_protocol = Cvar_Get("com_protocol", va("%i", PROTOCOL_VERSION), CVAR_SERVERINFO | CVAR_INIT);*/
+	// mmp - keep it simple guys, no redunant "com_*" cvar shit please
+	// also, this was never needed for vq3, but i'm leaving it here for now
+	com_gamename = Cvar_Get("gamename", GAMENAME_FOR_MASTER, /*CVAR_SERVERINFO | */CVAR_INIT);
+	com_protocol = Cvar_Get("protocol", va("%i", PROTOCOL_VERSION), /*CVAR_SERVERINFO | */CVAR_INIT);
+
 #ifdef LEGACY_PROTOCOL
 	com_legacyprotocol = Cvar_Get("com_legacyprotocol", va("%i", PROTOCOL_LEGACY_VERSION), CVAR_INIT);
 
 	// Keep for compatibility with old mods / mods that haven't updated yet.
-	if(com_legacyprotocol->integer > 0)
+	/*if(com_legacyprotocol->integer > 0)
 		Cvar_Get("protocol", com_legacyprotocol->string, CVAR_ROM);
-	else
+	else*/
 #endif
-		Cvar_Get("protocol", com_protocol->string, CVAR_ROM);
+		/*Cvar_Get("protocol", com_protocol->string, CVAR_ROM);*/
 
 	Sys_Init();
 
@@ -2929,7 +2938,7 @@ void Com_WriteConfiguration( void ) {
 	}
 	cvar_modifiedFlags &= ~CVAR_ARCHIVE;
 
-	Com_WriteConfigToFile( Q3CONFIG_CFG );
+	Com_WriteConfigToFile( MFCONFIG_CFG );
 
 	// not needed for dedicated or standalone
 #if !defined(DEDICATED) && !defined(STANDALONE)
@@ -3068,7 +3077,8 @@ void Com_Frame( void ) {
 	timeAfter = 0;
 
 	// write config file if anything changed
-	Com_WriteConfiguration(); 
+	// TODO: allow auto cfg save to be toggled on/off via cvar - mmp
+	Com_WriteConfiguration();
 
 	//
 	// main event loop
@@ -3540,7 +3550,7 @@ void Field_AutoComplete( field_t *field )
 ==================
 Com_RandomBytes
 
-fills string array with len random bytes, preferably from the OS randomizer
+fills string array with len radom bytes, peferably from the OS randomizer
 ==================
 */
 void Com_RandomBytes( byte *string, int len )
@@ -3553,6 +3563,7 @@ void Com_RandomBytes( byte *string, int len )
 	Com_Printf( "Com_RandomBytes: using weak randomization\n" );
 	for( i = 0; i < len; i++ )
 		string[i] = (unsigned char)( rand() % 256 );
+		/*string[i] = (unsigned char)( rand() % 255 );*/
 }
 
 

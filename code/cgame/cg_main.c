@@ -88,6 +88,8 @@ centity_t			cg_entities[MAX_GENTITIES];
 weaponInfo_t		cg_weapons[MAX_WEAPONS];
 itemInfo_t			cg_items[MAX_ITEMS];
 
+endGameStats_t		endGameStats[MAX_GAME_STATS];
+
 
 vmCvar_t	cg_railTrailTime;
 vmCvar_t	cg_centertime;
@@ -135,10 +137,16 @@ vmCvar_t	cg_tracerChance;
 vmCvar_t	cg_tracerWidth;
 vmCvar_t	cg_tracerLength;
 vmCvar_t	cg_autoswitch;
+vmCvar_t	cg_switchOnEmpty; //cg_outOfAmmoChange; // mmp
+vmCvar_t	cg_switchToEmpty; //cg_noEmptyAmmoSwitch; // mmp
+vmCvar_t	cg_powerupOverlay; // mmp
+vmCvar_t	cg_itemPickUpOverlay; // mmp
+vmCvar_t	cg_intermissionEffect; // mmp
 vmCvar_t	cg_ignore;
 vmCvar_t	cg_simpleItems;
 vmCvar_t	cg_fov;
 vmCvar_t	cg_zoomFov;
+vmCvar_t	cg_fovMode;
 vmCvar_t	cg_thirdPerson;
 vmCvar_t	cg_thirdPersonRange;
 vmCvar_t	cg_thirdPersonAngle;
@@ -164,7 +172,11 @@ vmCvar_t	cg_noVoiceText;
 #endif
 vmCvar_t	cg_hudFiles;
 vmCvar_t 	cg_scorePlum;
-vmCvar_t 	cg_smoothClients;
+vmCvar_t 	cg_damagePlum;
+//unlagged - smooth clients #2
+// this is done server-side now
+//vmCvar_t 	cg_smoothClients;
+//unlagged - smooth clients #2
 vmCvar_t	pmove_fixed;
 //vmCvar_t	cg_pmove_fixed;
 vmCvar_t	pmove_msec;
@@ -182,11 +194,382 @@ vmCvar_t	cg_noProjectileTrail;
 vmCvar_t	cg_oldRail;
 vmCvar_t	cg_oldRocket;
 vmCvar_t	cg_oldPlasma;
+vmCvar_t	cg_damageKick; //
+vmCvar_t	cg_chatSound; //
+vmCvar_t	cg_teamChatSound; //
+
 vmCvar_t	cg_trueLightning;
 
+vmCvar_t	cg_hitSound;
+vmCvar_t	cg_killSound;
+vmCvar_t	cg_teamKillSound;
+vmCvar_t	cg_lumOverlay;
+
+vmCvar_t	cg_weaponCycleSkipsBlaster;
+vmCvar_t	cg_placebo;
+
+// hud
+vmCvar_t	hud_scoreboard_pingType;
+vmCvar_t	hud_scoreboard_barType;
+
+vmCvar_t	hud_keys_show;
+vmCvar_t	hud_keys_align;
+vmCvar_t	hud_keys_xPos;
+vmCvar_t	hud_keys_xAlign;
+vmCvar_t	hud_keys_yPos;
+vmCvar_t	hud_keys_scale;
+vmCvar_t	hud_keys_color;
+vmCvar_t	hud_keys_pressColor;
+
+vmCvar_t	hud_testStatus_show;
+
+vmCvar_t	hud_crosshair_innerColor;
+vmCvar_t	hud_crosshair_innerType;
+vmCvar_t	hud_crosshair_outsideColor;
+vmCvar_t	hud_crosshair_outsideType;
+
+vmCvar_t	hud_fps_show; // shows the hud element
+vmCvar_t	hud_fps_align; // alignment of hud element
+vmCvar_t	hud_fps_style; // style of effect
+vmCvar_t	hud_fps_posLock; // screen position lock
+vmCvar_t	hud_fps_xPos;
+vmCvar_t	hud_fps_xAlign;
+vmCvar_t	hud_fps_yPos;
+vmCvar_t	hud_fps_xScale;
+vmCvar_t	hud_fps_yScale;
+vmCvar_t	hud_fps_color;
+
+vmCvar_t	hud_gameClock_show;
+
+vmCvar_t	hud_digitalClock_show;
+vmCvar_t	hud_digitalClock_align;
+vmCvar_t	hud_digitalClock_style;
+vmCvar_t	hud_digitalClock_posLock;
+vmCvar_t	hud_digitalClock_xPos;
+vmCvar_t	hud_digitalClock_xAlign;
+vmCvar_t	hud_digitalClock_yPos;
+vmCvar_t	hud_digitalClock_xScale;
+vmCvar_t	hud_digitalClock_yScale;
+vmCvar_t	hud_digitalClock_color;
+
+vmCvar_t	hud_ups_show;
+vmCvar_t	hud_ups_align;
+vmCvar_t	hud_ups_style;
+vmCvar_t	hud_ups_posLock;
+vmCvar_t	hud_ups_xPos;
+vmCvar_t	hud_ups_xAlign;
+vmCvar_t	hud_ups_yPos;
+vmCvar_t	hud_ups_xScale;
+vmCvar_t	hud_ups_yScale;
+vmCvar_t	hud_ups_color;
+
+vmCvar_t	hud_briefScore_show;
+vmCvar_t	hud_briefScore_align;
+vmCvar_t	hud_briefScore_style;
+vmCvar_t	hud_briefScore_posLock;
+vmCvar_t	hud_briefScore_xPos;
+vmCvar_t	hud_briefScore_xAlign;
+vmCvar_t	hud_briefScore_yPos;
+vmCvar_t	hud_briefScore_xScale;
+vmCvar_t	hud_briefScore_yScale;
+vmCvar_t	hud_briefScore_colorTeam;
+vmCvar_t	hud_briefScore_colorEnemy;
+vmCvar_t	hud_briefScore_colorRed;
+vmCvar_t	hud_briefScore_colorBlue;
+vmCvar_t	hud_briefScore_colorNum;
+
+vmCvar_t	hud_gameMap_show;
+vmCvar_t	hud_gameMap_align;
+vmCvar_t	hud_gameMap_style;
+vmCvar_t	hud_gameMap_posLock;
+vmCvar_t	hud_gameMap_xPos;
+vmCvar_t	hud_gameMap_xAlign;
+vmCvar_t	hud_gameMap_yPos;
+vmCvar_t	hud_gameMap_xScale;
+vmCvar_t	hud_gameMap_yScale;
+vmCvar_t	hud_gameMap_colorBG;
+vmCvar_t	hud_gameMap_colorPlayer;
+vmCvar_t	hud_gameMap_colorTeam;
+
+vmCvar_t	hud_statusHealth_show;
+vmCvar_t	hud_statusHealth_showZero;
+vmCvar_t	hud_statusHealth_colorType;
+vmCvar_t	hud_statusHealth_align;
+vmCvar_t	hud_statusHealth_style;
+vmCvar_t	hud_statusHealth_posLock;
+vmCvar_t	hud_statusHealth_xPos;
+vmCvar_t	hud_statusHealth_xAlign;
+vmCvar_t	hud_statusHealth_yPos;
+vmCvar_t	hud_statusHealth_xScale;
+vmCvar_t	hud_statusHealth_yScale;
+vmCvar_t	hud_statusHealth_colorNormal;
+vmCvar_t	hud_statusHealth_colorHigh;
+vmCvar_t	hud_statusHealth_colorLow;
+vmCvar_t	hud_statusHealth_colorLowFlash;
+vmCvar_t	hud_statusHealth_colorNormalRed;
+vmCvar_t	hud_statusHealth_colorHighRed;
+vmCvar_t	hud_statusHealth_colorLowRed;
+vmCvar_t	hud_statusHealth_colorLowFlashRed;
+vmCvar_t	hud_statusHealth_colorNormalBlue;
+vmCvar_t	hud_statusHealth_colorHighBlue;
+vmCvar_t	hud_statusHealth_colorLowBlue;
+vmCvar_t	hud_statusHealth_colorLowFlashBlue;
+
+vmCvar_t	hud_statusHealthIcon_show;
+vmCvar_t	hud_statusHealthIcon_showZero;
+vmCvar_t	hud_statusHealthIcon_colorType;
+vmCvar_t	hud_statusHealthIcon_align;
+vmCvar_t	hud_statusHealthIcon_style;
+vmCvar_t	hud_statusHealthIcon_posLock;
+vmCvar_t	hud_statusHealthIcon_xPos;
+vmCvar_t	hud_statusHealthIcon_xAlign;
+vmCvar_t	hud_statusHealthIcon_yPos;
+vmCvar_t	hud_statusHealthIcon_xScale;
+vmCvar_t	hud_statusHealthIcon_yScale;
+vmCvar_t	hud_statusHealthIcon_colorNormal;
+vmCvar_t	hud_statusHealthIcon_colorHigh;
+vmCvar_t	hud_statusHealthIcon_colorLow;
+vmCvar_t	hud_statusHealthIcon_colorLowFlash;
+vmCvar_t	hud_statusHealthIcon_colorNormalRed;
+vmCvar_t	hud_statusHealthIcon_colorHighRed;
+vmCvar_t	hud_statusHealthIcon_colorLowRed;
+vmCvar_t	hud_statusHealthIcon_colorLowFlashRed;
+vmCvar_t	hud_statusHealthIcon_colorNormalBlue;
+vmCvar_t	hud_statusHealthIcon_colorHighBlue;
+vmCvar_t	hud_statusHealthIcon_colorLowBlue;
+vmCvar_t	hud_statusHealthIcon_colorLowFlashBlue;
+
+vmCvar_t	hud_statusArmor_show;
+vmCvar_t	hud_statusArmor_showZero;
+vmCvar_t	hud_statusArmor_colorBreakPoint;
+vmCvar_t	hud_statusArmor_colorType;
+vmCvar_t	hud_statusArmor_align;
+vmCvar_t	hud_statusArmor_style;
+vmCvar_t	hud_statusArmor_posLock;
+vmCvar_t	hud_statusArmor_xPos;
+vmCvar_t	hud_statusArmor_xAlign;
+vmCvar_t	hud_statusArmor_yPos;
+vmCvar_t	hud_statusArmor_xScale;
+vmCvar_t	hud_statusArmor_yScale;
+vmCvar_t	hud_statusArmor_color;
+vmCvar_t	hud_statusArmor_colorBreak;
+vmCvar_t	hud_statusArmor_colorRed;
+vmCvar_t	hud_statusArmor_colorRedBreak;
+vmCvar_t	hud_statusArmor_colorBlue;
+vmCvar_t	hud_statusArmor_colorBlueBreak;
+vmCvar_t	hud_statusArmor_colorTier1;
+vmCvar_t	hud_statusArmor_colorTier1Break;
+vmCvar_t	hud_statusArmor_colorTier2;
+vmCvar_t	hud_statusArmor_colorTier2Break;
+vmCvar_t	hud_statusArmor_colorTier3;
+vmCvar_t	hud_statusArmor_colorTier3Break;
+
+vmCvar_t	hud_statusArmorIcon_show;
+vmCvar_t	hud_statusArmorIcon_showZero;
+vmCvar_t	hud_statusArmorIcon_colorType;
+vmCvar_t	hud_statusArmorIcon_align;
+vmCvar_t	hud_statusArmorIcon_style;
+vmCvar_t	hud_statusArmorIcon_posLock;
+vmCvar_t	hud_statusArmorIcon_xPos;
+vmCvar_t	hud_statusArmorIcon_xAlign;
+vmCvar_t	hud_statusArmorIcon_yPos;
+vmCvar_t	hud_statusArmorIcon_xScale;
+vmCvar_t	hud_statusArmorIcon_yScale;
+vmCvar_t	hud_statusArmorIcon_color;
+vmCvar_t	hud_statusArmorIcon_colorRed;
+vmCvar_t	hud_statusArmorIcon_colorBlue;
+vmCvar_t	hud_statusArmorIcon_colorTier1;
+vmCvar_t	hud_statusArmorIcon_colorTier2;
+vmCvar_t	hud_statusArmorIcon_colorTier3;
+
+vmCvar_t	hud_statusArmorTier_show;
+vmCvar_t	hud_statusArmorTier_showZero;
+vmCvar_t	hud_statusArmorTier_colorType;
+vmCvar_t	hud_statusArmorTier_type;
+vmCvar_t	hud_statusArmorTier_align;
+vmCvar_t	hud_statusArmorTier_style;
+vmCvar_t	hud_statusArmorTier_posLock;
+vmCvar_t	hud_statusArmorTier_xPos;
+vmCvar_t	hud_statusArmorTier_xAlign;
+vmCvar_t	hud_statusArmorTier_yPos;
+vmCvar_t	hud_statusArmorTier_xScale;
+vmCvar_t	hud_statusArmorTier_yScale;
+vmCvar_t	hud_statusArmorTier_color;
+vmCvar_t	hud_statusArmorTier_colorRed;
+vmCvar_t	hud_statusArmorTier_colorBlue;
+vmCvar_t	hud_statusArmorTier_colorTier1;
+vmCvar_t	hud_statusArmorTier_colorTier2;
+vmCvar_t	hud_statusArmorTier_colorTier3;
+
+vmCvar_t	hud_statusLevel_show;
+vmCvar_t	hud_statusLevel_colorType;
+vmCvar_t	hud_statusLevel_type;
+vmCvar_t	hud_statusLevel_align;
+vmCvar_t	hud_statusLevel_style;
+vmCvar_t	hud_statusLevel_posLock;
+vmCvar_t	hud_statusLevel_xPos;
+vmCvar_t	hud_statusLevel_xAlign;
+vmCvar_t	hud_statusLevel_yPos;
+vmCvar_t	hud_statusLevel_xScale;
+vmCvar_t	hud_statusLevel_yScale;
+vmCvar_t	hud_statusLevel_color;
+vmCvar_t	hud_statusLevel_colorRed;
+vmCvar_t	hud_statusLevel_colorBlue;
+
+vmCvar_t	hud_statusPhysics_show;
+vmCvar_t	hud_statusPhysics_colorType;
+vmCvar_t	hud_statusPhysics_type;
+vmCvar_t	hud_statusPhysics_align;
+vmCvar_t	hud_statusPhysics_style;
+vmCvar_t	hud_statusPhysics_posLock;
+vmCvar_t	hud_statusPhysics_xPos;
+vmCvar_t	hud_statusPhysics_xAlign;
+vmCvar_t	hud_statusPhysics_yPos;
+vmCvar_t	hud_statusPhysics_xScale;
+vmCvar_t	hud_statusPhysics_yScale;
+vmCvar_t	hud_statusPhysics_color;
+vmCvar_t	hud_statusPhysics_colorRed;
+vmCvar_t	hud_statusPhysics_colorBlue;
+
+vmCvar_t	hud_statusKeycards_show;
+vmCvar_t	hud_statusKeycards_align;
+vmCvar_t	hud_statusKeycards_style;
+vmCvar_t	hud_statusKeycards_posLock;
+vmCvar_t	hud_statusKeycards_xPos;
+vmCvar_t	hud_statusKeycards_xAlign;
+vmCvar_t	hud_statusKeycards_yPos;
+vmCvar_t	hud_statusKeycards_xScale;
+vmCvar_t	hud_statusKeycards_yScale;
+
+vmCvar_t	hud_statusHoldable_show;
+vmCvar_t	hud_statusHoldable_align;
+vmCvar_t	hud_statusHoldable_style;
+vmCvar_t	hud_statusHoldable_posLock;
+vmCvar_t	hud_statusHoldable_xPos;
+vmCvar_t	hud_statusHoldable_xAlign;
+vmCvar_t	hud_statusHoldable_yPos;
+vmCvar_t	hud_statusHoldable_xScale;
+vmCvar_t	hud_statusHoldable_yScale;
+
+vmCvar_t	hud_statusItem_show;
+vmCvar_t	hud_statusItem_align;
+vmCvar_t	hud_statusItem_style;
+vmCvar_t	hud_statusItem_posLock;
+vmCvar_t	hud_statusItem_xPos;
+vmCvar_t	hud_statusItem_xAlign;
+vmCvar_t	hud_statusItem_yPos;
+vmCvar_t	hud_statusItem_xScale;
+vmCvar_t	hud_statusItem_yScale;
+
+vmCvar_t	hud_weaponBar_show;
+vmCvar_t	hud_weaponBar_align;
+vmCvar_t	hud_weaponBar_style;
+vmCvar_t	hud_weaponBar_angle;
+//vmCvar_t	hud_weaponBar_posLock;
+vmCvar_t	hud_weaponBar_xPos;
+vmCvar_t	hud_weaponBar_xAlign;
+vmCvar_t	hud_weaponBar_yPos;
+//vmCvar_t	hud_weaponBar_xScale;
+//vmCvar_t	hud_weaponBar_yScale;
+vmCvar_t	hud_weaponBar_colorNormal;
+vmCvar_t	hud_weaponBar_colorLow;
+vmCvar_t	hud_weaponBar_colorDead;
+//vmCvar_t	hud_weaponBar_colorText;
+//vmCvar_t	hud_weaponBar_colorTextDead;
+vmCvar_t	hud_weaponBar_colorFlash1;
+vmCvar_t	hud_weaponBar_colorFlash2;
+
+vmCvar_t	hud_ammoBar_show;
+vmCvar_t	hud_ammoBar_align;
+vmCvar_t	hud_ammoBar_style;
+vmCvar_t	hud_ammoBar_angle;
+vmCvar_t	hud_ammoBar_xPos;
+vmCvar_t	hud_ammoBar_xAlign;
+vmCvar_t	hud_ammoBar_yPos;
+vmCvar_t	hud_ammoBar_colorNormal;
+vmCvar_t	hud_ammoBar_colorLow;
+vmCvar_t	hud_ammoBar_colorDead;
+vmCvar_t	hud_ammoBar_colorText;
+vmCvar_t	hud_ammoBar_colorTextDead;
+vmCvar_t	hud_ammoBar_colorFlash1;
+vmCvar_t	hud_ammoBar_colorFlash2;
+
+vmCvar_t	hud_voteStatus_show;
+vmCvar_t	hud_voteStatus_align;
+vmCvar_t	hud_voteStatus_style;
+vmCvar_t	hud_voteStatus_posLock;
+vmCvar_t	hud_voteStatus_xPos;
+vmCvar_t	hud_voteStatus_xAlign;
+vmCvar_t	hud_voteStatus_yPos;
+vmCvar_t	hud_voteStatus_xScale;
+vmCvar_t	hud_voteStatus_yScale;
+
+vmCvar_t	hud_teamOverlay_show;
+vmCvar_t	hud_teamOverlay_xPos;
+vmCvar_t	hud_teamOverlay_yPos;
+
+vmCvar_t	hud_chatBoxRoute;
+vmCvar_t	hud_teamChatBoxRoute;
+vmCvar_t	hud_notifyBoxRoute;
+vmCvar_t	hud_notifyBoxFilter;
+
+vmCvar_t	hud_infoBox0_show;
+vmCvar_t	hud_infoBox0_xPos;
+vmCvar_t	hud_infoBox0_xAlign;
+vmCvar_t	hud_infoBox0_yPos;
+vmCvar_t	hud_infoBox0_lines;
+vmCvar_t	hud_infoBox0_dir;
+vmCvar_t	hud_infoBox0_scale;
+
+vmCvar_t	hud_infoBox1_show;
+vmCvar_t	hud_infoBox1_xPos;
+vmCvar_t	hud_infoBox1_xAlign;
+vmCvar_t	hud_infoBox1_yPos;
+vmCvar_t	hud_infoBox1_lines;
+vmCvar_t	hud_infoBox1_dir;
+vmCvar_t	hud_infoBox1_scale;
+
+vmCvar_t	hud_infoBox2_show;
+vmCvar_t	hud_infoBox2_xPos;
+vmCvar_t	hud_infoBox2_xAlign;
+vmCvar_t	hud_infoBox2_yPos;
+vmCvar_t	hud_infoBox2_lines;
+vmCvar_t	hud_infoBox2_dir;
+vmCvar_t	hud_infoBox2_scale;
+
+vmCvar_t	hud_infoBox3_show;
+vmCvar_t	hud_infoBox3_xPos;
+vmCvar_t	hud_infoBox3_xAlign;
+vmCvar_t	hud_infoBox3_yPos;
+vmCvar_t	hud_infoBox3_lines;
+vmCvar_t	hud_infoBox3_dir;
+vmCvar_t	hud_infoBox3_scale;
+
+vmCvar_t	hud_fragInfo_show;
+vmCvar_t	hud_fragInfo_xPos;
+vmCvar_t	hud_fragInfo_xAlign;
+vmCvar_t	hud_fragInfo_yPos;
+vmCvar_t	hud_fragInfo_lines;
+vmCvar_t	hud_fragInfo_dir;
+vmCvar_t	hud_fragInfo_align;
+vmCvar_t	hud_fragInfo_scale;
+
+vmCvar_t	hud_filterColors;
+vmCvar_t	hud_aspectRatioScale;
+vmCvar_t	hud_autoRatioScale;
+vmCvar_t	hud_overscanAdjust;
+
+vmCvar_t	hud_iUnderstand;
+vmCvar_t	hud_showRulesetInFreeFloat;
+
+vmCvar_t	hud_useEmoticons;
+vmCvar_t	hud_hqFontThreshold;
+
+vmCvar_t	hud_customHUD;
+
 #ifdef MISSIONPACK
-vmCvar_t 	cg_redTeamName;
-vmCvar_t 	cg_blueTeamName;
+vmCvar_t	cg_redTeamName;
+vmCvar_t	cg_blueTeamName;
 vmCvar_t	cg_currentSelectedPlayer;
 vmCvar_t	cg_currentSelectedPlayerName;
 vmCvar_t	cg_singlePlayer;
@@ -198,6 +581,21 @@ vmCvar_t	cg_recordSPDemoName;
 vmCvar_t	cg_obeliskRespawnDelay;
 #endif
 
+//unlagged - client options
+vmCvar_t	cg_delag;
+//vmCvar_t	cg_debugDelag;
+//vmCvar_t	cg_drawBBox;
+vmCvar_t	cg_cmdTimeNudge;
+vmCvar_t	sv_fps;
+vmCvar_t	cg_projectileNudge;
+vmCvar_t	cg_optimizePrediction;
+vmCvar_t	cl_timeNudge;
+//vmCvar_t	cg_latentSnaps;
+//vmCvar_t	cg_latentCmds;
+//vmCvar_t	cg_plOut;
+//unlagged - client options
+
+
 typedef struct {
 	vmCvar_t	*vmCvar;
 	char		*cvarName;
@@ -207,10 +605,16 @@ typedef struct {
 
 static cvarTable_t cvarTable[] = {
 	{ &cg_ignore, "cg_ignore", "0", 0 },	// used for debugging
-	{ &cg_autoswitch, "cg_autoswitch", "1", CVAR_ARCHIVE },
+	{ &cg_autoswitch, "cg_autoswitch", "0", CVAR_ARCHIVE },
+	{ &cg_switchOnEmpty, "cg_switchOnEmpty", "1", CVAR_ARCHIVE },
+	{ &cg_switchToEmpty, "cg_switchToEmpty", "0", CVAR_ARCHIVE },
+	{ &cg_powerupOverlay, "cg_powerupOverlay", "0.20", CVAR_ARCHIVE },
+	{ &cg_itemPickUpOverlay, "cg_itemPickUpOverlay", "0.20", CVAR_ARCHIVE },
+	{ &cg_intermissionEffect, "cg_intermissionEffect", "1", CVAR_ARCHIVE },
 	{ &cg_drawGun, "cg_drawGun", "1", CVAR_ARCHIVE },
 	{ &cg_zoomFov, "cg_zoomfov", "22.5", CVAR_ARCHIVE },
 	{ &cg_fov, "cg_fov", "90", CVAR_ARCHIVE },
+	{ &cg_fovMode, "cg_fovMode", "0", CVAR_ARCHIVE }, // mmp
 	{ &cg_viewsize, "cg_viewsize", "100", CVAR_ARCHIVE },
 	{ &cg_shadows, "cg_shadows", "1", CVAR_ARCHIVE  },
 	{ &cg_gibs, "cg_gibs", "1", CVAR_ARCHIVE  },
@@ -225,26 +629,26 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_drawAttacker, "cg_drawAttacker", "1", CVAR_ARCHIVE  },
 	{ &cg_drawCrosshair, "cg_drawCrosshair", "4", CVAR_ARCHIVE },
 	{ &cg_drawCrosshairNames, "cg_drawCrosshairNames", "1", CVAR_ARCHIVE },
-	{ &cg_drawRewards, "cg_drawRewards", "1", CVAR_ARCHIVE },
+	{ &cg_drawRewards, /*"cg_drawRewards"*/ "", "0", /*CVAR_ARCHIVE*/ 0 },
 	{ &cg_crosshairSize, "cg_crosshairSize", "24", CVAR_ARCHIVE },
 	{ &cg_crosshairHealth, "cg_crosshairHealth", "1", CVAR_ARCHIVE },
 	{ &cg_crosshairX, "cg_crosshairX", "0", CVAR_ARCHIVE },
 	{ &cg_crosshairY, "cg_crosshairY", "0", CVAR_ARCHIVE },
 	{ &cg_brassTime, "cg_brassTime", "2500", CVAR_ARCHIVE },
-	{ &cg_simpleItems, "cg_simpleItems", "0", CVAR_ARCHIVE },
+	{ &cg_simpleItems, "cg_simpleItems", "0", CVAR_CHEAT },
 	{ &cg_addMarks, "cg_marks", "1", CVAR_ARCHIVE },
 	{ &cg_lagometer, "cg_lagometer", "1", CVAR_ARCHIVE },
 	{ &cg_railTrailTime, "cg_railTrailTime", "400", CVAR_ARCHIVE  },
 	{ &cg_gun_x, "cg_gunX", "0", CVAR_CHEAT },
 	{ &cg_gun_y, "cg_gunY", "0", CVAR_CHEAT },
 	{ &cg_gun_z, "cg_gunZ", "0", CVAR_CHEAT },
-	{ &cg_centertime, "cg_centertime", "3", CVAR_CHEAT },
-	{ &cg_runpitch, "cg_runpitch", "0.002", CVAR_ARCHIVE},
-	{ &cg_runroll, "cg_runroll", "0.005", CVAR_ARCHIVE },
-	{ &cg_bobup , "cg_bobup", "0.005", CVAR_CHEAT },
-	{ &cg_bobpitch, "cg_bobpitch", "0.002", CVAR_ARCHIVE },
-	{ &cg_bobroll, "cg_bobroll", "0.002", CVAR_ARCHIVE },
-	{ &cg_swingSpeed, "cg_swingSpeed", "0.3", CVAR_CHEAT },
+	{ &cg_centertime, "cg_centertime", "3", /*CVAR_CHEAT*/ 0 }, // 3
+	{ &cg_runpitch, "cg_runpitch", "0.002", CVAR_ARCHIVE}, // 0.002
+	{ &cg_runroll, "cg_runroll", "0.005", CVAR_ARCHIVE }, // 0.005
+	{ &cg_bobup , "cg_bobup", "0.005", /*CVAR_CHEAT*/ 0 }, // 0.005
+	{ &cg_bobpitch, "cg_bobpitch", "0.002", CVAR_ARCHIVE }, // 0.002
+	{ &cg_bobroll, "cg_bobroll", "0.002", CVAR_ARCHIVE }, // 0.002
+	{ &cg_swingSpeed, "cg_swingSpeed", "0.3", /*CVAR_CHEAT*/ 0 },
 	{ &cg_animSpeed, "cg_animspeed", "1", CVAR_CHEAT },
 	{ &cg_debugAnim, "cg_debuganim", "0", CVAR_CHEAT },
 	{ &cg_debugPosition, "cg_debugposition", "0", CVAR_CHEAT },
@@ -257,66 +661,463 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_tracerChance, "cg_tracerchance", "0.4", CVAR_CHEAT },
 	{ &cg_tracerWidth, "cg_tracerwidth", "1", CVAR_CHEAT },
 	{ &cg_tracerLength, "cg_tracerlength", "100", CVAR_CHEAT },
-	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "40", CVAR_CHEAT },
-	{ &cg_thirdPersonAngle, "cg_thirdPersonAngle", "0", CVAR_CHEAT },
-	{ &cg_thirdPerson, "cg_thirdPerson", "0", 0 },
+	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "40", CVAR_CHEAT /*0*/ },
+	{ &cg_thirdPersonAngle, "cg_thirdPersonAngle", "0", CVAR_CHEAT /*0*/ },
+	{ &cg_thirdPerson, "cg_thirdPerson", "0", CVAR_CHEAT /*0*/ },
 	{ &cg_teamChatTime, "cg_teamChatTime", "3000", CVAR_ARCHIVE  },
 	{ &cg_teamChatHeight, "cg_teamChatHeight", "0", CVAR_ARCHIVE  },
-	{ &cg_forceModel, "cg_forceModel", "0", CVAR_ARCHIVE  },
+	{ &cg_forceModel, "cg_forceModel", "0", CVAR_ARCHIVE  }, // this is not really needed
 	{ &cg_predictItems, "cg_predictItems", "1", CVAR_ARCHIVE },
-#ifdef MISSIONPACK
-	{ &cg_deferPlayers, "cg_deferPlayers", "0", CVAR_ARCHIVE },
-#else
+//#ifdef MISSIONPACK
+//	{ &cg_deferPlayers, "cg_deferPlayers", "0", CVAR_ARCHIVE },
+//#else
+//	{ &cg_deferPlayers, "cg_deferPlayers", "1", CVAR_ARCHIVE },
+//#endif
 	{ &cg_deferPlayers, "cg_deferPlayers", "1", CVAR_ARCHIVE },
-#endif
 	{ &cg_drawTeamOverlay, "cg_drawTeamOverlay", "0", CVAR_ARCHIVE },
 	{ &cg_teamOverlayUserinfo, "teamoverlay", "0", CVAR_ROM | CVAR_USERINFO },
 	{ &cg_stats, "cg_stats", "0", 0 },
 	{ &cg_drawFriend, "cg_drawFriend", "1", CVAR_ARCHIVE },
 	{ &cg_teamChatsOnly, "cg_teamChatsOnly", "0", CVAR_ARCHIVE },
-#ifdef MISSIONPACK
-	{ &cg_noVoiceChats, "cg_noVoiceChats", "0", CVAR_ARCHIVE },
-	{ &cg_noVoiceText, "cg_noVoiceText", "0", CVAR_ARCHIVE },
-#endif
+//#ifdef MISSIONPACK
+//	{ &cg_noVoiceChats, "cg_noVoiceChats", "0", CVAR_ARCHIVE },
+//	{ &cg_noVoiceText, "cg_noVoiceText", "0", CVAR_ARCHIVE },
+//#endif
 	// the following variables are created in other parts of the system,
 	// but we also reference them here
 	{ &cg_buildScript, "com_buildScript", "0", 0 },	// force loading of all possible data amd error on failures
 	{ &cg_paused, "cl_paused", "0", CVAR_ROM },
 	{ &cg_blood, "com_blood", "1", CVAR_ARCHIVE },
 	{ &cg_synchronousClients, "g_synchronousClients", "0", CVAR_SYSTEMINFO },
-#ifdef MISSIONPACK
-	{ &cg_redTeamName, "g_redteam", DEFAULT_REDTEAM_NAME, CVAR_ARCHIVE | CVAR_SERVERINFO | CVAR_USERINFO },
-	{ &cg_blueTeamName, "g_blueteam", DEFAULT_BLUETEAM_NAME, CVAR_ARCHIVE | CVAR_SERVERINFO | CVAR_USERINFO },
-	{ &cg_currentSelectedPlayer, "cg_currentSelectedPlayer", "0", CVAR_ARCHIVE},
-	{ &cg_currentSelectedPlayerName, "cg_currentSelectedPlayerName", "", CVAR_ARCHIVE},
-	{ &cg_singlePlayer, "ui_singlePlayerActive", "0", CVAR_USERINFO},
-	{ &cg_enableDust, "g_enableDust", "0", CVAR_SERVERINFO},
-	{ &cg_enableBreath, "g_enableBreath", "0", CVAR_SERVERINFO},
-	{ &cg_singlePlayerActive, "ui_singlePlayerActive", "0", CVAR_USERINFO},
-	{ &cg_recordSPDemo, "ui_recordSPDemo", "0", CVAR_ARCHIVE},
-	{ &cg_recordSPDemoName, "ui_recordSPDemoName", "", CVAR_ARCHIVE},
-	{ &cg_obeliskRespawnDelay, "g_obeliskRespawnDelay", "10", CVAR_SERVERINFO},
-	{ &cg_hudFiles, "cg_hudFiles", "ui/hud.txt", CVAR_ARCHIVE},
-#endif
-	{ &cg_cameraOrbit, "cg_cameraOrbit", "0", CVAR_CHEAT},
+//#ifdef MISSIONPACK
+//	{ &cg_redTeamName, "g_redteam", DEFAULT_REDTEAM_NAME, CVAR_ARCHIVE | CVAR_SERVERINFO | CVAR_USERINFO },
+//	{ &cg_blueTeamName, "g_blueteam", DEFAULT_BLUETEAM_NAME, CVAR_ARCHIVE | CVAR_SERVERINFO | CVAR_USERINFO },
+//	{ &cg_currentSelectedPlayer, "cg_currentSelectedPlayer", "0", CVAR_ARCHIVE},
+//	{ &cg_currentSelectedPlayerName, "cg_currentSelectedPlayerName", "", CVAR_ARCHIVE},
+//	{ &cg_singlePlayer, "ui_singlePlayerActive", "0", CVAR_USERINFO},
+//	{ &cg_enableDust, "g_enableDust", "0", CVAR_SERVERINFO},
+//	{ &cg_enableBreath, "g_enableBreath", "0", CVAR_SERVERINFO},
+//	{ &cg_singlePlayerActive, "ui_singlePlayerActive", "0", CVAR_USERINFO},
+//	{ &cg_recordSPDemo, "ui_recordSPDemo", "0", CVAR_ARCHIVE},
+//	{ &cg_recordSPDemoName, "ui_recordSPDemoName", "", CVAR_ARCHIVE},
+//	{ &cg_obeliskRespawnDelay, "g_obeliskRespawnDelay", "10", CVAR_SERVERINFO},
+//	{ &cg_hudFiles, "cg_hudFiles", "ui/hud.txt", CVAR_ARCHIVE},
+//#endif
+	{ &cg_cameraOrbit, "cg_cameraOrbit", "0", /*CVAR_CHEAT*/ 0},
 	{ &cg_cameraOrbitDelay, "cg_cameraOrbitDelay", "50", CVAR_ARCHIVE},
 	{ &cg_timescaleFadeEnd, "cg_timescaleFadeEnd", "1", 0},
 	{ &cg_timescaleFadeSpeed, "cg_timescaleFadeSpeed", "0", 0},
 	{ &cg_timescale, "timescale", "1", 0},
 	{ &cg_scorePlum, "cg_scorePlums", "1", CVAR_USERINFO | CVAR_ARCHIVE},
-	{ &cg_smoothClients, "cg_smoothClients", "0", CVAR_USERINFO | CVAR_ARCHIVE},
+	{ &cg_damagePlum, "cg_damagePlum", "1", CVAR_USERINFO | CVAR_ARCHIVE}, // only used in warmup
+//unlagged - smooth clients #2
+// this is done server-side now
+//	{ &cg_smoothClients, "cg_smoothClients", "0", CVAR_USERINFO | CVAR_ARCHIVE},
+//unlagged - smooth clients #2
 	{ &cg_cameraMode, "com_cameraMode", "0", CVAR_CHEAT},
 
 	{ &pmove_fixed, "pmove_fixed", "0", CVAR_SYSTEMINFO},
 	{ &pmove_msec, "pmove_msec", "8", CVAR_SYSTEMINFO},
 	{ &cg_noTaunt, "cg_noTaunt", "0", CVAR_ARCHIVE},
 	{ &cg_noProjectileTrail, "cg_noProjectileTrail", "0", CVAR_ARCHIVE},
-	{ &cg_smallFont, "ui_smallFont", "0.25", CVAR_ARCHIVE},
-	{ &cg_bigFont, "ui_bigFont", "0.4", CVAR_ARCHIVE},
-	{ &cg_oldRail, "cg_oldRail", "1", CVAR_ARCHIVE},
-	{ &cg_oldRocket, "cg_oldRocket", "1", CVAR_ARCHIVE},
-	{ &cg_oldPlasma, "cg_oldPlasma", "1", CVAR_ARCHIVE},
-	{ &cg_trueLightning, "cg_trueLightning", "0.0", CVAR_ARCHIVE}
+
+	// these will be removed
+	{ &cg_smallFont, "", "0.25", CVAR_ARCHIVE},
+	{ &cg_bigFont, "", "0.4", CVAR_ARCHIVE},
+	{ &cg_oldRail, "", "1", CVAR_ARCHIVE},
+	{ &cg_oldRocket, "", "1", CVAR_ARCHIVE},
+	{ &cg_oldPlasma, "", "1", CVAR_ARCHIVE},
+
+	{ &cg_damageKick, "cg_damageKick", "1", CVAR_ARCHIVE},
+	{ &cg_chatSound, "cg_chatSound", "1", CVAR_ARCHIVE},
+	{ &cg_teamChatSound, "cg_teamChatSound", "2", CVAR_ARCHIVE},
+
+//unlagged - client options
+	{ &cg_delag, "cg_delag", "1", CVAR_ARCHIVE | CVAR_USERINFO },
+//	{ &cg_debugDelag, "cg_debugDelag", "0", CVAR_USERINFO | CVAR_CHEAT },
+//	{ &cg_drawBBox, "cg_drawBBox", "0", CVAR_CHEAT },
+	{ &cg_cmdTimeNudge, "cg_cmdTimeNudge", "0", CVAR_ARCHIVE | CVAR_USERINFO },
+	// this will be automagically copied from the server
+	{ &sv_fps, "sv_fps", "40", 0 },
+	{ &cg_projectileNudge, "cg_projectileNudge", "0", CVAR_ARCHIVE },
+	{ &cg_optimizePrediction, "cg_optimizePrediction", "1", CVAR_ARCHIVE },
+	{ &cl_timeNudge, "cl_timeNudge", "0", CVAR_ARCHIVE },
+//	{ &cg_latentSnaps, "cg_latentSnaps", "0", CVAR_USERINFO | CVAR_CHEAT },
+//	{ &cg_latentCmds, "cg_latentCmds", "0", CVAR_USERINFO | CVAR_CHEAT },
+//	{ &cg_plOut, "cg_plOut", "0", CVAR_USERINFO | CVAR_CHEAT },
+//unlagged - client options
+
+	{ &cg_trueLightning, "cg_trueLightning", "0.0", CVAR_ARCHIVE},
+
+// mmp
+	{ &cg_hitSound, "cg_hitSound", "1", CVAR_ARCHIVE},
+	{ &cg_killSound, "cg_killSound", "1", CVAR_ARCHIVE},
+	{ &cg_teamKillSound, "cg_teamKillSound", "2", CVAR_ARCHIVE},
+	{ &cg_lumOverlay, "cg_lumOverlay", "1", CVAR_ARCHIVE},
+
+	{ &cg_weaponCycleSkipsBlaster, "cg_weaponCycleSkipsBlaster", "1", CVAR_ARCHIVE},
+
+	{ &cg_placebo, "cg_placebo", "0", CVAR_ARCHIVE}, // placebo...  does it work?  you decide, 2016
+
+// hud
+	{ &hud_scoreboard_pingType, "hud_scoreboard_pingType", "0", CVAR_ARCHIVE},
+	{ &hud_scoreboard_barType, "hud_scoreboard_barType", "0", CVAR_ARCHIVE},
+
+	{ &hud_keys_show, "hud_keys_show", "2", CVAR_ARCHIVE},
+	{ &hud_keys_align, "hud_keys_align", "1", CVAR_ARCHIVE},
+	{ &hud_keys_xPos, "hud_keys_xPos", "0", CVAR_ARCHIVE},
+	{ &hud_keys_xAlign, "hud_keys_xAlign", "1", CVAR_ARCHIVE},
+	{ &hud_keys_yPos, "hud_keys_yPos", "408", CVAR_ARCHIVE},
+	{ &hud_keys_scale, "hud_keys_scale", "1.0", CVAR_ARCHIVE},
+	{ &hud_keys_color, "hud_keys_color", "202020FF", CVAR_ARCHIVE},
+	{ &hud_keys_pressColor, "hud_keys_pressColor", "C0C0C0FF"/*"0066CCFF"*/, CVAR_ARCHIVE},
+
+	{ &hud_testStatus_show, "hud_testStatus_show", "0", CVAR_ARCHIVE},
+
+	{ &hud_crosshair_innerColor, "hud_crosshair_innerColor", "FFFFFFFF", CVAR_ARCHIVE},
+	{ &hud_crosshair_innerType, "hud_crosshair_innerType", "1", CVAR_ARCHIVE},
+	{ &hud_crosshair_outsideColor, "hud_crosshair_outsideColor", "FFFFFF40", CVAR_ARCHIVE},
+	{ &hud_crosshair_outsideType, "hud_crosshair_outsideType", "1", CVAR_ARCHIVE},
+
+	{ &hud_fps_show, "hud_fps_show", "0", CVAR_ARCHIVE},
+	{ &hud_fps_align, "hud_fps_align", "0", CVAR_ARCHIVE},
+	{ &hud_fps_style, "hud_fps_style", "1", CVAR_ARCHIVE},
+	{ &hud_fps_posLock, "hud_fps_posLock", "3", CVAR_ARCHIVE},
+	{ &hud_fps_xPos, "hud_fps_xPos", "0", CVAR_ARCHIVE},
+	{ &hud_fps_xAlign, "hud_fps_xAlign", "0", CVAR_ARCHIVE},
+	{ &hud_fps_yPos, "hud_fps_yPos", "0", CVAR_ARCHIVE},
+	{ &hud_fps_xScale, "hud_fps_xScale", "0.5", CVAR_ARCHIVE},
+	{ &hud_fps_yScale, "hud_fps_yScale", "0.5", CVAR_ARCHIVE},
+	{ &hud_fps_color, "hud_fps_color", "FFFFFFFF", CVAR_ARCHIVE},
+
+	{ &hud_gameClock_show, "hud_gameClock_show", "0", CVAR_ARCHIVE},
+
+	{ &hud_digitalClock_show, "hud_digitalClock_show", "1", CVAR_ARCHIVE},
+	{ &hud_digitalClock_align, "hud_digitalClock_align", "0", CVAR_ARCHIVE},
+	{ &hud_digitalClock_style, "hud_digitalClock_style", "1", CVAR_ARCHIVE},
+	{ &hud_digitalClock_posLock, "hud_digitalClock_posLock", "3", CVAR_ARCHIVE},
+	{ &hud_digitalClock_xPos, "hud_digitalClock_xPos", "0", CVAR_ARCHIVE},
+	{ &hud_digitalClock_xAlign, "hud_digitalClock_xAlign", "0", CVAR_ARCHIVE},
+	{ &hud_digitalClock_yPos, "hud_digitalClock_yPos", "0", CVAR_ARCHIVE},
+	{ &hud_digitalClock_xScale, "hud_digitalClock_xScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_digitalClock_yScale, "hud_digitalClock_yScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_digitalClock_color, "hud_digitalClock_color", "FF00FFFF", CVAR_ARCHIVE},
+
+	{ &hud_ups_show, "hud_ups_show", "0", CVAR_ARCHIVE},
+	{ &hud_ups_align, "hud_ups_align", "0", CVAR_ARCHIVE},
+	{ &hud_ups_style, "hud_ups_style", "1", CVAR_ARCHIVE},
+	{ &hud_ups_posLock, "hud_ups_posLock", "3", CVAR_ARCHIVE},
+	{ &hud_ups_xPos, "hud_ups_xPos", "0", CVAR_ARCHIVE},
+	{ &hud_ups_xAlign, "hud_ups_xAlign", "0", CVAR_ARCHIVE},
+	{ &hud_ups_yPos, "hud_ups_yPos", "0", CVAR_ARCHIVE},
+	{ &hud_ups_xScale, "hud_ups_xScale", "0.5", CVAR_ARCHIVE},
+	{ &hud_ups_yScale, "hud_ups_yScale", "0.5", CVAR_ARCHIVE},
+	{ &hud_ups_color, "hud_ups_color", "FFFFFFFF", CVAR_ARCHIVE},
+
+	{ &hud_briefScore_show, "hud_briefScore_show", "1", CVAR_ARCHIVE},
+	{ &hud_briefScore_align, "hud_briefScore_align", "0", CVAR_ARCHIVE},
+	{ &hud_briefScore_style, "hud_briefScore_style", "1", CVAR_ARCHIVE},
+	{ &hud_briefScore_posLock, "hud_briefScore_posLock", "3", CVAR_ARCHIVE},
+	{ &hud_briefScore_xPos, "hud_briefScore_xPos", "0", CVAR_ARCHIVE},
+	{ &hud_briefScore_xAlign, "hud_briefScore_xAlign", "0", CVAR_ARCHIVE},
+	{ &hud_briefScore_yPos, "hud_briefScore_yPos", "0", CVAR_ARCHIVE},
+	{ &hud_briefScore_xScale, "hud_briefScore_xScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_briefScore_yScale, "hud_briefScore_yScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_briefScore_colorTeam, "hud_briefScore_colorTeam", "0060C0FF", CVAR_ARCHIVE},
+	{ &hud_briefScore_colorEnemy, "hud_briefScore_colorEnemy", "00C000FF", CVAR_ARCHIVE},
+	{ &hud_briefScore_colorRed, "hud_briefScore_colorRed", "FF0000FF", CVAR_ARCHIVE},
+	{ &hud_briefScore_colorBlue, "hud_briefScore_colorBlue", "0000FFFF", CVAR_ARCHIVE},
+	{ &hud_briefScore_colorNum, "hud_briefScore_colorNum", "FFFFFFFF", CVAR_ARCHIVE},
+
+	{ &hud_gameMap_show, "hud_gameMap_show", "1", CVAR_ARCHIVE},
+	{ &hud_gameMap_align, "hud_gameMap_align", "0", CVAR_ARCHIVE},
+	{ &hud_gameMap_posLock, "hud_gameMap_posLock", "4", CVAR_ARCHIVE},
+	{ &hud_gameMap_xPos, "hud_gameMap_xPos", "0", CVAR_ARCHIVE},
+	{ &hud_gameMap_xAlign, "hud_gameMap_xAlign", "0", CVAR_ARCHIVE},
+	{ &hud_gameMap_yPos, "hud_gameMap_yPos", "0", CVAR_ARCHIVE},
+	{ &hud_gameMap_xScale, "hud_gameMap_xScale", "1", CVAR_ARCHIVE},
+	{ &hud_gameMap_yScale, "hud_gameMap_yScale", "1", CVAR_ARCHIVE},
+	{ &hud_gameMap_colorBG, "hud_gameMap_colorBG", "00CC6680", CVAR_ARCHIVE},
+	{ &hud_gameMap_colorPlayer, "hud_gameMap_colorPlayer", "FFFFFFFF", CVAR_ARCHIVE},
+	{ &hud_gameMap_colorTeam, "hud_gameMap_colorTeam", "FFFFFFFF", CVAR_ARCHIVE},
+
+	{ &hud_statusHealth_show, "hud_statusHealth_show", "1", CVAR_ARCHIVE},
+	{ &hud_statusHealth_showZero, "hud_statusHealth_showZero", "1", CVAR_ARCHIVE},
+	{ &hud_statusHealth_colorType, "hud_statusHealth_colorType", "1", CVAR_ARCHIVE},
+	{ &hud_statusHealth_align, "hud_statusHealth_align", "2", CVAR_ARCHIVE},
+	{ &hud_statusHealth_style, "hud_statusHealth_style", "1", CVAR_ARCHIVE},
+	{ &hud_statusHealth_posLock, "hud_statusHealth_posLock", "0", CVAR_ARCHIVE},
+	{ &hud_statusHealth_xPos, "hud_statusHealth_xPos", "-32", CVAR_ARCHIVE},
+	{ &hud_statusHealth_xAlign, "hud_statusHealth_xAlign", "1", CVAR_ARCHIVE},
+	{ &hud_statusHealth_yPos, "hud_statusHealth_yPos", "456", CVAR_ARCHIVE},
+	{ &hud_statusHealth_xScale, "hud_statusHealth_xScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_statusHealth_yScale, "hud_statusHealth_yScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_statusHealth_colorNormal, "hud_statusHealth_colorNormal", "0080FFFF", CVAR_ARCHIVE},
+	{ &hud_statusHealth_colorHigh, "hud_statusHealth_colorHigh", "FFFFFFFF", CVAR_ARCHIVE},
+	{ &hud_statusHealth_colorLow, "hud_statusHealth_colorLow", "0080FFFF", CVAR_ARCHIVE},
+	{ &hud_statusHealth_colorLowFlash, "hud_statusHealth_colorLowFlash", "00000000", CVAR_ARCHIVE},
+	{ &hud_statusHealth_colorNormalRed, "hud_statusHealth_colorNormalRed", "FF8000FF", CVAR_ARCHIVE},
+	{ &hud_statusHealth_colorHighRed, "hud_statusHealth_colorHighRed", "FFFFFFFF", CVAR_ARCHIVE},
+	{ &hud_statusHealth_colorLowRed, "hud_statusHealth_colorLowRed", "FF8000FF", CVAR_ARCHIVE},
+	{ &hud_statusHealth_colorLowFlashRed, "hud_statusHealth_colorLowFlashRed", "00000000", CVAR_ARCHIVE},
+	{ &hud_statusHealth_colorNormalBlue, "hud_statusHealth_colorNormalBlue", "0080FFFF", CVAR_ARCHIVE},
+	{ &hud_statusHealth_colorHighBlue, "hud_statusHealth_colorHighBlue", "FFFFFFFF", CVAR_ARCHIVE},
+	{ &hud_statusHealth_colorLowBlue, "hud_statusHealth_colorLowBlue", "0080FFFF", CVAR_ARCHIVE},
+	{ &hud_statusHealth_colorLowFlashBlue, "hud_statusHealth_colorLowFlashBlue", "00000000", CVAR_ARCHIVE},
+
+	{ &hud_statusHealthIcon_show, "hud_statusHealthIcon_show", "1", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_showZero, "hud_statusHealthIcon_showZero", "1", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_colorType, "hud_statusHealthIcon_colorType", "1", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_align, "hud_statusHealthIcon_align", "2", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_style, "hud_statusHealthIcon_style", "1", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_posLock, "hud_statusHealthIcon_posLock", "0", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_xPos, "hud_statusHealthIcon_xPos", "-16", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_xAlign, "hud_statusHealthIcon_xAlign", "1", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_yPos, "hud_statusHealthIcon_yPos", "456", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_xScale, "hud_statusHealthIcon_xScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_yScale, "hud_statusHealthIcon_yScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_colorNormal, "hud_statusHealthIcon_colorNormal", "0000FFFF", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_colorHigh, "hud_statusHealthIcon_colorHigh", "0000FFFF", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_colorLow, "hud_statusHealthIcon_colorLow", "0000FFFF", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_colorLowFlash, "hud_statusHealthIcon_colorLowFlash", "0000FFFF", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_colorNormalRed, "hud_statusHealthIcon_colorNormalRed", "FF0000FF", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_colorHighRed, "hud_statusHealthIcon_colorHighRed", "FF0000FF", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_colorLowRed, "hud_statusHealthIcon_colorLowRed", "FF0000FF", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_colorLowFlashRed, "hud_statusHealthIcon_colorLowFlashRed", "FF0000FF", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_colorNormalBlue, "hud_statusHealthIcon_colorNormalBlue", "0000FFFF", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_colorHighBlue, "hud_statusHealthIcon_colorHighBlue", "0000FFFF", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_colorLowBlue, "hud_statusHealthIcon_colorLowBlue", "0000FFFF", CVAR_ARCHIVE},
+	{ &hud_statusHealthIcon_colorLowFlashBlue, "hud_statusHealthIcon_colorLowFlashBlue", "0000FFFF", CVAR_ARCHIVE},
+
+	{ &hud_statusArmor_show, "hud_statusArmor_show", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmor_showZero, "hud_statusArmor_showZero", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmor_colorBreakPoint, "hud_statusArmor_colorBreakPoint", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmor_colorType, "hud_statusArmor_colorType", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmor_align, "hud_statusArmor_align", "0", CVAR_ARCHIVE},
+	{ &hud_statusArmor_style, "hud_statusArmor_style", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmor_posLock, "hud_statusArmor_posLock", "0", CVAR_ARCHIVE},
+	{ &hud_statusArmor_xPos, "hud_statusArmor_xPos", "32", CVAR_ARCHIVE},
+	{ &hud_statusArmor_xAlign, "hud_statusArmor_xAlign", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmor_yPos, "hud_statusArmor_yPos", "456", CVAR_ARCHIVE},
+	{ &hud_statusArmor_xScale, "hud_statusArmor_xScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_statusArmor_yScale, "hud_statusArmor_yScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_statusArmor_color, "hud_statusArmor_color", "0080FFFF", CVAR_ARCHIVE},
+	{ &hud_statusArmor_colorBreak, "hud_statusArmor_colorBreak", "FFFFFFFF", CVAR_ARCHIVE},
+	{ &hud_statusArmor_colorRed, "hud_statusArmor_colorRed", "FF8000FF", CVAR_ARCHIVE},
+	{ &hud_statusArmor_colorRedBreak, "hud_statusArmor_colorRedBreak", "FFFFFFFF", CVAR_ARCHIVE},
+	{ &hud_statusArmor_colorBlue, "hud_statusArmor_colorBlue", "0080FFFF", CVAR_ARCHIVE},
+	{ &hud_statusArmor_colorBlueBreak, "hud_statusArmor_colorBlueBreak", "FFFFFFFF", CVAR_ARCHIVE},
+	{ &hud_statusArmor_colorTier1, "hud_statusArmor_colorTier1", "00FF00FF", CVAR_ARCHIVE},
+	{ &hud_statusArmor_colorTier1Break, "hud_statusArmor_colorTier1Break", "40FF80FF", CVAR_ARCHIVE},
+	{ &hud_statusArmor_colorTier2, "hud_statusArmor_colorTier2", "FFFF00FF", CVAR_ARCHIVE},
+	{ &hud_statusArmor_colorTier2Break, "hud_statusArmor_colorTier2Break", "FFFF80FF", CVAR_ARCHIVE},
+	{ &hud_statusArmor_colorTier3, "hud_statusArmor_colorTier3", "FF0000FF", CVAR_ARCHIVE},
+	{ &hud_statusArmor_colorTier3Break, "hud_statusArmor_colorTier3Break", "FF8040FF", CVAR_ARCHIVE},
+
+	{ &hud_statusArmorIcon_show, "hud_statusArmorIcon_show", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_showZero, "hud_statusArmorIcon_showZero", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_colorType, "hud_statusArmorIcon_colorType", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_align, "hud_statusArmorIcon_align", "0", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_style, "hud_statusArmorIcon_style", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_posLock, "hud_statusArmorIcon_posLock", "0", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_xPos, "hud_statusArmorIcon_xPos", "16", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_xAlign, "hud_statusArmorIcon_xAlign", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_yPos, "hud_statusArmorIcon_yPos", "456", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_xScale, "hud_statusArmorIcon_xScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_yScale, "hud_statusArmorIcon_yScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_color, "hud_statusArmorIcon_color", "0000FFFF", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_colorRed, "hud_statusArmorIcon_colorRed", "FF0000FF", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_colorBlue, "hud_statusArmorIcon_colorBlue", "0000FFFF", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_colorTier1, "hud_statusArmorIcon_colorTier1", "00FF00FF", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_colorTier2, "hud_statusArmorIcon_colorTier2", "FFFF00FF", CVAR_ARCHIVE},
+	{ &hud_statusArmorIcon_colorTier3, "hud_statusArmorIcon_colorTier3", "FF0000FF", CVAR_ARCHIVE},
+
+	{ &hud_statusArmorTier_show, "hud_statusArmorTier_show", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_showZero, "hud_statusArmorTier_showZero", "0", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_colorType, "hud_statusArmorTier_colorType", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_type, "hud_statusArmorTier_type", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_align, "hud_statusArmorTier_align", "0", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_style, "hud_statusArmorTier_style", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_posLock, "hud_statusArmorTier_posLock", "0", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_xPos, "hud_statusArmorTier_xPos", "16", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_xAlign, "hud_statusArmorTier_xAlign", "1", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_yPos, "hud_statusArmorTier_yPos", "446", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_xScale, "hud_statusArmorTier_xScale", "0.5", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_yScale, "hud_statusArmorTier_yScale", "0.5", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_color, "hud_statusArmorTier_color", "0080FFFF", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_colorRed, "hud_statusArmorTier_colorRed", "FF8000FF", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_colorBlue, "hud_statusArmorTier_colorBlue", "0080FFFF", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_colorTier1, "hud_statusArmorTier_colorTier1", "00FF00FF", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_colorTier2, "hud_statusArmorTier_colorTier2", "FFFF00FF", CVAR_ARCHIVE},
+	{ &hud_statusArmorTier_colorTier3, "hud_statusArmorTier_colorTier3", "FF0000FF", CVAR_ARCHIVE},
+
+	{ &hud_statusLevel_show, "hud_statusLevel_show", "1", CVAR_ARCHIVE},
+	{ &hud_statusLevel_colorType, "hud_statusLevel_colorType", "1", CVAR_ARCHIVE},
+	{ &hud_statusLevel_type, "hud_statusLevel_type", "1", CVAR_ARCHIVE},
+	{ &hud_statusLevel_align, "hud_statusLevel_align", "2", CVAR_ARCHIVE},
+	{ &hud_statusLevel_style, "hud_statusLevel_style", "1", CVAR_ARCHIVE},
+	{ &hud_statusLevel_posLock, "hud_statusLevel_posLock", "0", CVAR_ARCHIVE},
+	{ &hud_statusLevel_xPos, "hud_statusLevel_xPos", "-16", CVAR_ARCHIVE},
+	{ &hud_statusLevel_xAlign, "hud_statusLevel_xAlign", "1", CVAR_ARCHIVE},
+	{ &hud_statusLevel_yPos, "hud_statusLevel_yPos", "446", CVAR_ARCHIVE},
+	{ &hud_statusLevel_xScale, "hud_statusLevel_xScale", "0.5", CVAR_ARCHIVE},
+	{ &hud_statusLevel_yScale, "hud_statusLevel_yScale", "0.5", CVAR_ARCHIVE},
+	{ &hud_statusLevel_color, "hud_statusLevel_color", "0080FFFF", CVAR_ARCHIVE},
+	{ &hud_statusLevel_colorRed, "hud_statusLevel_colorRed", "FF8000FF", CVAR_ARCHIVE},
+	{ &hud_statusLevel_colorBlue, "hud_statusLevel_colorBlue", "0080FFFF", CVAR_ARCHIVE},
+
+	{ &hud_statusPhysics_show, "hud_statusPhysics_show", "1", CVAR_ARCHIVE},
+	{ &hud_statusPhysics_colorType, "hud_statusPhysics_colorType", "1", CVAR_ARCHIVE},
+	{ &hud_statusPhysics_type, "hud_statusPhysics_type", "0", CVAR_ARCHIVE},
+	{ &hud_statusPhysics_align, "hud_statusPhysics_align", "1", CVAR_ARCHIVE},
+	{ &hud_statusPhysics_style, "hud_statusPhysics_style", "1", CVAR_ARCHIVE},
+	{ &hud_statusPhysics_posLock, "hud_statusPhysics_posLock", "0", CVAR_ARCHIVE},
+	{ &hud_statusPhysics_xPos, "hud_statusPhysics_xPos", "0", CVAR_ARCHIVE},
+	{ &hud_statusPhysics_xAlign, "hud_statusPhysics_xAlign", "1", CVAR_ARCHIVE},
+	{ &hud_statusPhysics_yPos, "hud_statusPhysics_yPos", "456", CVAR_ARCHIVE},
+	{ &hud_statusPhysics_xScale, "hud_statusPhysics_xScale", "0.75", CVAR_ARCHIVE},
+	{ &hud_statusPhysics_yScale, "hud_statusPhysics_yScale", "0.75", CVAR_ARCHIVE},
+	{ &hud_statusPhysics_color, "hud_statusPhysics_color", "0080FFFF", CVAR_ARCHIVE},
+	{ &hud_statusPhysics_colorRed, "hud_statusPhysics_colorRed", "FF8000FF", CVAR_ARCHIVE},
+	{ &hud_statusPhysics_colorBlue, "hud_statusPhysics_colorBlue", "0080FFFF", CVAR_ARCHIVE},
+
+	{ &hud_statusKeycards_show, "hud_statusKeycards_show", "1", CVAR_ARCHIVE},
+	{ &hud_statusKeycards_align, "hud_statusKeycards_align", "0", CVAR_ARCHIVE},
+	{ &hud_statusKeycards_style, "hud_statusKeycards_style", "1", CVAR_ARCHIVE},
+	{ &hud_statusKeycards_posLock, "hud_statusKeycards_posLock", "0", CVAR_ARCHIVE},
+	{ &hud_statusKeycards_xPos, "hud_statusKeycards_xPos", "84", CVAR_ARCHIVE},
+	{ &hud_statusKeycards_xAlign, "hud_statusKeycards_xAlign", "1", CVAR_ARCHIVE},
+	{ &hud_statusKeycards_yPos, "hud_statusKeycards_yPos", "456", CVAR_ARCHIVE},
+	{ &hud_statusKeycards_xScale, "hud_statusKeycards_xScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_statusKeycards_yScale, "hud_statusKeycards_yScale", "1.0", CVAR_ARCHIVE},
+
+	{ &hud_statusHoldable_show, "hud_statusHoldable_show", "1", CVAR_ARCHIVE},
+	{ &hud_statusHoldable_align, "hud_statusHoldable_align", "0", CVAR_ARCHIVE},
+	{ &hud_statusHoldable_style, "hud_statusHoldable_style", "1", CVAR_ARCHIVE},
+	{ &hud_statusHoldable_posLock, "hud_statusHoldable_posLock", "0", CVAR_ARCHIVE},
+	{ &hud_statusHoldable_xPos, "hud_statusHoldable_xPos", "120", CVAR_ARCHIVE},
+	{ &hud_statusHoldable_xAlign, "hud_statusHoldable_xAlign", "1", CVAR_ARCHIVE},
+	{ &hud_statusHoldable_yPos, "hud_statusHoldable_yPos", "456", CVAR_ARCHIVE},
+	{ &hud_statusHoldable_xScale, "hud_statusHoldable_xScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_statusHoldable_yScale, "hud_statusHoldable_yScale", "1.0", CVAR_ARCHIVE},
+
+	{ &hud_statusItem_show, "hud_statusItem_show", "1", CVAR_ARCHIVE},
+	{ &hud_statusItem_align, "hud_statusItem_align", "2", CVAR_ARCHIVE},
+	{ &hud_statusItem_style, "hud_statusItem_style", "1", CVAR_ARCHIVE},
+	{ &hud_statusItem_posLock, "hud_statusItem_posLock", "0", CVAR_ARCHIVE},
+	{ &hud_statusItem_xPos, "hud_statusItem_xPos", "-84", CVAR_ARCHIVE},
+	{ &hud_statusItem_xAlign, "hud_statusItem_xAlign", "1", CVAR_ARCHIVE},
+	{ &hud_statusItem_yPos, "hud_statusItem_yPos", "456", CVAR_ARCHIVE},
+	{ &hud_statusItem_xScale, "hud_statusItem_xScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_statusItem_yScale, "hud_statusItem_yScale", "1.0", CVAR_ARCHIVE},
+
+	{ &hud_weaponBar_show, "hud_weaponBar_show", "1", CVAR_ARCHIVE},
+	{ &hud_weaponBar_align, "hud_weaponBar_align", "0", CVAR_ARCHIVE},
+	{ &hud_weaponBar_style, "hud_weaponBar_style", "0", CVAR_ARCHIVE},
+	{ &hud_weaponBar_angle, "hud_weaponBar_angle", "0", CVAR_ARCHIVE},
+	//{ &hud_weaponBar_posLock, "", "0", CVAR_ARCHIVE},
+	{ &hud_weaponBar_xPos, "hud_weaponBar_xPos", "4", CVAR_ARCHIVE},
+	{ &hud_weaponBar_xAlign, "hud_weaponBar_xAlign", "0", CVAR_ARCHIVE},
+	{ &hud_weaponBar_yPos, "hud_weaponBar_yPos", "151", CVAR_ARCHIVE}, // 128 when the spreadshot was a regular weapon
+	//{ &hud_weaponBar_xScale, "", "1.0", CVAR_ARCHIVE},
+	//{ &hud_weaponBar_yScale, "", "1.0", CVAR_ARCHIVE},
+	{ &hud_weaponBar_colorNormal, "hud_weaponBar_colorNormal", "0000FF66", CVAR_ARCHIVE},
+	{ &hud_weaponBar_colorLow, "hud_weaponBar_colorLow", "FF000066", CVAR_ARCHIVE},
+	{ &hud_weaponBar_colorDead, "hud_weaponBar_colorDead", "00000066", CVAR_ARCHIVE},
+//	{ &hud_weaponBar_colorText, "hud_weaponBar_colorText", "FFFFFFFF", CVAR_ARCHIVE},
+//	{ &hud_weaponBar_colorTextDead, "hud_weaponBar_colorTextDead", "FF0000FF", CVAR_ARCHIVE},
+	{ &hud_weaponBar_colorFlash1, "hud_weaponBar_colorFlash1", "FFFFFFFF", CVAR_ARCHIVE},
+	{ &hud_weaponBar_colorFlash2, "hud_weaponBar_colorFlash2", "00B0FFFF", CVAR_ARCHIVE},
+
+	{ &hud_ammoBar_show, "hud_ammoBar_show", "1", CVAR_ARCHIVE},
+	{ &hud_ammoBar_align, "hud_ammoBar_align", "0", CVAR_ARCHIVE},
+	{ &hud_ammoBar_style, "hud_ammoBar_style", "0", CVAR_ARCHIVE},
+	{ &hud_ammoBar_angle, "hud_ammoBar_angle", "0", CVAR_ARCHIVE},
+	{ &hud_ammoBar_xPos, "hud_ammoBar_xPos", "24", CVAR_ARCHIVE},
+	{ &hud_ammoBar_xAlign, "hud_ammoBar_xAlign", "0", CVAR_ARCHIVE},
+	{ &hud_ammoBar_yPos, "hud_ammoBar_yPos", "151", CVAR_ARCHIVE}, // 128 when the spreadshot was a regular weapon
+	{ &hud_ammoBar_colorNormal, "hud_ammoBar_colorNormal", "0000FF66", CVAR_ARCHIVE},
+	{ &hud_ammoBar_colorLow, "hud_ammoBar_colorLow", "FF000066", CVAR_ARCHIVE},
+	{ &hud_ammoBar_colorDead, "hud_ammoBar_colorDead", "00000066", CVAR_ARCHIVE},
+	{ &hud_ammoBar_colorText, "hud_ammoBar_colorText", "FFFFFFFF", CVAR_ARCHIVE},
+	{ &hud_ammoBar_colorTextDead, "hud_ammoBar_colorTextDead", "FF0000FF", CVAR_ARCHIVE},
+	{ &hud_ammoBar_colorFlash1, "hud_ammoBar_colorFlash1", "FFFFFFFF", CVAR_ARCHIVE},
+	{ &hud_ammoBar_colorFlash2, "hud_ammoBar_colorFlash2", "00B0FFFF", CVAR_ARCHIVE},
+
+	{ &hud_voteStatus_show, "hud_voteStatus_show", "1", CVAR_ARCHIVE},
+	{ &hud_voteStatus_align, "hud_voteStatus_align", "1", CVAR_ARCHIVE},
+	{ &hud_voteStatus_style, "hud_voteStatus_style", "1", CVAR_ARCHIVE},
+	{ &hud_voteStatus_posLock, "hud_voteStatus_posLock", "0", CVAR_ARCHIVE},
+	{ &hud_voteStatus_xPos, "hud_voteStatus_xPos", "0", CVAR_ARCHIVE},
+	{ &hud_voteStatus_xAlign, "hud_voteStatus_xAlign", "1", CVAR_ARCHIVE},
+	{ &hud_voteStatus_yPos, "hud_voteStatus_yPos", "24", CVAR_ARCHIVE},
+	{ &hud_voteStatus_xScale, "hud_voteStatus_xScale", "0.5", CVAR_ARCHIVE},
+	{ &hud_voteStatus_yScale, "hud_voteStatus_yScale", "0.75", CVAR_ARCHIVE},
+
+	{ &hud_teamOverlay_show, "hud_teamOverlay_show", "0", CVAR_ARCHIVE},
+	{ &hud_teamOverlay_xPos, "hud_teamOverlay_xPos", "320", CVAR_ARCHIVE},
+	{ &hud_teamOverlay_yPos, "hud_teamOverlay_yPos", "240", CVAR_ARCHIVE},
+
+	{ &hud_chatBoxRoute, "hud_chatBoxRoute", "0", 0},
+	{ &hud_teamChatBoxRoute, "hud_teamChatBoxRoute", "1", 0},
+	{ &hud_notifyBoxRoute, "hud_notifyBoxRoute", "2", 0},
+	{ &hud_notifyBoxFilter, "hud_notifyBoxFilter", "1", 0},
+
+	{ &hud_infoBox0_show, "hud_infoBox0_show", "1", CVAR_ARCHIVE},
+	{ &hud_infoBox0_xPos, "hud_infoBox0_xPos", "4", CVAR_ARCHIVE},
+	{ &hud_infoBox0_xAlign, "hud_infoBox0_xAlign", "0", CVAR_ARCHIVE},
+	{ &hud_infoBox0_yPos, "hud_infoBox0_yPos", "404", CVAR_ARCHIVE},
+	{ &hud_infoBox0_lines, "hud_infoBox0_lines", "4", CVAR_ARCHIVE},
+	{ &hud_infoBox0_dir, "hud_infoBox0_dir", "1", CVAR_ARCHIVE},
+	{ &hud_infoBox0_scale, "hud_infoBox0_scale", "0.5", CVAR_ARCHIVE},
+
+	{ &hud_infoBox1_show, "hud_infoBox1_show", "1", CVAR_ARCHIVE},
+	{ &hud_infoBox1_xPos, "hud_infoBox1_xPos", "4", CVAR_ARCHIVE},
+	{ &hud_infoBox1_xAlign, "hud_infoBox1_xAlign", "0", CVAR_ARCHIVE},
+	{ &hud_infoBox1_yPos, "hud_infoBox1_yPos", "372", CVAR_ARCHIVE},
+	{ &hud_infoBox1_lines, "hud_infoBox1_lines", "4", CVAR_ARCHIVE},
+	{ &hud_infoBox1_dir, "hud_infoBox1_dir", "1", CVAR_ARCHIVE},
+	{ &hud_infoBox1_scale, "hud_infoBox1_scale", "0.5", CVAR_ARCHIVE},
+
+	{ &hud_infoBox2_show, "hud_infoBox2_show", "1", CVAR_ARCHIVE},
+	{ &hud_infoBox2_xPos, "hud_infoBox2_xPos", "4", CVAR_ARCHIVE},
+	{ &hud_infoBox2_xAlign, "hud_infoBox2_xAlign", "0", CVAR_ARCHIVE},
+	{ &hud_infoBox2_yPos, "hud_infoBox2_yPos", "4", CVAR_ARCHIVE},
+	{ &hud_infoBox2_lines, "hud_infoBox2_lines", "8", CVAR_ARCHIVE},
+	{ &hud_infoBox2_dir, "hud_infoBox2_dir", "0", CVAR_ARCHIVE},
+	{ &hud_infoBox2_scale, "hud_infoBox2_scale", "0.5", CVAR_ARCHIVE},
+
+	{ &hud_infoBox3_show, "hud_infoBox3_show", "0", CVAR_ARCHIVE},
+	{ &hud_infoBox3_xPos, "hud_infoBox3_xPos", "4", CVAR_ARCHIVE},
+	{ &hud_infoBox3_xAlign, "hud_infoBox3_xAlign", "0", CVAR_ARCHIVE},
+	{ &hud_infoBox3_yPos, "hud_infoBox3_yPos", "128", CVAR_ARCHIVE},
+	{ &hud_infoBox3_lines, "hud_infoBox3_lines", "0", CVAR_ARCHIVE},
+	{ &hud_infoBox3_dir, "hud_infoBox3_dir", "0", CVAR_ARCHIVE},
+	{ &hud_infoBox3_scale, "hud_infoBox3_scale", "0.5", CVAR_ARCHIVE},
+
+	{ &hud_fragInfo_show, "hud_fragInfo_show", "1", CVAR_ARCHIVE},
+	{ &hud_fragInfo_xPos, "hud_fragInfo_xPos", "-4", CVAR_ARCHIVE},
+	{ &hud_fragInfo_xAlign, "hud_fragInfo_xAlign", "2", CVAR_ARCHIVE},
+	{ &hud_fragInfo_yPos, "hud_fragInfo_yPos", "432", CVAR_ARCHIVE},
+	{ &hud_fragInfo_lines, "hud_fragInfo_lines", "8", CVAR_ARCHIVE},
+	{ &hud_fragInfo_dir, "hud_fragInfo_dir", "1", CVAR_ARCHIVE},
+	{ &hud_fragInfo_align, "hud_fragInfo_align", "2", CVAR_ARCHIVE},
+	{ &hud_fragInfo_scale, "hud_fragInfo_scale", "0.5", CVAR_ARCHIVE},
+
+	{ &hud_filterColors, "hud_filterColors", "0", CVAR_ARCHIVE},
+
+	{ &hud_aspectRatioScale, "hud_aspectRatioScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_autoRatioScale, "hud_autoRatioScale", "1", CVAR_ARCHIVE},
+	{ &hud_overscanAdjust, "hud_overscanAdjust", "0", CVAR_ARCHIVE},
+
+	{ &hud_iUnderstand, "hud_iUnderstand", "0", 0}, // will remove when MFA goes out of beta
+
+	{ &hud_showRulesetInFreeFloat, "hud_showRulesetInFreeFloat", "1", 0},
+	{ &hud_useEmoticons, "hud_useEmoticons", "1", 0},
+	{ &hud_hqFontThreshold, "hud_hqFontThreshold", "1.5", 0},
+
+	{ &hud_customHUD, "hud_customHUD", "1", CVAR_ARCHIVE} // will change to 0 when the hardcoded HUD get implemented
+
 //	{ &cg_pmove_fixed, "cg_pmove_fixed", "0", CVAR_USERINFO | CVAR_ARCHIVE }
 };
 
@@ -349,7 +1150,7 @@ void CG_RegisterCvars( void ) {
 	trap_Cvar_Register(NULL, "team_headmodel", DEFAULT_TEAM_HEAD, CVAR_USERINFO | CVAR_ARCHIVE );
 }
 
-/*																																			
+/*
 ===================
 CG_ForceModelChange
 ===================
@@ -378,6 +1179,35 @@ void CG_UpdateCvars( void ) {
 	cvarTable_t	*cv;
 
 	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ ) {
+
+//unlagged - client options
+		// clamp the value between 0 and 999
+		// negative values would suck - people could conceivably shoot other
+		// players *long* after they had left the area, on purpose
+		if ( cv->vmCvar == &cg_cmdTimeNudge ) {
+			CG_Cvar_ClampInt( cv->cvarName, cv->vmCvar, 0, 999 );
+		}
+		// cl_timenudge less than -50 or greater than 50 doesn't actually
+		// do anything more than -50 or 50 (actually the numbers are probably
+		// closer to -30 and 30, but 50 is nice and round-ish)
+		// might as well not feed the myth, eh?
+		else if ( cv->vmCvar == &cl_timeNudge ) {
+			CG_Cvar_ClampInt( cv->cvarName, cv->vmCvar, -50, 50 );
+		}
+		// don't let this go too high - no point
+		/*else if ( cv->vmCvar == &cg_latentSnaps ) {
+			CG_Cvar_ClampInt( cv->cvarName, cv->vmCvar, 0, 10 );
+		}*/
+		// don't let this get too large
+		/*else if ( cv->vmCvar == &cg_latentCmds ) {
+			CG_Cvar_ClampInt( cv->cvarName, cv->vmCvar, 0, MAX_LATENT_CMDS - 1 );
+		}*/
+		// no more than 100% packet loss
+		/*else if ( cv->vmCvar == &cg_plOut ) {
+			CG_Cvar_ClampInt( cv->cvarName, cv->vmCvar, 0, 100 );
+		}*/
+//unlagged - client options
+
 		trap_Cvar_Update( cv->vmCvar );
 	}
 
@@ -508,7 +1338,7 @@ static void CG_RegisterItemSounds( int itemNum ) {
 
 		len = s-start;
 		if (len >= MAX_QPATH || len < 5) {
-			CG_Error( "PrecacheItem: %s has bad precache string", 
+			CG_Error( "PrecacheItem: %s has bad precache string",
 				item->classname);
 			return;
 		}
@@ -549,14 +1379,56 @@ static void CG_RegisterSounds( void ) {
 	cgs.media.oneFragSound = trap_S_RegisterSound( "sound/feedback/1_frag.wav", qtrue );
 	cgs.media.twoFragSound = trap_S_RegisterSound( "sound/feedback/2_frags.wav", qtrue );
 	cgs.media.threeFragSound = trap_S_RegisterSound( "sound/feedback/3_frags.wav", qtrue );
+
+	/*
 	cgs.media.count3Sound = trap_S_RegisterSound( "sound/feedback/three.wav", qtrue );
 	cgs.media.count2Sound = trap_S_RegisterSound( "sound/feedback/two.wav", qtrue );
 	cgs.media.count1Sound = trap_S_RegisterSound( "sound/feedback/one.wav", qtrue );
 	cgs.media.countFightSound = trap_S_RegisterSound( "sound/feedback/fight.wav", qtrue );
 	cgs.media.countPrepareSound = trap_S_RegisterSound( "sound/feedback/prepare.wav", qtrue );
+	*/
+
+	// TODO: allow client to change the announcer dir path
+	cgs.media.count10Sound = trap_S_RegisterSound( "sound/announcer/mmp/count_10.wav", qtrue );
+	cgs.media.count9Sound = trap_S_RegisterSound( "sound/announcer/mmp/count_09.wav", qtrue );
+	cgs.media.count8Sound = trap_S_RegisterSound( "sound/announcer/mmp/count_08.wav", qtrue );
+	cgs.media.count7Sound = trap_S_RegisterSound( "sound/announcer/mmp/count_07.wav", qtrue );
+	cgs.media.count6Sound = trap_S_RegisterSound( "sound/announcer/mmp/count_06.wav", qtrue );
+	cgs.media.count5Sound = trap_S_RegisterSound( "sound/announcer/mmp/count_05.wav", qtrue );
+	cgs.media.count4Sound = trap_S_RegisterSound( "sound/announcer/mmp/count_04.wav", qtrue );
+	cgs.media.count3Sound = trap_S_RegisterSound( "sound/announcer/mmp/count_03.wav", qtrue );
+	cgs.media.count2Sound = trap_S_RegisterSound( "sound/announcer/mmp/count_02.wav", qtrue );
+	cgs.media.count1Sound = trap_S_RegisterSound( "sound/announcer/mmp/count_01.wav", qtrue );
+	cgs.media.countFightSound = trap_S_RegisterSound( "sound/announcer/mmp/fight.wav", qtrue );
+	cgs.media.countEngageSound = trap_S_RegisterSound( "sound/announcer/mmp/engage.wav", qtrue );
+	cgs.media.countPrepareSound = trap_S_RegisterSound( "sound/announcer/mmp/get_ready.wav", qtrue );
+
+	cgs.media.an_shit = trap_S_RegisterSound( "sound/announcer/mmp/shit.wav", qtrue );
+	cgs.media.an_yes = trap_S_RegisterSound( "sound/announcer/mmp/yes.wav", qtrue );
+	cgs.media.an_great = trap_S_RegisterSound( "sound/announcer/mmp/great.wav", qtrue );
+	cgs.media.an_ok = trap_S_RegisterSound( "sound/announcer/mmp/ok.wav", qtrue );
+	cgs.media.an_excellent = trap_S_RegisterSound( "sound/announcer/mmp/excellent.wav", qtrue );
+	cgs.media.an_superb = trap_S_RegisterSound( "sound/announcer/mmp/superb.wav", qtrue );
+	cgs.media.an_keepItUp = trap_S_RegisterSound( "sound/announcer/mmp/keep_it_up.wav", qtrue );
+	cgs.media.an_wonderful = trap_S_RegisterSound( "sound/announcer/mmp/fucking_wonderful.wav", qtrue );
+	cgs.media.an_fuckem = trap_S_RegisterSound( "sound/announcer/mmp/fuck_em_in_the_ass.wav", qtrue );
+	cgs.media.an_youSuck = trap_S_RegisterSound( "sound/announcer/mmp/you_suck.wav", qtrue );
+	cgs.media.an_cBreaker = trap_S_RegisterSound( "sound/announcer/mmp/combo_breaker_2.wav", qtrue );
+	cgs.media.an_perfect = trap_S_RegisterSound( "sound/announcer/mmp/perfect.wav", qtrue );
+
 #ifdef MISSIONPACK
 	cgs.media.countPrepareTeamSound = trap_S_RegisterSound( "sound/feedback/prepare_team.wav", qtrue );
 #endif
+
+	// mmp - misc tone
+	cgs.media.oneMinuteTone = trap_S_RegisterSound( "sound/feedback/1min.wav", qtrue );
+	cgs.media.voteUpdate = trap_S_RegisterSound( "sound/misc/fanfare1.wav", qtrue );
+
+	// soundcall effects
+	cgs.media.toneConnect1 = trap_S_RegisterSound( "sound/feedback/connect1_ff.wav", qtrue );
+	cgs.media.toneDisconnect1 = trap_S_RegisterSound( "sound/feedback/disconnect1_ff.wav", qtrue );
+	cgs.media.timelimit = trap_S_RegisterSound( "sound/feedback/buzzer.wav", qtrue );
+	cgs.media.overtime = trap_S_RegisterSound( "sound/feedback/overtime.wav", qtrue );
 
 	if ( cgs.gametype >= GT_TEAM || cg_buildScript.integer ) {
 
@@ -636,18 +1508,34 @@ static void CG_RegisterSounds( void ) {
 	cgs.media.teleInSound = trap_S_RegisterSound( "sound/world/telein.wav", qfalse );
 	cgs.media.teleOutSound = trap_S_RegisterSound( "sound/world/teleout.wav", qfalse );
 	cgs.media.respawnSound = trap_S_RegisterSound( "sound/items/respawn1.wav", qfalse );
+	cgs.media.superRespawnSound = trap_S_RegisterSound( "sound/items/respawn2.wav", qfalse );
 
 	cgs.media.noAmmoSound = trap_S_RegisterSound( "sound/weapons/noammo.wav", qfalse );
 
-	cgs.media.talkSound = trap_S_RegisterSound( "sound/player/talk.wav", qfalse );
+	for ( i = 0 ; i < NUM_CHATSOUND_TYPES ; i++ ) {
+		cgs.media.chatSound[i] = trap_S_RegisterSound( va("sound/player/chat%c.wav", '1'+i), qfalse );
+	}
+	cgs.media.clockTickSound = trap_S_RegisterSound( "sound/feedback/clocktick.wav", qfalse);
+
+//	cgs.media.talkSound = trap_S_RegisterSound( "sound/player/talk.wav", qfalse );
 	cgs.media.landSound = trap_S_RegisterSound( "sound/player/land1.wav", qfalse);
 
-	cgs.media.hitSound = trap_S_RegisterSound( "sound/feedback/hit.wav", qfalse );
+//	cgs.media.hitSound = trap_S_RegisterSound( "sound/feedback/hit.wav", qfalse );
+	for ( i = 0 ; i < NUM_HITSOUND_TYPES ; i++ ) {
+		cgs.media.hitSound0[i] = trap_S_RegisterSound( va("sound/feedback/hit%c_0.wav", '1'+i), qfalse );
+		cgs.media.hitSound1[i] = trap_S_RegisterSound( va("sound/feedback/hit%c_1.wav", '1'+i), qfalse );
+		cgs.media.hitSound2[i] = trap_S_RegisterSound( va("sound/feedback/hit%c_2.wav", '1'+i), qfalse );
+		cgs.media.hitSound3[i] = trap_S_RegisterSound( va("sound/feedback/hit%c_3.wav", '1'+i), qfalse );
+		cgs.media.hitSound4[i] = trap_S_RegisterSound( va("sound/feedback/hit%c_4.wav", '1'+i), qfalse );
+		cgs.media.killSound[i] = trap_S_RegisterSound( va("sound/feedback/kill%c.wav", '1'+i), qfalse );
+	}
+
 #ifdef MISSIONPACK
 	cgs.media.hitSoundHighArmor = trap_S_RegisterSound( "sound/feedback/hithi.wav", qfalse );
 	cgs.media.hitSoundLowArmor = trap_S_RegisterSound( "sound/feedback/hitlo.wav", qfalse );
 #endif
 
+/*
 	cgs.media.impressiveSound = trap_S_RegisterSound( "sound/feedback/impressive.wav", qtrue );
 	cgs.media.excellentSound = trap_S_RegisterSound( "sound/feedback/excellent.wav", qtrue );
 	cgs.media.deniedSound = trap_S_RegisterSound( "sound/feedback/denied.wav", qtrue );
@@ -669,6 +1557,7 @@ static void CG_RegisterSounds( void ) {
 	cgs.media.votePassed = trap_S_RegisterSound( "sound/feedback/vote_passed.wav", qtrue);
 	cgs.media.voteFailed = trap_S_RegisterSound( "sound/feedback/vote_failed.wav", qtrue);
 #endif
+*/
 
 	cgs.media.watrInSound = trap_S_RegisterSound( "sound/player/watr_in.wav", qfalse);
 	cgs.media.watrOutSound = trap_S_RegisterSound( "sound/player/watr_out.wav", qfalse);
@@ -722,13 +1611,22 @@ static void CG_RegisterSounds( void ) {
 	// FIXME: only needed with item
 	cgs.media.flightSound = trap_S_RegisterSound( "sound/items/flight.wav", qfalse );
 	cgs.media.medkitSound = trap_S_RegisterSound ("sound/items/use_medkit.wav", qfalse);
-	cgs.media.quadSound = trap_S_RegisterSound("sound/items/damage3.wav", qfalse);
+	cgs.media.quadSound = trap_S_RegisterSound("sound/items/quad_act.wav", qfalse);
 	cgs.media.sfx_ric1 = trap_S_RegisterSound ("sound/weapons/machinegun/ric1.wav", qfalse);
 	cgs.media.sfx_ric2 = trap_S_RegisterSound ("sound/weapons/machinegun/ric2.wav", qfalse);
 	cgs.media.sfx_ric3 = trap_S_RegisterSound ("sound/weapons/machinegun/ric3.wav", qfalse);
 	//cgs.media.sfx_railg = trap_S_RegisterSound ("sound/weapons/railgun/railgf1a.wav", qfalse);
-	cgs.media.sfx_rockexp = trap_S_RegisterSound ("sound/weapons/rocket/rocklx1a.wav", qfalse);
-	cgs.media.sfx_plasmaexp = trap_S_RegisterSound ("sound/weapons/plasma/plasmx1a.wav", qfalse);
+	//cgs.media.sfx_rockexp = trap_S_RegisterSound ("sound/weapons/rocket/rocklx1a.wav", qfalse);
+	cgs.media.sfx_rockexp = trap_S_RegisterSound ("sound/action/explosion.wav", qfalse);
+	//cgs.media.sfx_plasmaexp = trap_S_RegisterSound ("sound/weapons/plasma/plasmx1a.wav", qfalse);
+	cgs.media.sfx_blasterexp = trap_S_RegisterSound ("sound/action/clash_light.wav", qfalse);
+	cgs.media.sfx_spreadexp = trap_S_RegisterSound ("sound/action/clash_medium.wav", qfalse);
+	cgs.media.sfx_plasmaexp = trap_S_RegisterSound ("sound/action/clash_heavy.wav", qfalse);
+
+	cgs.media.sfx_exp_hi = trap_S_RegisterSound ("sound/action/explosion_hi.wav", qfalse);
+	cgs.media.sfx_exp_lo = trap_S_RegisterSound ("sound/action/explosion_lo.wav", qfalse);
+	cgs.media.sfx_exp_global = trap_S_RegisterSound ("sound/action/explosion_global.wav", qfalse);
+
 #ifdef MISSIONPACK
 	cgs.media.sfx_proxexp = trap_S_RegisterSound( "sound/weapons/proxmine/wstbexpl.wav" , qfalse);
 	cgs.media.sfx_nghit = trap_S_RegisterSound( "sound/weapons/nailgun/wnalimpd.wav" , qfalse);
@@ -751,7 +1649,7 @@ static void CG_RegisterSounds( void ) {
 #endif
 
 	cgs.media.regenSound = trap_S_RegisterSound("sound/items/regen.wav", qfalse);
-	cgs.media.protectSound = trap_S_RegisterSound("sound/items/protect3.wav", qfalse);
+	cgs.media.protectSound = trap_S_RegisterSound("sound/items/pent_act.wav", qfalse);
 	cgs.media.n_healthSound = trap_S_RegisterSound("sound/items/n_health.wav", qfalse );
 	cgs.media.hgrenb1aSound = trap_S_RegisterSound("sound/weapons/grenade/hgrenb1a.wav", qfalse);
 	cgs.media.hgrenb2aSound = trap_S_RegisterSound("sound/weapons/grenade/hgrenb2a.wav", qfalse);
@@ -797,21 +1695,24 @@ CG_RegisterGraphics
 This function may execute for a couple of minutes with a slow disk.
 =================
 */
+
 static void CG_RegisterGraphics( void ) {
-	int			i;
+	int			i, x, y;
 	char		items[MAX_ITEMS+1];
+	const char		*bspName;
+	const char		*info;
 	static char		*sb_nums[11] = {
-		"gfx/2d/numbers/zero_32b",
-		"gfx/2d/numbers/one_32b",
-		"gfx/2d/numbers/two_32b",
-		"gfx/2d/numbers/three_32b",
-		"gfx/2d/numbers/four_32b",
-		"gfx/2d/numbers/five_32b",
-		"gfx/2d/numbers/six_32b",
-		"gfx/2d/numbers/seven_32b",
-		"gfx/2d/numbers/eight_32b",
-		"gfx/2d/numbers/nine_32b",
-		"gfx/2d/numbers/minus_32b",
+		"gfx/2d/bigchar/char_0",
+		"gfx/2d/bigchar/char_1",
+		"gfx/2d/bigchar/char_2",
+		"gfx/2d/bigchar/char_3",
+		"gfx/2d/bigchar/char_4",
+		"gfx/2d/bigchar/char_5",
+		"gfx/2d/bigchar/char_6",
+		"gfx/2d/bigchar/char_7",
+		"gfx/2d/bigchar/char_8",
+		"gfx/2d/bigchar/char_9",
+		"gfx/2d/bigchar/char_-",
 	};
 
 	// clear any references to old media
@@ -829,20 +1730,104 @@ static void CG_RegisterGraphics( void ) {
 		cgs.media.numberShaders[i] = trap_R_RegisterShader( sb_nums[i] );
 	}
 
-	cgs.media.botSkillShaders[0] = trap_R_RegisterShader( "menu/art/skill1.tga" );
-	cgs.media.botSkillShaders[1] = trap_R_RegisterShader( "menu/art/skill2.tga" );
-	cgs.media.botSkillShaders[2] = trap_R_RegisterShader( "menu/art/skill3.tga" );
-	cgs.media.botSkillShaders[3] = trap_R_RegisterShader( "menu/art/skill4.tga" );
-	cgs.media.botSkillShaders[4] = trap_R_RegisterShader( "menu/art/skill5.tga" );
+	// in-game mini map
+	/*info = CG_ConfigString( CS_SERVERINFO );
+	bspName = Info_ValueForKey( info, "mapname" );
+	cgs.media.miniMap = trap_R_RegisterShaderNoMip( va("levelshots/%s_mini.tga", bspName) );*/
+	//trap_Print( va( S_COLOR_GREEN "levelshots/%s_mini.tga\n", cgs.mapname ) );
+	cgs.media.miniMapPlyr = trap_R_RegisterShaderNoMip( "gfx/hud/miniMapPlyr" );
+	cgs.media.miniMapTeam = trap_R_RegisterShaderNoMip( "gfx/hud/miniMapTeam" );
+
+	// hud bar parts
+	for ( i=0 ; i<NUM_HUDBAR_TYPES ; i++) {
+		cgs.media.hudBarShaders[i] = trap_R_RegisterShaderNoMip( va("gfx/hud/statBar%c", '0'+i) );
+	}
+	/*for ( y=0 ; y<NUM_HUDBAR_TYPES ; y++) {
+		for ( x=0 ; x<NUM_HUDBAR_PARTS ; x++) {
+			cgs.media.hudBarShaders[y][x] = trap_R_RegisterShaderNoMip( va("gfx/hud/statBar%c%c", '0'+y, '0'+x) );
+		}
+	}*/
+
+	// hud elements
+	for ( i=0 ; i<NUM_BORDER_TYPES ; i++) {
+		cgs.media.hudBorderShaders[i] = trap_R_RegisterShaderNoMip( va("gfx/hud/border%c", '0'+i) );
+	}
+	for ( i=0 ; i<NUM_MINISCORE_TYPES ; i++) {
+		cgs.media.hudMiniScoreShaders[i] = trap_R_RegisterShaderNoMip( va("gfx/hud/miniScore%c", '0'+i) );
+		cgs.media.hudFlagStatus[i] = trap_R_RegisterShaderNoMip( va("gfx/hud/flagInfo%c", '0'+i) );
+	}
+	cgs.media.hudDefaultPort = trap_R_RegisterShaderNoMip( "gfx/hud/defaultPort" );
+	for ( i=0 ; i<NUM_PLAYER_PORTS ; i++) {
+		cgs.media.hudPlayerPort[i] = trap_R_RegisterShaderNoMip( "gfx/hud/defaultPort" );
+	}
+	//cgs.media.hudPlayerPort[1] = trap_R_RegisterShaderNoMip( "gfx/hud/testPort" ); // test
+	for ( i=0 ; i<NUM_FIXED_PORTS ; i++) {
+		cgs.media.hudFixedPort[i] = trap_R_RegisterShaderNoMip( va("gfx/hud/fixedPort%i", '0'+i) );
+	}
+
+	cgs.media.hudGrad = trap_R_RegisterShaderNoMip( "gfx/hud/grad0" );
+	cgs.media.hudGradRCurve = trap_R_RegisterShaderNoMip( "gfx/hud/grad1" );
+	cgs.media.hudPing = trap_R_RegisterShaderNoMip( "gfx/hud/ping" );
+	cgs.media.hudKeycards = trap_R_RegisterShaderNoMip( "gfx/hud/keycards" );
+
+	cgs.media.armorIconWhite  = trap_R_RegisterShaderNoMip( "icons/iconr_white" );
+	cgs.media.healthIconWhite  = trap_R_RegisterShaderNoMip( "icons/iconh_white" );
+	cgs.media.flagIconWhite  = trap_R_RegisterShaderNoMip( "icons/iconf_white" );
+	cgs.media.skullIconWhite  = trap_R_RegisterShaderNoMip( "icons/icon_skull" );
+
+	// old film effect for intermission
+	cgs.media.oldFilm1 = trap_R_RegisterShaderNoMip( "gfx/hud/oldfilm1" );
+	cgs.media.oldFilm2 = trap_R_RegisterShaderNoMip( "gfx/hud/oldfilm2" );
+
+	// to be removed
+	cgs.media.gametypeIcon_dm = trap_R_RegisterShaderNoMip( "icons/gt_dm" );
+	cgs.media.gametypeIcon_duel = trap_R_RegisterShaderNoMip( "icons/gt_duel" );
+	cgs.media.gametypeIcon_tdm = trap_R_RegisterShaderNoMip( "icons/gt_tdm" );
+	cgs.media.gametypeIcon_ctf = trap_R_RegisterShaderNoMip( "icons/gt_ctf" );
+
+	cgs.media.gametypeIcons = trap_R_RegisterShaderNoMip( "gfx/hud/gametype" );
+
+	// scoreboard icons
+	cgs.media.scoreIconOK = trap_R_RegisterShaderNoMip( "icons/icon_ok.tga" );
+	cgs.media.scoreIconNo = trap_R_RegisterShaderNoMip( "icons/icon_no.tga" );
+//	cgs.media.scoreIconOut = trap_R_RegisterShaderNoMip( "icons/icon_out.tga" );
+	cgs.media.scoreIconLock = trap_R_RegisterShaderNoMip( "icons/icon_lock.tga" );
+	cgs.media.iconCam = trap_R_RegisterShaderNoMip( "icons/icon_cam" );
+	cgs.media.iconSkull = trap_R_RegisterShaderNoMip( "icons/icon_skull" );
+	cgs.media.iconSkullFlame = trap_R_RegisterShaderNoMip( "icons/icon_skullflame" );
+	cgs.media.iconSkullTele = trap_R_RegisterShaderNoMip( "icons/icon_skulltele" );
+
+	cgs.media.hudButtonPress = trap_R_RegisterShaderNoMip( "gfx/hud/joypad" );
+
+	cgs.media.hudScoreBoard[TEAM_FREE] = trap_R_RegisterShaderNoMip( "gfx/hud/score_f" );
+	cgs.media.hudScoreBoard[TEAM_RED] = trap_R_RegisterShaderNoMip( "gfx/hud/score_r" );
+	cgs.media.hudScoreBoard[TEAM_BLUE] = trap_R_RegisterShaderNoMip( "gfx/hud/score_b" );
+	cgs.media.hudScoreBoardSpec = trap_R_RegisterShaderNoMip( "gfx/hud/score_spec" );
+	cgs.media.hudScoreBoardBG = trap_R_RegisterShaderNoMip( "gfx/hud/scoreBG" );
+	cgs.media.hudHighlight = trap_R_RegisterShaderNoMip( "gfx/hud/highlight_grad" );
+
+	cgs.media.rulesBG256 = trap_R_RegisterShaderNoMip( "gfx/hud/rule256.tga" );
+	cgs.media.rulesBG064 = trap_R_RegisterShaderNoMip( "gfx/hud/rule064.tga" );
+
+//	trap_R_RegisterShaderNoMip
+
+	// this is not used anymore
+	cgs.media.botSkillShaders[0] = trap_R_RegisterShaderNoMip( "menu/art/skill1" );
+	cgs.media.botSkillShaders[1] = trap_R_RegisterShaderNoMip( "menu/art/skill2" );
+	cgs.media.botSkillShaders[2] = trap_R_RegisterShaderNoMip( "menu/art/skill3" );
+	cgs.media.botSkillShaders[3] = trap_R_RegisterShaderNoMip( "menu/art/skill4" );
+	cgs.media.botSkillShaders[4] = trap_R_RegisterShaderNoMip( "menu/art/skill5" );
 
 	cgs.media.viewBloodShader = trap_R_RegisterShader( "viewBloodBlend" );
 
 	cgs.media.deferShader = trap_R_RegisterShaderNoMip( "gfx/2d/defer.tga" );
 
+	/*
 	cgs.media.scoreboardName = trap_R_RegisterShaderNoMip( "menu/tab/name.tga" );
 	cgs.media.scoreboardPing = trap_R_RegisterShaderNoMip( "menu/tab/ping.tga" );
 	cgs.media.scoreboardScore = trap_R_RegisterShaderNoMip( "menu/tab/score.tga" );
 	cgs.media.scoreboardTime = trap_R_RegisterShaderNoMip( "menu/tab/time.tga" );
+	*/
 
 	cgs.media.smokePuffShader = trap_R_RegisterShader( "smokePuff" );
 	cgs.media.smokePuffRageProShader = trap_R_RegisterShader( "smokePuffRagePro" );
@@ -851,7 +1836,9 @@ static void CG_RegisterGraphics( void ) {
 	cgs.media.nailPuffShader = trap_R_RegisterShader( "nailtrail" );
 	cgs.media.blueProxMine = trap_R_RegisterModel( "models/weaphits/proxmineb.md3" );
 #endif
-	cgs.media.plasmaBallShader = trap_R_RegisterShader( "sprites/plasma1" );
+	cgs.media.blasterBallShader = trap_R_RegisterShader( "sprites/blaster" );
+	cgs.media.plasmaBallShader = trap_R_RegisterShader( "sprites/plasmaball" );
+	cgs.media.spreadBallShader = trap_R_RegisterShader( "sprites/spreadball" );
 	cgs.media.bloodTrailShader = trap_R_RegisterShader( "bloodTrail" );
 	cgs.media.lagometerShader = trap_R_RegisterShader("lagometer" );
 	cgs.media.connectionShader = trap_R_RegisterShader( "disconnected" );
@@ -861,21 +1848,39 @@ static void CG_RegisterGraphics( void ) {
 	cgs.media.tracerShader = trap_R_RegisterShader( "gfx/misc/tracer" );
 	cgs.media.selectShader = trap_R_RegisterShader( "gfx/2d/select" );
 
-	for ( i = 0 ; i < NUM_CROSSHAIRS ; i++ ) {
-		cgs.media.crosshairShader[i] = trap_R_RegisterShader( va("gfx/2d/crosshair%c", 'a'+i) );
+	//mmp
+	cgs.media.flameBallShader = trap_R_RegisterShader( "sprites/flameball" );
+
+	for ( i = 0 ; i < NUM_CROSSHAIRS - 1 ; i++ ) {
+//		cgs.media.crosshairShader[i] = trap_R_RegisterShader( va("gfx/2d/crosshair%c", 'a'+i) );
+		cgs.media.crosshairTypeA[i] = trap_R_RegisterShaderNoMip( va("gfx/2d/cross_a%c", '1'+i) );
+		cgs.media.crosshairTypeB[i] = trap_R_RegisterShaderNoMip( va("gfx/2d/cross_b%c", '1'+i) );
 	}
 
 	cgs.media.backTileShader = trap_R_RegisterShader( "gfx/2d/backtile" );
 	cgs.media.noammoShader = trap_R_RegisterShader( "icons/noammo" );
 
 	// powerup shaders
-	cgs.media.quadShader = trap_R_RegisterShader("powerups/quad" );
-	cgs.media.quadWeaponShader = trap_R_RegisterShader("powerups/quadWeapon" );
+	cgs.media.quadShader = trap_R_RegisterShader("models/powerups/quad" );
+	cgs.media.quadWareOffShader = trap_R_RegisterShader("models/powerups/quadWareOff" );
+	cgs.media.quadWeaponShader = trap_R_RegisterShader("models/powerups/quad" );
 	cgs.media.battleSuitShader = trap_R_RegisterShader("powerups/battleSuit" );
 	cgs.media.battleWeaponShader = trap_R_RegisterShader("powerups/battleWeapon" );
+	cgs.media.pentShader = trap_R_RegisterShader("models/powerups/pent" );
+	cgs.media.pentWeaponShader = trap_R_RegisterShader("models/powerups/pent" );
 	cgs.media.invisShader = trap_R_RegisterShader("powerups/invisibility" );
 	cgs.media.regenShader = trap_R_RegisterShader("powerups/regen" );
 	cgs.media.hastePuffShader = trap_R_RegisterShader("hasteSmokePuff" );
+
+	// lum overlays
+	if ( cgs.gametype >= GT_TEAM ) {
+		cgs.media.redOverlay = trap_R_RegisterShader( "gfx/overlay/player_r");
+		cgs.media.blueOverlay = trap_R_RegisterShader( "gfx/overlay/player_b");
+	} else {
+		cgs.media.neutralOverlay = trap_R_RegisterShader( "gfx/overlay/player_n");
+	}
+	/*cgs.media.customOverlay = trap_R_RegisterShader( "gfx/overlay/player_c");
+	cgs.media.customOverlayAlpha = trap_R_RegisterShader( "gfx/overlay/player_a");*/
 
 #ifdef MISSIONPACK
 	if ( cgs.gametype == GT_HARVESTER || cg_buildScript.integer ) {
@@ -940,7 +1945,8 @@ static void CG_RegisterGraphics( void ) {
 #endif
 
 	if ( cgs.gametype >= GT_TEAM || cg_buildScript.integer ) {
-		cgs.media.friendShader = trap_R_RegisterShader( "sprites/foe" );
+		//cgs.media.friendShader = trap_R_RegisterShader( "sprites/foe" );
+		cgs.media.friendShader = trap_R_RegisterShader( "sprites/teammate" ); // makes more sense
 		cgs.media.redQuadShader = trap_R_RegisterShader("powerups/blueflag" );
 		cgs.media.teamStatusBar = trap_R_RegisterShader( "gfx/2d/colorbar.tga" );
 #ifdef MISSIONPACK
@@ -967,7 +1973,8 @@ static void CG_RegisterGraphics( void ) {
 
 	cgs.media.smoke2 = trap_R_RegisterModel( "models/weapons2/shells/s_shell.md3" );
 
-	cgs.media.balloonShader = trap_R_RegisterShader( "sprites/balloon3" );
+	/*cgs.media.balloonShader = trap_R_RegisterShader( "sprites/balloon3" );*/
+	cgs.media.balloonShader = trap_R_RegisterShader( "sprites/hitme" );
 
 	cgs.media.bloodExplosionShader = trap_R_RegisterShader( "bloodExplosion" );
 
@@ -1021,7 +2028,9 @@ static void CG_RegisterGraphics( void ) {
 	cgs.media.bulletMarkShader = trap_R_RegisterShader( "gfx/damage/bullet_mrk" );
 	cgs.media.burnMarkShader = trap_R_RegisterShader( "gfx/damage/burn_med_mrk" );
 	cgs.media.holeMarkShader = trap_R_RegisterShader( "gfx/damage/hole_lg_mrk" );
+	cgs.media.blasterMarkShader = trap_R_RegisterShader( "gfx/damage/blaster_mrk" );
 	cgs.media.energyMarkShader = trap_R_RegisterShader( "gfx/damage/plasma_mrk" );
+	cgs.media.spreadMarkShader = trap_R_RegisterShader( "gfx/damage/spread_mrk" );
 	cgs.media.shadowMarkShader = trap_R_RegisterShader( "markShadow" );
 	cgs.media.wakeMarkShader = trap_R_RegisterShader( "wake" );
 	cgs.media.bloodMarkShader = trap_R_RegisterShader( "bloodMark" );
@@ -1095,7 +2104,7 @@ static void CG_RegisterGraphics( void ) {
 
 
 
-/*																																			
+/*
 =======================
 CG_BuildSpectatorString
 
@@ -1116,8 +2125,82 @@ void CG_BuildSpectatorString(void) {
 	}
 }
 
+/*
+=======================
+CG_AddEmoticons
 
-/*																																			
+TODO: Complete this function
+=======================
+*/
+
+char CG_AddEmoticons( char *str ) {
+
+	char	*workstr;
+	char	*curstr;
+	char	*advstr;
+	int		shaftSize;
+
+	workstr = curstr = str;
+
+	while (*curstr) {
+		if ( *curstr == '<' ) {
+			advstr = curstr + 1;
+			if ( *advstr == '3' ) {
+				*workstr++ = '\x14';
+				curstr+=2;
+				continue;
+			}
+		} else
+		if ( *curstr == ':' || *curstr == '=' ) {
+			advstr = curstr + 1;
+			if ( *advstr == ')' ) {
+				*workstr++ = '\x15';
+				curstr+=2;
+				continue;
+			} else
+			if ( *advstr == '(' ) {
+				*workstr++ = '\x16';
+				curstr+=2;
+				continue;
+			} else
+			if ( *advstr == 'P' ) {
+				*workstr++ = '\x17';
+				curstr+=2;
+				continue;
+			} else
+			if ( *advstr == 'D' ) {
+				*workstr++ = '\x18';
+				curstr+=2;
+				continue;
+			}
+		} else
+		if ( *curstr == 'D' ) {
+			advstr = curstr + 1;
+			if ( *advstr == ':' || *advstr == '=' ) {
+				*workstr++ = '\x19';
+				curstr+=2;
+				continue;
+			}
+		} else
+		if ( *curstr == 'X' ) {
+			advstr = curstr + 1;
+			if ( *advstr == 'D' ) {
+				*workstr++ = '\x1A';
+				curstr+=2;
+				continue;
+			}
+		}
+
+		workstr++;
+		curstr++;
+	}
+
+	return *str;
+
+}
+
+
+/*
 ===================
 CG_RegisterClients
 ===================
@@ -1172,12 +2255,36 @@ void CG_StartMusic( void ) {
 	char	parm1[MAX_QPATH], parm2[MAX_QPATH];
 
 	// start the background music
-	s = (char *)CG_ConfigString( CS_MUSIC );
+	s = (char *)"music/mf00.ogg";
+//	s = (char *)"music/mf00.wav";
+//	s = (char *)"music/end_match.ogg";
+//	s = (char *)CG_ConfigString( CS_MUSIC );
+
 	Q_strncpyz( parm1, COM_Parse( &s ), sizeof( parm1 ) );
 	Q_strncpyz( parm2, COM_Parse( &s ), sizeof( parm2 ) );
 
 	trap_S_StartBackgroundTrack( parm1, parm2 );
 }
+
+/*
+======================
+CG_EndMatchMusic
+
+======================
+*/
+void CG_EndMatchMusic( void ) {
+	char	*s;
+	char	parm1[MAX_QPATH], parm2[MAX_QPATH];
+
+	// start the background music
+	s = (char *)"music/end_match.ogg";
+
+	Q_strncpyz( parm1, COM_Parse( &s ), sizeof( parm1 ) );
+	Q_strncpyz( parm2, COM_Parse( &s ), sizeof( parm2 ) );
+
+	trap_S_StartBackgroundTrack( parm1, parm2 );
+}
+
 #ifdef MISSIONPACK
 char *CG_GetMenuBuffer(const char *filename) {
 	int	len;
@@ -1216,7 +2323,7 @@ qboolean CG_Asset_Parse(int handle) {
 	if (Q_stricmp(token.string, "{") != 0) {
 		return qfalse;
 	}
-    
+
 	while ( 1 ) {
 		if (!trap_PC_ReadToken(handle, &token))
 			return qfalse;
@@ -1412,7 +2519,7 @@ qboolean CG_Load_Menu(char **p) {
 	while ( 1 ) {
 
 		token = COM_ParseExt(p, qtrue);
-    
+
 		if (Q_stricmp(token, "}") == 0) {
 			return qtrue;
 		}
@@ -1421,7 +2528,7 @@ qboolean CG_Load_Menu(char **p) {
 			return qfalse;
 		}
 
-		CG_ParseMenu(token); 
+		CG_ParseMenu(token);
 	}
 	return qfalse;
 }
@@ -1455,7 +2562,7 @@ void CG_LoadMenus(const char *menuFile) {
 	trap_FS_Read( buf, len, f );
 	buf[len] = 0;
 	trap_FS_FCloseFile( f );
-	
+
 	COM_Compress(buf);
 
 	Menu_Reset();
@@ -1652,7 +2759,7 @@ static const char *CG_FeederItemText(float feederID, int index, int column, qhan
 			case 6:
 				if ( sp->ping == -1 ) {
 					return "connecting";
-				} 
+				}
 				return va("%4i", sp->ping);
 			break;
 		}
@@ -1757,7 +2864,7 @@ void CG_LoadHudMenu( void ) {
 	cgDC.registerModel = &trap_R_RegisterModel;
 	cgDC.modelBounds = &trap_R_ModelBounds;
 	cgDC.fillRect = &CG_FillRect;
-	cgDC.drawRect = &CG_DrawRect;   
+	cgDC.drawRect = &CG_DrawRect;
 	cgDC.drawSides = &CG_DrawSides;
 	cgDC.drawTopBottom = &CG_DrawTopBottom;
 	cgDC.clearScene = &trap_R_ClearScene;
@@ -1785,8 +2892,8 @@ void CG_LoadHudMenu( void ) {
 	//cgDC.getBindingBuf = &trap_Key_GetBindingBuf;
 	//cgDC.keynumToStringBuf = &trap_Key_KeynumToStringBuf;
 	//cgDC.executeText = &trap_Cmd_ExecuteText;
-	cgDC.Error = &Com_Error; 
-	cgDC.Print = &Com_Printf; 
+	cgDC.Error = &Com_Error;
+	cgDC.Print = &Com_Printf;
 	cgDC.ownerDrawWidth = &CG_OwnerDrawWidth;
 	//cgDC.Pause = &CG_Pause;
 	cgDC.registerSound = &trap_S_RegisterSound;
@@ -1796,11 +2903,11 @@ void CG_LoadHudMenu( void ) {
 	cgDC.stopCinematic = &CG_StopCinematic;
 	cgDC.drawCinematic = &CG_DrawCinematic;
 	cgDC.runCinematicFrame = &CG_RunCinematicFrame;
-	
+
 	Init_Display(&cgDC);
 
 	Menu_Reset();
-	
+
 	trap_Cvar_VariableStringBuffer("cg_hudFiles", buff, sizeof(buff));
 	hudSet = buff;
 	if (hudSet[0] == '\0') {
@@ -1845,6 +2952,7 @@ Will perform callbacks to make the loading info screen update.
 */
 void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	const char	*s;
+	float		aratio;
 
 	// clear everything
 	memset( &cgs, 0, sizeof( cgs ) );
@@ -1859,17 +2967,22 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	cgs.serverCommandSequence = serverCommandSequence;
 
 	// load a few needed things before we do any screen updates
-	cgs.media.charsetShader		= trap_R_RegisterShader( "gfx/2d/bigchars" );
+	cgs.media.charsetShader		= trap_R_RegisterShader( "gfx/2d/conchar" );
 	cgs.media.whiteShader		= trap_R_RegisterShader( "white" );
-	cgs.media.charsetProp		= trap_R_RegisterShaderNoMip( "menu/art/font1_prop.tga" );
-	cgs.media.charsetPropGlow	= trap_R_RegisterShaderNoMip( "menu/art/font1_prop_glo.tga" );
-	cgs.media.charsetPropB		= trap_R_RegisterShaderNoMip( "menu/art/font2_prop.tga" );
+	cgs.media.charsetProp		= trap_R_RegisterShaderNoMip( "gfx/fonts/propfont1" );
+	cgs.media.charsetPropHQ		= trap_R_RegisterShaderNoMip( "gfx/fonts/propfont1hq" );
+	cgs.media.charsetPropGlow	= trap_R_RegisterShaderNoMip( "menu/art/propfont1g.tga" );
+	cgs.media.charsetPropB		= trap_R_RegisterShaderNoMip( "menu/art/propfont2.tga" );
+	cgs.media.charsetDigit		= trap_R_RegisterShaderNoMip( "gfx/fonts/propfont3" );
+	cgs.media.charsetDigitHQ	= trap_R_RegisterShaderNoMip( "gfx/fonts/propfont3hq" );
+	cgs.media.numChar			= trap_R_RegisterShaderNoMip( "gfx/2d/numchars.tga" ); // single player/non-custom hud
 
 	CG_RegisterCvars();
 
 	CG_InitConsoleCommands();
 
-	cg.weaponSelect = WP_MACHINEGUN;
+	/*cg.weaponSelect = WP_GAUNTLET;*/
+	cg.weaponSelect = WP_BLASTER;
 
 	cgs.redflag = cgs.blueflag = -1; // For compatibily, default to unset for
 	cgs.flagStatus = -1;
@@ -1877,8 +2990,35 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	// get the rendering configuration from the client system
 	trap_GetGlconfig( &cgs.glconfig );
-	cgs.screenXScale = cgs.glconfig.vidWidth / 640.0;
+//	cgs.screenXScale = cgs.glconfig.vidWidth / 640.0;
+	if ( hud_autoRatioScale.integer ) {
+		// 1152
+//		aratio = ((float)cgs.glconfig.vidWidth * (float)cgs.glconfig.vidHeight / 480);
+		aratio = ((float)cgs.glconfig.vidWidth / (float)cgs.glconfig.vidHeight) * 480;
+//		cgs.screenXScale = cgs.glconfig.vidWidth / cgs.glconfig.vidHeight;
+		cgs.screenXScale = (float)cgs.glconfig.vidWidth / aratio;
+		trap_Cvar_Set ( "hud_aspectRatioScale",va("%f", aratio / 640) ); // force scale width
+		//debug
+	} else {
+		cgs.screenXScale = cgs.glconfig.vidWidth / (640.0 * hud_aspectRatioScale.value);
+	}
 	cgs.screenYScale = cgs.glconfig.vidHeight / 480.0;
+
+	// overscan adjustment
+	cgs.overscanAdj = hud_overscanAdjust.integer;
+
+	if ( cgs.overscanAdj ) {
+		cgs.screenXScale *= OVERSCAN_ADJ;
+		cgs.screenYScale *= OVERSCAN_ADJ;
+
+		cgs.screenXOffset = ( cgs.glconfig.vidWidth - ( cgs.glconfig.vidWidth * OVERSCAN_ADJ ) ) / 2;
+		cgs.screenYOffset = ( cgs.glconfig.vidHeight - ( cgs.glconfig.vidHeight * OVERSCAN_ADJ ) ) / 2;
+	}
+
+	// debug
+	Com_Printf( S_COLOR_CYAN "vidRes / hudScale: %ix%i / %fx%f\n",
+						cgs.glconfig.vidWidth, cgs.glconfig.vidHeight,
+						cgs.screenXScale, cgs.screenYScale );
 
 	// get the gamestate from the client system
 	trap_GetGameState( &cgs.gameState );
@@ -1981,4 +3121,29 @@ void CG_KeyEvent(int key, qboolean down) {
 void CG_MouseEvent(int x, int y) {
 }
 #endif
+
+//unlagged - attack prediction #3
+// moved from g_weapon.c
+/*
+======================
+SnapVectorTowards
+
+Round a vector to integers for more efficient network
+transmission, but make sure that it rounds towards a given point
+rather than blindly truncating.  This prevents it from truncating
+into a wall.
+======================
+*/
+void SnapVectorTowards( vec3_t v, vec3_t to ) {
+	int		i;
+
+	for ( i = 0 ; i < 3 ; i++ ) {
+		if ( to[i] <= v[i] ) {
+			v[i] = (int)v[i];
+		} else {
+			v[i] = (int)v[i] + 1;
+		}
+	}
+}
+//unlagged - attack prediction #3
 

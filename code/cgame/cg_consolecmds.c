@@ -36,11 +36,12 @@ void CG_TargetCommand_f( void ) {
 	char	test[4];
 
 	targetNum = CG_CrosshairPlayer();
-	if ( targetNum == -1 ) {
+	if (/*!targetNum*/ targetNum == -1 ) {
 		return;
 	}
 
 	trap_Argv( 1, test, 4 );
+	/*trap_SendConsoleCommand( va( "gc %i %i", targetNum, atoi( test ) ) );*/
 	trap_SendClientCommand( va( "gc %i %i", targetNum, atoi( test ) ) );
 }
 
@@ -79,8 +80,60 @@ Debugging command to print the current position
 */
 static void CG_Viewpos_f (void) {
 	CG_Printf ("(%i %i %i) : %i\n", (int)cg.refdef.vieworg[0],
-		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], 
+		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2],
 		(int)cg.refdefViewAngles[YAW]);
+}
+
+
+/*
+=============
+CG_TestHUD_f
+
+Debugging HUD chat, notifier and MOD functions.
+=============
+*/
+static void CG_TestHUD_f (void) {
+	int		mins, seconds, tens;
+	int		msec;
+	int		timeLimit;
+	int		gameClock;
+
+	msec = cg.time - cgs.levelStartTime;
+	gameClock = msec;
+	if (gameClock >= 6000000) {
+		gameClock = 5999000;
+	} else if (gameClock < 0) {
+		gameClock = 0;
+	}
+
+	seconds = gameClock / 1000;
+	mins = seconds / 60;
+	seconds -= mins * 60;
+	tens = seconds / 10;
+	seconds -= tens * 10;
+
+	CG_AddToFragInfo ( "UnnamedAttacker", cg_weapons[WP_ROCKET_LAUNCHER].weaponIcon, "UnnamedTarget" );
+	CG_AddToHUDInfo ( hud_notifyBoxRoute.integer,
+			"UnnamedPlayer " S_COLOR_GREEN "is ready\n", 0, 0 );
+	CG_AddToHUDInfo ( hud_chatBoxRoute.integer,
+			va("%2i:%i%i UnnamedPlayer: " S_COLOR_GREEN ":D", mins, tens, seconds ), 5, 0 );
+	CG_AddToHUDInfo ( hud_teamChatBoxRoute.integer,
+			va("%2i:%i%i (UnnamedTeammate) (UnnamedLocation): " S_COLOR_CYAN "GET THE QUAD FFS!", mins, tens, seconds ), 0, 0 );
+
+	CG_Printf ("CG_TestHUD_f complete.\n");
+}
+
+
+static void CG_TestPortLoc_f (void) {
+
+	CG_Printf ("CG_TestPortLoc_f: Loc[0]: %i.\n" ,cgs.media.hudPlayerPort[0]);
+
+}
+
+static void CG_TestPortHex_f (void) {
+
+	CG_Printf ("CG_TestPortHex_f: ...\n");
+
 }
 
 
@@ -126,7 +179,7 @@ static void CG_LoadHud_f( void) {
 
 	String_Init();
 	Menu_Reset();
-	
+
 	trap_Cvar_VariableStringBuffer("cg_hudFiles", buff, sizeof(buff));
 	hudSet = buff;
 	if (hudSet[0] == '\0') {
@@ -432,6 +485,26 @@ static void CG_StartOrbit_f( void ) {
 }
 
 /*
+==================
+CG_PhysicsMode_f
+==================
+*/
+
+static void CG_PhysicsMode_f( void ) {
+	if (!(cg.snap->ps.persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS)) {
+//		cg.snap->ps.persistant[PERS_MISC] ^= PMSC_PHYSICS_SELECTION;
+		cg.physicsSelect ^= PMSC_PHYSICS_SELECTION;
+
+		//CG_Printf ("^5physicsSelect\n");
+	}
+}
+
+/*
+==================
+CG_Camera_f
+==================
+*/
+/*
 static void CG_Camera_f( void ) {
 	char name[1024];
 	trap_Argv( 1, name, sizeof(name));
@@ -453,6 +526,9 @@ typedef struct {
 static consoleCommand_t	commands[] = {
 	{ "testgun", CG_TestGun_f },
 	{ "testmodel", CG_TestModel_f },
+	{ "testHUD", CG_TestHUD_f },
+	{ "testportLoc", CG_TestPortLoc_f },
+	{ "testportHex", CG_TestPortHex_f },
 	{ "nextframe", CG_TestModelNextFrame_f },
 	{ "prevframe", CG_TestModelPrevFrame_f },
 	{ "nextskin", CG_TestModelNextSkin_f },
@@ -500,7 +576,11 @@ static consoleCommand_t	commands[] = {
 #endif
 	{ "startOrbit", CG_StartOrbit_f },
 	//{ "camera", CG_Camera_f },
-	{ "loaddeferred", CG_LoadDeferredPlayers }	
+
+	// mmp
+	{ "physicsSelect", CG_PhysicsMode_f },
+
+	{ "loaddeferred", CG_LoadDeferredPlayers }
 };
 
 
@@ -566,18 +646,29 @@ void CG_InitConsoleCommands( void ) {
 	trap_AddCommand ("notarget");
 	trap_AddCommand ("noclip");
 	trap_AddCommand ("where");
-	trap_AddCommand ("team");
+/*	trap_AddCommand ("team");*/
+	trap_AddCommand ("join");
 	trap_AddCommand ("follow");
 	trap_AddCommand ("follownext");
 	trap_AddCommand ("followprev");
+	trap_AddCommand ("follownextpowerup");
+	trap_AddCommand ("followprevpowerup");
+	trap_AddCommand ("follownextobj");
+	trap_AddCommand ("followprevobj");
+	trap_AddCommand ("specMode");
 	trap_AddCommand ("levelshot");
 	trap_AddCommand ("addbot");
 	trap_AddCommand ("setviewpos");
 	trap_AddCommand ("callvote");
+	trap_AddCommand ("cv");
 	trap_AddCommand ("vote");
-	trap_AddCommand ("callteamvote");
+/*	trap_AddCommand ("callteamvote");
 	trap_AddCommand ("teamvote");
-	trap_AddCommand ("stats");
+	trap_AddCommand ("stats");*/
 	trap_AddCommand ("teamtask");
+
+	trap_AddCommand ("ready");
+	trap_AddCommand ("dropWeapon");
+
 	trap_AddCommand ("loaddefered");	// spelled wrong, but not changing for demo
 }

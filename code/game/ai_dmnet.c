@@ -1292,19 +1292,21 @@ int AINode_Respawn(bot_state_t *bs) {
 BotSelectActivateWeapon
 ==================
 */
+// TODO - add MFA weapons
 int BotSelectActivateWeapon(bot_state_t *bs) {
 	//
-	if (bs->inventory[INVENTORY_MACHINEGUN] > 0 && bs->inventory[INVENTORY_BULLETS] > 0)
+	/*if (bs->inventory[INVENTORY_MACHINEGUN] > 0 && bs->inventory[INVENTORY_BULLETS] > 0)
 		return WEAPONINDEX_MACHINEGUN;
-	else if (bs->inventory[INVENTORY_SHOTGUN] > 0 && bs->inventory[INVENTORY_SHELLS] > 0)
+	else*/
+	if (bs->inventory[INVENTORY_SHOTGUN] > 0 && bs->inventory[INVENTORY_SHELLS] > 0)
 		return WEAPONINDEX_SHOTGUN;
 	else if (bs->inventory[INVENTORY_PLASMAGUN] > 0 && bs->inventory[INVENTORY_CELLS] > 0)
 		return WEAPONINDEX_PLASMAGUN;
 	else if (bs->inventory[INVENTORY_LIGHTNING] > 0 && bs->inventory[INVENTORY_LIGHTNINGAMMO] > 0)
 		return WEAPONINDEX_LIGHTNING;
-#ifdef MISSIONPACK
 	else if (bs->inventory[INVENTORY_CHAINGUN] > 0 && bs->inventory[INVENTORY_BELT] > 0)
 		return WEAPONINDEX_CHAINGUN;
+#ifdef MISSIONPACK
 	else if (bs->inventory[INVENTORY_NAILGUN] > 0 && bs->inventory[INVENTORY_NAILS] > 0)
 		return WEAPONINDEX_NAILGUN;
 	else if (bs->inventory[INVENTORY_PROXLAUNCHER] > 0 && bs->inventory[INVENTORY_MINES] > 0)
@@ -1312,12 +1314,14 @@ int BotSelectActivateWeapon(bot_state_t *bs) {
 #endif
 	else if (bs->inventory[INVENTORY_GRENADELAUNCHER] > 0 && bs->inventory[INVENTORY_GRENADES] > 0)
 		return WEAPONINDEX_GRENADE_LAUNCHER;
+#ifdef MISSIONPACK
 	else if (bs->inventory[INVENTORY_RAILGUN] > 0 && bs->inventory[INVENTORY_SLUGS] > 0)
 		return WEAPONINDEX_RAILGUN;
+#endif
 	else if (bs->inventory[INVENTORY_ROCKETLAUNCHER] > 0 && bs->inventory[INVENTORY_ROCKETS] > 0)
 		return WEAPONINDEX_ROCKET_LAUNCHER;
-	else if (bs->inventory[INVENTORY_BFG10K] > 0 && bs->inventory[INVENTORY_BFGAMMO] > 0)
-		return WEAPONINDEX_BFG;
+	/*else if (bs->inventory[INVENTORY_BFG10K] > 0 && bs->inventory[INVENTORY_BFGAMMO] > 0)
+		return WEAPONINDEX_BFG;*/
 	else {
 		return -1;
 	}
@@ -1405,8 +1409,8 @@ void BotClearPath(bot_state_t *bs, bot_moveresult_t *moveresult) {
 				moveresult->weapon = WEAPONINDEX_PLASMAGUN;
 			else if (bs->inventory[INVENTORY_ROCKETLAUNCHER] > 0 && bs->inventory[INVENTORY_ROCKETS] > 0)
 				moveresult->weapon = WEAPONINDEX_ROCKET_LAUNCHER;
-			else if (bs->inventory[INVENTORY_BFG10K] > 0 && bs->inventory[INVENTORY_BFGAMMO] > 0)
-				moveresult->weapon = WEAPONINDEX_BFG;
+			/*else if (bs->inventory[INVENTORY_BFG10K] > 0 && bs->inventory[INVENTORY_BFGAMMO] > 0)
+				moveresult->weapon = WEAPONINDEX_BFG;*/
 			else {
 				moveresult->weapon = 0;
 			}

@@ -172,9 +172,10 @@ qboolean	CL_GetSnapshot( int snapshotNumber, snapshot_t *snapshot ) {
 CL_SetUserCmdValue
 =====================
 */
-void CL_SetUserCmdValue( int userCmdValue, float sensitivityScale ) {
+void CL_SetUserCmdValue( int userCmdValue, float sensitivityScale, int flags ) {
 	cl.cgameUserCmdValue = userCmdValue;
 	cl.cgameSensitivity = sensitivityScale;
+	cl.cgameMiscFlags = flags; // mmp - for future use
 }
 
 /*
@@ -184,6 +185,15 @@ CL_AddCgameCommand
 */
 void CL_AddCgameCommand( const char *cmdName ) {
 	Cmd_AddCommand( cmdName, NULL );
+}
+
+/*
+=====================
+CL_CgameError
+=====================
+*/
+void CL_CgameError( const char *string ) {
+	Com_Error( ERR_DROP, "%s", string );
 }
 
 
@@ -201,6 +211,7 @@ void CL_ConfigstringModified( void ) {
 
 	index = atoi( Cmd_Argv(1) );
 	if ( index < 0 || index >= MAX_CONFIGSTRINGS ) {
+		/*Com_Error( ERR_DROP, "configstring > MAX_CONFIGSTRINGS" );*/
 		Com_Error( ERR_DROP, "CL_ConfigstringModified: bad index %i", index );
 	}
 	// get everything after "cs <num>"
@@ -594,19 +605,19 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	case CG_GETUSERCMD:
 		return CL_GetUserCmd( args[1], VMA(2) );
 	case CG_SETUSERCMDVALUE:
-		CL_SetUserCmdValue( args[1], VMF(2) );
+		CL_SetUserCmdValue( args[1], VMF(2), args[3] );
 		return 0;
 	case CG_MEMORY_REMAINING:
 		return Hunk_MemoryRemaining();
-  case CG_KEY_ISDOWN:
+	case CG_KEY_ISDOWN:
 		return Key_IsDown( args[1] );
-  case CG_KEY_GETCATCHER:
+	case CG_KEY_GETCATCHER:
 		return Key_GetCatcher();
-  case CG_KEY_SETCATCHER:
+	case CG_KEY_SETCATCHER:
 		// Don't allow the cgame module to close the console
 		Key_SetCatcher( args[1] | ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) );
-    return 0;
-  case CG_KEY_GETKEY:
+		return 0;
+	case CG_KEY_GETKEY:
 		return Key_GetKey( VMA(1) );
 
 

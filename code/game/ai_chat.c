@@ -281,21 +281,22 @@ BotWeaponNameForMeansOfDeath
 char *BotWeaponNameForMeansOfDeath(int mod) {
 	switch(mod) {
 		case MOD_SHOTGUN: return "Shotgun";
+		case MOD_SUPER_SHOTGUN: return "Super Shotgun";
 		case MOD_GAUNTLET: return "Gauntlet";
-		case MOD_MACHINEGUN: return "Machinegun";
+		case MOD_BLASTER: return "Blaster";
 		case MOD_GRENADE:
 		case MOD_GRENADE_SPLASH: return "Grenade Launcher";
 		case MOD_ROCKET:
 		case MOD_ROCKET_SPLASH: return "Rocket Launcher";
 		case MOD_PLASMA:
 		case MOD_PLASMA_SPLASH: return "Plasmagun";
+#ifdef MISSIONPACK
 		case MOD_RAILGUN: return "Railgun";
+#endif
 		case MOD_LIGHTNING: return "Lightning Gun";
-		case MOD_BFG:
-		case MOD_BFG_SPLASH: return "BFG10K";
+		case MOD_CHAINGUN: return "Chaingun";
 #ifdef MISSIONPACK
 		case MOD_NAIL: return "Nailgun";
-		case MOD_CHAINGUN: return "Chaingun";
 		case MOD_PROXIMITY_MINE: return "Proximity Launcher";
 		case MOD_KAMIKAZE: return "Kamikaze";
 		case MOD_JUICED: return "Prox mine";
@@ -325,7 +326,9 @@ char *BotRandomWeaponName(void) {
 		case 3: return "Grenade Launcher";
 		case 4: return "Rocket Launcher";
 		case 5: return "Plasmagun";
+#ifdef MISSIONPACK
 		case 6: return "Railgun";
+#endif
 		case 7: return "Lightning Gun";
 #ifdef MISSIONPACK
 		case 8: return "Nailgun";
@@ -632,23 +635,10 @@ int BotChat_Death(bot_state_t *bs) {
 			BotAI_BotInitialChat(bs, "death_kamikaze", name, NULL);
 #endif
 		else {
-			if ((bs->botdeathtype == MOD_GAUNTLET ||
-				bs->botdeathtype == MOD_RAILGUN ||
-				bs->botdeathtype == MOD_BFG ||
-				bs->botdeathtype == MOD_BFG_SPLASH) && random() < 0.5) {
+			if ( bs->botdeathtype == MOD_GAUNTLET ) {
 
 				if (bs->botdeathtype == MOD_GAUNTLET)
 					BotAI_BotInitialChat(bs, "death_gauntlet",
-							name,												// 0
-							BotWeaponNameForMeansOfDeath(bs->botdeathtype),		// 1
-							NULL);
-				else if (bs->botdeathtype == MOD_RAILGUN)
-					BotAI_BotInitialChat(bs, "death_rail",
-							name,												// 0
-							BotWeaponNameForMeansOfDeath(bs->botdeathtype),		// 1
-							NULL);
-				else
-					BotAI_BotInitialChat(bs, "death_bfg",
 							name,												// 0
 							BotWeaponNameForMeansOfDeath(bs->botdeathtype),		// 1
 							NULL);
@@ -717,9 +707,11 @@ int BotChat_Kill(bot_state_t *bs) {
 		if (bs->enemydeathtype == MOD_GAUNTLET) {
 			BotAI_BotInitialChat(bs, "kill_gauntlet", name, NULL);
 		}
+#ifdef MISSIONPACK
 		else if (bs->enemydeathtype == MOD_RAILGUN) {
 			BotAI_BotInitialChat(bs, "kill_rail", name, NULL);
 		}
+#endif
 		else if (bs->enemydeathtype == MOD_TELEFRAG) {
 			BotAI_BotInitialChat(bs, "kill_telefrag", name, NULL);
 		}
@@ -1103,6 +1095,7 @@ void BotChatTest(bot_state_t *bs) {
 				NULL);
 		trap_BotEnterChat(bs->cs, 0, CHAT_ALL);
 	}
+#ifdef MISSIONPACK
 	num = trap_BotNumInitialChats(bs->cs, "death_rail");
 	for (i = 0; i < num; i++)
 	{
@@ -1112,6 +1105,7 @@ void BotChatTest(bot_state_t *bs) {
 				NULL);
 		trap_BotEnterChat(bs->cs, 0, CHAT_ALL);
 	}
+#endif
 	num = trap_BotNumInitialChats(bs->cs, "death_bfg");
 	for (i = 0; i < num; i++)
 	{
@@ -1149,12 +1143,14 @@ void BotChatTest(bot_state_t *bs) {
 		BotAI_BotInitialChat(bs, "kill_gauntlet", name, NULL);
 		trap_BotEnterChat(bs->cs, 0, CHAT_ALL);
 	}
+#ifdef MISSIONPACK
 	num = trap_BotNumInitialChats(bs->cs, "kill_rail");
 	for (i = 0; i < num; i++)
 	{
 		BotAI_BotInitialChat(bs, "kill_rail", name, NULL);
 		trap_BotEnterChat(bs->cs, 0, CHAT_ALL);
 	}
+#endif
 	num = trap_BotNumInitialChats(bs->cs, "kill_telefrag");
 	for (i = 0; i < num; i++)
 	{

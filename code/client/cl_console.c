@@ -53,6 +53,8 @@ typedef struct {
 	vec4_t	color;
 } console_t;
 
+/*extern	console_t	con;*/
+
 console_t	con;
 
 cvar_t		*con_conspeed;
@@ -173,14 +175,13 @@ Con_Dump_f
 Save the console contents out to a file
 ================
 */
+// mmp - reverted 'Con_Dump_f' changes back to a working version (IOQ-SVN2318), since the updated version doesn't seem to work
 void Con_Dump_f (void)
 {
 	int		l, x, i;
 	short	*line;
 	fileHandle_t	f;
-	int		bufferlen;
-	char	*buffer;
-	char	filename[MAX_QPATH];
+	char	buffer[1024];
 
 	if (Cmd_Argc() != 2)
 	{
@@ -188,17 +189,14 @@ void Con_Dump_f (void)
 		return;
 	}
 
-	Q_strncpyz( filename, Cmd_Argv( 1 ), sizeof( filename ) );
-	COM_DefaultExtension( filename, sizeof( filename ), ".txt" );
+	Com_Printf ("Dumped console text to %s.\n", Cmd_Argv(1) );
 
-	f = FS_FOpenFileWrite( filename );
+	f = FS_FOpenFileWrite( Cmd_Argv( 1 ) );
 	if (!f)
 	{
-		Com_Printf ("ERROR: couldn't open %s.\n", filename);
+		Com_Printf ("ERROR: couldn't open.\n");
 		return;
 	}
-
-	Com_Printf ("Dumped console text to %s.\n", filename );
 
 	// skip empty lines
 	for (l = con.current - con.totallines + 1 ; l <= con.current ; l++)
@@ -211,16 +209,8 @@ void Con_Dump_f (void)
 			break;
 	}
 
-#ifdef _WIN32
-	bufferlen = con.linewidth + 3 * sizeof ( char );
-#else
-	bufferlen = con.linewidth + 2 * sizeof ( char );
-#endif
-
-	buffer = Hunk_AllocateTempMemory( bufferlen );
-
 	// write the remaining lines
-	buffer[bufferlen-1] = 0;
+	buffer[con.linewidth] = 0;
 	for ( ; l <= con.current ; l++)
 	{
 		line = con.text + (l%con.totallines)*con.linewidth;
@@ -233,19 +223,13 @@ void Con_Dump_f (void)
 			else
 				break;
 		}
-#ifdef _WIN32
-		Q_strcat(buffer, bufferlen, "\r\n");
-#else
-		Q_strcat(buffer, bufferlen, "\n");
-#endif
+		strcat( buffer, "\n" );
 		FS_Write(buffer, strlen(buffer), f);
 	}
 
-	Hunk_FreeTempMemory( buffer );
 	FS_FCloseFile( f );
 }
 
-						
 /*
 ================
 Con_ClearNotify
@@ -346,7 +330,7 @@ Con_Init
 void Con_Init (void) {
 	int		i;
 
-	con_notifytime = Cvar_Get ("con_notifytime", "3", 0);
+	con_notifytime = Cvar_Get ("con_notifytime", "-1", 0);
 	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0);
 
 	Field_Clear( &g_consoleField );
@@ -583,10 +567,14 @@ void Con_DrawNotify (void)
 			if ( ( text[x] & 0xff ) == ' ' ) {
 				continue;
 			}
-			if ( ColorIndexForNumber( text[x]>>8 ) != currentColor ) {
-				currentColor = ColorIndexForNumber( text[x]>>8 );
+			if ( ( (text[x]>>8)% MAX_CCODES ) != currentColor ) {
+				currentColor = (text[x]>>8) % MAX_CCODES;
 				re.SetColor( g_color_table[currentColor] );
 			}
+			/*if ( ( (text[x]>>8)&7 ) != currentColor ) {
+				currentColor = (text[x]>>8)&7;
+				re.SetColor( g_color_table[currentColor] );
+			}*/
 			SCR_DrawSmallChar( cl_conXOffset->integer + con.xadjust + (x+1)*SMALLCHAR_WIDTH, v, text[x] & 0xff );
 		}
 
@@ -604,17 +592,22 @@ void Con_DrawNotify (void)
 	{
 		if (chat_team)
 		{
-			SCR_DrawBigString (8, v, "say_team:", 1.0f, qfalse );
+			SCR_DrawBigString (8, SCREEN_HEIGHT - BIGCHAR_WIDTH /*v*/, "say_team:", 1.0f, qfalse );
 			skip = 10;
 		}
 		else
 		{
-			SCR_DrawBigString (8, v, "say:", 1.0f, qfalse );
+			SCR_DrawBigString (8, SCREEN_HEIGHT - BIGCHAR_WIDTH /*v*/, "say:", 1.0f, qfalse );
 			skip = 5;
 		}
 
-		Field_BigDraw( &chatField, skip * BIGCHAR_WIDTH, v,
+		Field_BigDraw( &chatField, skip * BIGCHAR_WIDTH, SCREEN_HEIGHT - BIGCHAR_WIDTH,
 			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue, qtrue );
+
+		/*Field_BigDraw( &chatField, skip * BIGCHAR_WIDTH, v,
+			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue, qtrue );
+
+		v += BIGCHAR_HEIGHT;*/
 	}
 
 }
@@ -677,7 +670,7 @@ void Con_DrawSolidConsole( float frac ) {
 
 	// draw the text
 	con.vislines = lines;
-	rows = (lines-SMALLCHAR_HEIGHT)/SMALLCHAR_HEIGHT;		// rows of text to draw
+	rows = (lines-SMALLCHAR_WIDTH)/SMALLCHAR_WIDTH;		// rows of text to draw
 
 	y = lines - (SMALLCHAR_HEIGHT*3);
 
@@ -717,10 +710,15 @@ void Con_DrawSolidConsole( float frac ) {
 				continue;
 			}
 
-			if ( ColorIndexForNumber( text[x]>>8 ) != currentColor ) {
-				currentColor = ColorIndexForNumber( text[x]>>8 );
+			if ( ( (text[x]>>8)% MAX_CCODES ) != currentColor ) {
+				currentColor = (text[x]>>8) % MAX_CCODES;
 				re.SetColor( g_color_table[currentColor] );
 			}
+
+			/*if ( ( (text[x]>>8)&7 ) != currentColor ) {
+				currentColor = (text[x]>>8)&7;
+				re.SetColor( g_color_table[currentColor] );
+			}*/
 			SCR_DrawSmallChar(  con.xadjust + (x+1)*SMALLCHAR_WIDTH, y, text[x] & 0xff );
 		}
 	}

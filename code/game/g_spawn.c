@@ -42,6 +42,27 @@ qboolean	G_SpawnString( const char *key, const char *defaultString, char **out )
 	return qfalse;
 }
 
+// TODO: when not lazy, combind this with the code above
+qboolean	G_SpawnStringWithRuleset( const char *key, const char *defaultString, char **out ) {
+	int		i;
+
+	if ( !level.spawning ) {
+		*out = (char *)defaultString;
+//		G_Error( "G_SpawnString() called while not spawning" );
+	}
+
+	for ( i = 0 ; i < level.numSpawnVars ; i++ ) {
+		if ( !Q_stricmp( key, level.spawnVars[i][0] ) ) {
+			*out = level.spawnVars[i][1];
+			level.forcefullyUpdateRuleset = qtrue; // update ruleset
+			return qtrue;
+		}
+	}
+
+	*out = (char *)defaultString;
+	return qfalse;
+}
+
 qboolean	G_SpawnFloat( const char *key, const char *defaultString, float *out ) {
 	char		*s;
 	qboolean	present;
@@ -121,6 +142,7 @@ typedef struct {
 
 void SP_info_player_start (gentity_t *ent);
 void SP_info_player_deathmatch (gentity_t *ent);
+void SP_info_player_deathmatch_alt (gentity_t *ent);
 void SP_info_player_intermission (gentity_t *ent);
 
 void SP_func_plat (gentity_t *ent);
@@ -152,6 +174,10 @@ void SP_target_kill (gentity_t *ent);
 void SP_target_position (gentity_t *ent);
 void SP_target_location (gentity_t *ent);
 void SP_target_push (gentity_t *ent);
+// mmp
+void SP_target_startTimer (gentity_t *ent);
+void SP_target_stopTimer (gentity_t *ent);
+void SP_target_checkpoint (gentity_t *ent);
 
 void SP_light (gentity_t *self);
 void SP_info_null (gentity_t *self);
@@ -174,6 +200,12 @@ void SP_team_CTF_blueplayer( gentity_t *ent );
 void SP_team_CTF_redspawn( gentity_t *ent );
 void SP_team_CTF_bluespawn( gentity_t *ent );
 
+void SP_team_base_redplayer( gentity_t *ent );
+void SP_team_base_blueplayer( gentity_t *ent );
+
+void SP_team_base_redspawn( gentity_t *ent );
+void SP_team_base_bluespawn( gentity_t *ent );
+
 #ifdef MISSIONPACK
 void SP_team_blueobelisk( gentity_t *ent );
 void SP_team_redobelisk( gentity_t *ent );
@@ -186,6 +218,7 @@ spawn_t	spawns[] = {
 	// information for things controlled by other processes
 	{"info_player_start", SP_info_player_start},
 	{"info_player_deathmatch", SP_info_player_deathmatch},
+	{"info_player_deathmatch_alt", SP_info_player_deathmatch_alt},
 	{"info_player_intermission", SP_info_player_intermission},
 	{"info_null", SP_info_null},
 	{"info_notnull", SP_info_notnull},		// use target_position instead
@@ -228,6 +261,10 @@ spawn_t	spawns[] = {
 	{"target_position", SP_target_position},
 	{"target_location", SP_target_location},
 	{"target_push", SP_target_push},
+	// mmp
+	{"target_startTimer", SP_target_startTimer},
+	{"target_stopTimer", SP_target_stopTimer},
+	{"target_checkpoint", SP_target_checkpoint},
 
 	{"light", SP_light},
 	{"path_corner", SP_path_corner},
@@ -246,6 +283,12 @@ spawn_t	spawns[] = {
 
 	{"team_CTF_redspawn", SP_team_CTF_redspawn},
 	{"team_CTF_bluespawn", SP_team_CTF_bluespawn},
+
+	{"team_base_redplayer", SP_team_base_redplayer},
+	{"team_base_blueplayer", SP_team_base_blueplayer},
+
+	{"team_base_redspawn", SP_team_base_redspawn},
+	{"team_base_bluespawn", SP_team_base_bluespawn},
 
 #ifdef MISSIONPACK
 	{"team_redobelisk", SP_team_redobelisk},
@@ -305,7 +348,7 @@ so message texts can be multi-line
 char *G_NewString( const char *string ) {
 	char	*newb, *new_p;
 	int		i,l;
-	
+
 	l = strlen(string) + 1;
 
 	newb = G_Alloc( l );
@@ -325,7 +368,7 @@ char *G_NewString( const char *string ) {
 			*new_p++ = string[i];
 		}
 	}
-	
+
 	return newb;
 }
 
@@ -397,8 +440,10 @@ level.spawnVars[], then call the class specfic spawn function
 void G_SpawnGEntityFromSpawnVars( void ) {
 	int			i;
 	gentity_t	*ent;
+	/*gitem_t		*item;*/ // mmp
 	char		*s, *value, *gametypeName;
-	static char *gametypeNames[] = {"ffa", "tournament", "single", "team", "ctf", "oneflag", "obelisk", "harvester"};
+	/*static char *gametypeNames[] = {"ffa", "tournament", "single", "team", "ctf", "oneflag", "obelisk", "harvester"};*/
+	static char *gametypeNames[] = {"ffa", "tournament", "single", "team", "ctf", "aa1", "6", "7"};
 
 	// get the next free entity
 	ent = G_Spawn();
@@ -425,29 +470,32 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 			return;
 		}
 	} else {
-		G_SpawnInt( "notfree", "0", &i );
+		if (g_gametype.integer == GT_TOURNAMENT) {
+			G_SpawnInt( "nottournament", "0", &i );
+			if ( i ) {
+				ADJUST_AREAPORTAL();
+				G_FreeEntity( ent );
+				return;
+			}
+		} else {
+			G_SpawnInt( "notfree", "0", &i );
+			if ( i ) {
+				ADJUST_AREAPORTAL();
+				G_FreeEntity( ent );
+				return;
+			}
+		}
+	}
+
+	// remove item that share a spawn spot with a gametype objective item
+/*	if ( g_gametype.integer >= GT_SKULLBALL ) {
+		G_SpawnInt( "nocenterobjective", "0", &i );
 		if ( i ) {
 			ADJUST_AREAPORTAL();
 			G_FreeEntity( ent );
 			return;
 		}
-	}
-
-#ifdef MISSIONPACK
-	G_SpawnInt( "notta", "0", &i );
-	if ( i ) {
-		ADJUST_AREAPORTAL();
-		G_FreeEntity( ent );
-		return;
-	}
-#else
-	G_SpawnInt( "notq3a", "0", &i );
-	if ( i ) {
-		ADJUST_AREAPORTAL();
-		G_FreeEntity( ent );
-		return;
-	}
-#endif
+	}*/
 
 	if( G_SpawnString( "gametype", NULL, &value ) ) {
 		if( g_gametype.integer >= GT_FFA && g_gametype.integer < GT_MAX_GAME_TYPE ) {
@@ -455,6 +503,20 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 
 			s = strstr( value, gametypeName );
 			if( !s ) {
+				ADJUST_AREAPORTAL();
+				G_FreeEntity( ent );
+				return;
+			}
+		}
+	}
+
+	// this will omit a gametype if listed
+	if( G_SpawnString( "notgametype", NULL, &value ) ) {
+		if( g_gametype.integer >= GT_FFA && g_gametype.integer < GT_MAX_GAME_TYPE ) {
+			gametypeName = gametypeNames[g_gametype.integer];
+
+			s = strstr( value, gametypeName );
+			if( s ) {
 				ADJUST_AREAPORTAL();
 				G_FreeEntity( ent );
 				return;
@@ -523,7 +585,7 @@ qboolean G_ParseSpawnVars( void ) {
 	}
 
 	// go through all the key / value pairs
-	while ( 1 ) {	
+	while ( 1 ) {
 		// parse key
 		if ( !trap_GetEntityToken( keyname, sizeof( keyname ) ) ) {
 			G_Error( "G_ParseSpawnVars: EOF without closing brace" );
@@ -532,8 +594,8 @@ qboolean G_ParseSpawnVars( void ) {
 		if ( keyname[0] == '}' ) {
 			break;
 		}
-		
-		// parse value	
+
+		// parse value
 		if ( !trap_GetEntityToken( com_token, sizeof( com_token ) ) ) {
 			G_Error( "G_ParseSpawnVars: EOF without closing brace" );
 		}
@@ -558,7 +620,7 @@ qboolean G_ParseSpawnVars( void ) {
 
 Every map should have exactly one worldspawn.
 "music"		music wav file
-"gravity"	800 is default gravity
+"gravity"	1000 is default gravity
 "message"	Text to print during connection process
 */
 void SP_worldspawn( void ) {
@@ -580,9 +642,15 @@ void SP_worldspawn( void ) {
 	G_SpawnString( "message", "", &s );
 	trap_SetConfigstring( CS_MESSAGE, s );				// map specific message
 
+	// mini map
+	G_SpawnString( "mapScaleX", "0.5", &s );
+	trap_SetConfigstring( CS_MINIMAPSCALEX, s );
+	G_SpawnString( "mapScaleY", "0.5", &s );
+	trap_SetConfigstring( CS_MINIMAPSCALEY, s );
+
 	trap_SetConfigstring( CS_MOTD, g_motd.string );		// message of the day
 
-	G_SpawnString( "gravity", "800", &s );
+	G_SpawnString( "gravity", "1000", &s );
 	trap_Cvar_Set( "g_gravity", s );
 
 	G_SpawnString( "enableDust", "0", &s );
@@ -590,6 +658,37 @@ void SP_worldspawn( void ) {
 
 	G_SpawnString( "enableBreath", "0", &s );
 	trap_Cvar_Set( "g_enableBreath", s );
+
+	// map specified ruleset modifications
+	G_SpawnStringWithRuleset( "timelimit_dm", "-1", &s );
+	level.rsmod_timelimit_dm = atoi( s ) + 1;
+	/*G_Printf ("^6DEBUG: %i\n", level.rsmod_timelimit_dm);*/
+	G_SpawnStringWithRuleset( "timelimit_tourney", "-1", &s );
+	level.rsmod_timelimit_tourney = atoi( s ) + 1;
+	G_SpawnStringWithRuleset( "timelimit_team", "-1", &s );
+	level.rsmod_timelimit_team = atoi( s ) + 1;
+	G_SpawnStringWithRuleset( "timelimit_ctf", "-1", &s );
+	level.rsmod_timelimit_ctf = atoi( s ) + 1;
+	G_SpawnStringWithRuleset( "timelimit_else", "-1", &s );
+	level.rsmod_timelimit_else = atoi( s ) + 1;
+
+	G_SpawnStringWithRuleset( "overtime_dm", "-1", &s );
+	level.rsmod_overtime_dm = atoi( s ) + 1;
+	G_SpawnStringWithRuleset( "overtime_tourney", "-1", &s );
+	level.rsmod_overtime_tourney = atoi( s ) + 1;
+	G_SpawnStringWithRuleset( "overtime_team", "-1", &s );
+	level.rsmod_overtime_team = atoi( s ) + 1;
+	G_SpawnStringWithRuleset( "overtime_ctf", "-1", &s );
+	level.rsmod_overtime_ctf = atoi( s ) + 1;
+	G_SpawnStringWithRuleset( "overtime_else", "-1", &s );
+	level.rsmod_overtime_else = atoi( s ) + 1;
+
+	G_SpawnStringWithRuleset( "matchMode", "-1", &s );
+	level.rsmod_matchMode = atoi( s ) + 1;
+
+	//G_Printf ("^8DEBUG: %i\n", level.rsmod_timelimit_dm);
+
+	//
 
 	g_entities[ENTITYNUM_WORLD].s.number = ENTITYNUM_WORLD;
 	g_entities[ENTITYNUM_WORLD].r.ownerNum = ENTITYNUM_NONE;
@@ -604,7 +703,7 @@ void SP_worldspawn( void ) {
 	if ( g_restarted.integer ) {
 		trap_Cvar_Set( "g_restarted", "0" );
 		level.warmupTime = 0;
-	} else if ( g_doWarmup.integer ) { // Turn it on
+	} else if ( level.rs_warmup /*g_doWarmup.integer*/ ) { // Turn it on
 		level.warmupTime = -1;
 		trap_SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
 		G_LogPrintf( "Warmup:\n" );
@@ -636,7 +735,7 @@ void G_SpawnEntitiesFromString( void ) {
 	// parse ents
 	while( G_ParseSpawnVars() ) {
 		G_SpawnGEntityFromSpawnVars();
-	}	
+	}
 
 	level.spawning = qfalse;			// any future calls to G_Spawn*() will be errors
 }

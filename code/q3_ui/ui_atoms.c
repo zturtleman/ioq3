@@ -184,151 +184,223 @@ void UI_LerpColor(vec4_t a, vec4_t b, vec4_t c, float t)
 UI_DrawProportionalString2
 =================
 */
-static int	propMap[128][3] = {
+static int	propMap[256][3] = {
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, /*{0, 0, -1}, {0, 0, -1},*/
+
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 1, 16},	// health icon
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 1, 16},	// armor icon
+
+{0, 0, PROP_SPACE_WIDTH},			// SPACE
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 2, 8},	// !
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 2, 16},	// "
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 2, 16},	// #
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 2, 16},	// $
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 2, 16},	// %
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 2, 16},	// &
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 2, 8},	// '
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 2, 8},	// (
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 2, 8},	// )
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 2, 16},	// *
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 2, 16},	// +
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 2, 8},	// ,
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * 2, 16},	// -
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 2, 8},	// .
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 2, 16},	// /
+
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 3, 16},	// 0
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 3, 12},	// 1
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 3, 16},	// 2
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 3, 16},	// 3
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 3, 16},	// 4
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 3, 16},	// 5
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 3, 16},	// 6
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 3, 16},	// 7
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 3, 16},	// 8
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 3, 16},	// 9
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 3, 8},	// :
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 3, 8},	// ;
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 3, 16},	// <
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * 3, 16},	// =
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 3, 16},	// >
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 3, 16},	// ?
+
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 4, 16},	// @
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 4, 16},	// A
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 4, 16},	// B
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 4, 16},	// C
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 4, 16},	// D
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 4, 16},	// E
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 4, 16},	// F
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 4, 16},	// G
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 4, 16},	// H
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 4, 10},	// I
+{PROP_GRID_SIZE * 10 +1, PROP_GRID_SIZE * 4, 15},// J
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 4, 16},	// K
+{PROP_GRID_SIZE * 12 +1, PROP_GRID_SIZE * 4, 15},// L
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 0, 18},	// M
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 4, 16},	// N
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 4, 16},	// O
+
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 5, 16},	// P
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 5, 16},	// Q
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 5, 16},	// R
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 5, 16},	// S
+{PROP_GRID_SIZE * 4 +1, PROP_GRID_SIZE * 5, 15},// T
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 5, 16},	// U
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 5, 16},	// V
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 0, 20},	// W
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 5, 16},	// X
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 5, 16},	// Y
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 5, 16},	// Z
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 5, 8},	// [
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 5, 16},	// '\'
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * 5, 8},	// ]
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 5, 16},	// ^
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 5, 16},	// _
+
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 6, 8},	// ` <-- not ' but `, big differents
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 6, 16},	// a
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 6, 16},	// b
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 6, 16},	// c
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 6, 16},	// d
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 6, 16},	// e
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 6, 16},	// f
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 6, 16},	// g
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 6, 16},	// h
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 6, 10},	// i
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 6, 16},	// j
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 6, 16},	// k
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 6, 10},	// l
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * 6, 16},	// m
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 6, 16},	// n
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 6, 16},	// o
+
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 7, 16},	// p
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 7, 16},	// q
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 7, 16},	// r
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 7, 16},	// s
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 7, 16},	// t
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 7, 16},	// u
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 7, 16},	// v
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 7, 16},	// w
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 7, 16},	// x
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 7, 16},	// y
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 7, 16},	// z
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 7, 8},	// {
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 7, 8},	// |
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * 7, 8},	// }
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 7, 16},	// ~
+//{0, 0, -1},					// DEL
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 0, 30},	// DEL (used for infinite symbol)
+
 {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
 {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
 
 {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
 {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
 
-{0, 0, PROP_SPACE_WIDTH},		// SPACE
-{11, 122, 7},	// !
-{154, 181, 14},	// "
-{55, 122, 17},	// #
-{79, 122, 18},	// $
-{101, 122, 23},	// %
-{153, 122, 18},	// &
-{9, 93, 7},		// '
-{207, 122, 8},	// (
-{230, 122, 9},	// )
-{177, 122, 18},	// *
-{30, 152, 18},	// +
-{85, 181, 7},	// ,
-{34, 93, 11},	// -
-{110, 181, 6},	// .
-{130, 152, 14},	// /
+/*{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
 
-{22, 64, 17},	// 0
-{41, 64, 12},	// 1
-{58, 64, 17},	// 2
-{78, 64, 18},	// 3
-{98, 64, 19},	// 4
-{120, 64, 18},	// 5
-{141, 64, 18},	// 6
-{204, 64, 16},	// 7
-{162, 64, 17},	// 8
-{182, 64, 18},	// 9
-{59, 181, 7},	// :
-{35,181, 7},	// ;
-{203, 152, 14},	// <
-{56, 93, 14},	// =
-{228, 152, 14},	// >
-{177, 181, 18},	// ?
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},*/
 
-{28, 122, 22},	// @
-{5, 4, 18},		// A
-{27, 4, 18},	// B
-{48, 4, 18},	// C
-{69, 4, 17},	// D
-{90, 4, 13},	// E
-{106, 4, 13},	// F
-{121, 4, 18},	// G
-{143, 4, 17},	// H
-{164, 4, 8},	// I
-{175, 4, 16},	// J
-{195, 4, 18},	// K
-{216, 4, 12},	// L
-{230, 4, 23},	// M
-{6, 34, 18},	// N
-{27, 34, 18},	// O
+{0, 0, PROP_SPACE_WIDTH},			// 0xA0
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 10, 8},	// 0xA1
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 10, 16},	// 0xA2
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 10, 16},	// 0xA3
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 10, 14},	// 0xA4
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 10, 16},	// 0xA5
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 10, 8},	// 0xA6
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 10, 16},	// 0xA7
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 10, 10},	// 0xA8
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 10, 14},	// 0xA9
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 10, 10},	// 0xAA
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 10, 16},	// 0xAB
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 10, 16},	// 0xAC
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * 10, 16},	// 0xAD
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 10, 14},	// 0xAE
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 10, 16},	// 0xAF
 
-{48, 34, 18},	// P
-{68, 34, 18},	// Q
-{90, 34, 17},	// R
-{110, 34, 18},	// S
-{130, 34, 14},	// T
-{146, 34, 18},	// U
-{166, 34, 19},	// V
-{185, 34, 29},	// W
-{215, 34, 18},	// X
-{234, 34, 18},	// Y
-{5, 64, 14},	// Z
-{60, 152, 7},	// [
-{106, 151, 13},	// '\'
-{83, 152, 7},	// ]
-{128, 122, 17},	// ^
-{4, 152, 21},	// _
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 11, 8},	// 0xB0
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 11, 16},	// 0xB1
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 11, 10},	// 0xB2
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 11, 10},	// 0xB3
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 11, 8},	// 0xB4
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 11, 16},	// 0xB5
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 11, 16},	// 0xB6
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 11, 16},	// 0xB7
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 11, 16},	// 0xB8
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 11, 10},	// 0xB9
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 11, 10},	// 0xBA
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 11, 16},	// 0xBB
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 11, 16},	// 0xBC
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * 11, 16},	// 0xBD
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 11, 16},	// 0xBE
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 11, 16},	// 0xBF
 
-{134, 181, 5},	// '
-{5, 4, 18},		// A
-{27, 4, 18},	// B
-{48, 4, 18},	// C
-{69, 4, 17},	// D
-{90, 4, 13},	// E
-{106, 4, 13},	// F
-{121, 4, 18},	// G
-{143, 4, 17},	// H
-{164, 4, 8},	// I
-{175, 4, 16},	// J
-{195, 4, 18},	// K
-{216, 4, 12},	// L
-{230, 4, 23},	// M
-{6, 34, 18},	// N
-{27, 34, 18},	// O
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
 
-{48, 34, 18},	// P
-{68, 34, 18},	// Q
-{90, 34, 17},	// R
-{110, 34, 18},	// S
-{130, 34, 14},	// T
-{146, 34, 18},	// U
-{166, 34, 19},	// V
-{185, 34, 29},	// W
-{215, 34, 18},	// X
-{234, 34, 18},	// Y
-{5, 64, 14},	// Z
-{153, 152, 13},	// {
-{11, 181, 5},	// |
-{180, 152, 13},	// }
-{79, 93, 17},	// ~
-{0, 0, -1}		// DEL
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}
 };
 
-static int propMapB[26][3] = {
-{11, 12, 33},
-{49, 12, 31},
-{85, 12, 31},
-{120, 12, 30},
-{156, 12, 21},
-{183, 12, 21},
-{207, 12, 32},
+static int propMapB[/*26*/ 37][3] = {
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 4, 16},	// A
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 4, 16},	// B
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 4, 16},	// C
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 4, 16},	// D
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 4, 16},	// E
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 4, 16},	// F
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 4, 16},	// G
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 4, 16},	// H
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 4, 10},	// I
+{PROP_GRID_SIZE * 10 +1, PROP_GRID_SIZE * 4, 15},// J
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 4, 16},	// K
+{PROP_GRID_SIZE * 12 +1, PROP_GRID_SIZE * 4, 15},// L
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 0, 18},	// M
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 4, 16},	// N
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 4, 16},	// O
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 5, 16},	// P
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 5, 16},	// Q
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 5, 16},	// R
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 5, 16},	// S
+{PROP_GRID_SIZE * 4 +1, PROP_GRID_SIZE * 5, 15},// T
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 5, 16},	// U
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 5, 16},	// V
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 0, 20},	// W
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 5, 16},	// X
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 5, 16},	// Y
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 5, 16},	// Z
 
-{13, 55, 30},
-{49, 55, 13},
-{66, 55, 29},
-{101, 55, 31},
-{135, 55, 21},
-{158, 55, 40},
-{204, 55, 32},
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 3, 16},	// 0
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 3, 12},	// 1
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 3, 16},	// 2
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 3, 16},	// 3
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 3, 16},	// 4
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 3, 16},	// 5
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 3, 16},	// 6
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 3, 16},	// 7
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 3, 16},	// 8
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 3, 16},	// 9
 
-{12, 97, 31},
-{48, 97, 31},
-{82, 97, 30},
-{118, 97, 30},
-{153, 97, 30},
-{185, 97, 25},
-{213, 97, 30},
-
-{11, 139, 32},
-{42, 139, 51},
-{93, 139, 32},
-{126, 139, 31},
-{158, 139, 25},
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 2, 8}	// .
 };
 
 #define PROPB_GAP_WIDTH		4
-#define PROPB_SPACE_WIDTH	12
-#define PROPB_HEIGHT		36
+#define PROPB_SPACE_WIDTH	8
+#define PROPB_HEIGHT		16
 
 /*
 =================
@@ -371,6 +443,26 @@ static void UI_DrawBannerString2( int x, int y, const char* str, vec4_t color )
 			ah = (float)PROPB_HEIGHT * uis.yscale;
 			trap_R_DrawStretchPic( ax, ay, aw, ah, fcol, frow, fcol+fwidth, frow+fheight, uis.charsetPropB );
 			ax += (aw + (float)PROPB_GAP_WIDTH * uis.xscale);
+		} else if ( ch >= '0' && ch <= '9' ) {
+			ch -= ('0' - 26);
+			fcol = (float)propMapB[ch][0] / 256.0f;
+			frow = (float)propMapB[ch][1] / 256.0f;
+			fwidth = (float)propMapB[ch][2] / 256.0f;
+			fheight = (float)PROPB_HEIGHT / 256.0f;
+			aw = (float)propMapB[ch][2] * uis.xscale;
+			ah = (float)PROPB_HEIGHT * uis.yscale;
+			trap_R_DrawStretchPic( ax, ay, aw, ah, fcol, frow, fcol+fwidth, frow+fheight, uis.charsetPropB );
+			ax += (aw + (float)PROPB_GAP_WIDTH * uis.xscale);
+		} else if ( ch == '.' ) {
+			ch = 36;
+			fcol = (float)propMapB[ch][0] / 256.0f;
+			frow = (float)propMapB[ch][1] / 256.0f;
+			fwidth = (float)propMapB[ch][2] / 256.0f;
+			fheight = (float)PROPB_HEIGHT / 256.0f;
+			aw = (float)propMapB[ch][2] * uis.xscale;
+			ah = (float)PROPB_HEIGHT * uis.yscale;
+			trap_R_DrawStretchPic( ax, ay, aw, ah, fcol, frow, fcol+fwidth, frow+fheight, uis.charsetPropB );
+			ax += (aw + (float)PROPB_GAP_WIDTH * uis.xscale);
 		}
 		s++;
 	}
@@ -394,6 +486,10 @@ void UI_DrawBannerString( int x, int y, const char* str, int style, vec4_t color
 		}
 		else if ( ch >= 'A' && ch <= 'Z' ) {
 			width += propMapB[ch - 'A'][2] + PROPB_GAP_WIDTH;
+		} else if ( ch >= '0' && ch <= '9' ) {
+			width += propMapB[ch - ('0' - 26)][2] + PROPB_GAP_WIDTH;
+		} else if ( ch >= '.' ) {
+			width += propMapB[36][2] + PROPB_GAP_WIDTH;
 		}
 		s++;
 	}
@@ -416,7 +512,7 @@ void UI_DrawBannerString( int x, int y, const char* str, int style, vec4_t color
 	if ( style & UI_DROPSHADOW ) {
 		drawcolor[0] = drawcolor[1] = drawcolor[2] = 0;
 		drawcolor[3] = color[3];
-		UI_DrawBannerString2( x+2, y+2, str, drawcolor );
+		UI_DrawBannerString2( x+1, y+1, str, drawcolor );
 	}
 
 	UI_DrawBannerString2( x, y, str, color );
@@ -1226,7 +1322,16 @@ void UI_Refresh( int realtime )
 
 	// draw cursor
 	UI_SetColor( NULL );
-	UI_DrawHandlePic( uis.cursorx-16, uis.cursory-16, 32, 32, uis.cursor);
+	//UI_DrawHandlePic( uis.cursorx-16, uis.cursory-16, 32, 32, uis.cursor);
+	if (ui_sharpCursor.integer) {
+		trap_R_DrawStretchPic( floor( uis.cursorx * uis.xscale + uis.bias - 16 ), floor( uis.cursory * uis.yscale - 16 ),
+								32, 32,
+								0.0, 0.0, 1.0, 1.0, uis.cursor );
+	} else {
+		trap_R_DrawStretchPic( uis.cursorx * uis.xscale + uis.bias - 16, uis.cursory * uis.yscale - 16,
+								32, 32,
+								0.0, 0.0, 1.0, 1.0, uis.cursor );
+	}
 
 #ifndef NDEBUG
 	if (uis.debug)

@@ -79,31 +79,29 @@ tryagain:
 	}
 
 	if( pi->weaponModel == 0 ) {
-		if( weaponNum == WP_MACHINEGUN ) {
+		if( weaponNum == WP_SHOTGUN ) {
 			weaponNum = WP_NONE;
 			goto tryagain;
 		}
-		weaponNum = WP_MACHINEGUN;
+		weaponNum = WP_SHOTGUN;
 		goto tryagain;
 	}
 
-	if ( weaponNum == WP_MACHINEGUN || weaponNum == WP_GAUNTLET || weaponNum == WP_BFG ) {
-		COM_StripExtension( item->world_model[0], path, sizeof(path) );
-		Q_strcat( path, sizeof(path), "_barrel.md3" );
+	if ( weaponNum == WP_GAUNTLET ) {
+		strcpy( path, item->world_model[0] );
+		COM_StripExtension( path, path, sizeof(path) );
+		strcat( path, "_barrel.md3" );
 		pi->barrelModel = trap_R_RegisterModel( path );
 	}
 
-	COM_StripExtension( item->world_model[0], path, sizeof(path) );
-	Q_strcat( path, sizeof(path), "_flash.md3" );
+	strcpy( path, item->world_model[0] );
+	COM_StripExtension( path, path, sizeof(path) );
+	strcat( path, "_flash.md3" );
 	pi->flashModel = trap_R_RegisterModel( path );
 
 	switch( weaponNum ) {
 	case WP_GAUNTLET:
 		MAKERGB( pi->flashDlightColor, 0.6f, 0.6f, 1 );
-		break;
-
-	case WP_MACHINEGUN:
-		MAKERGB( pi->flashDlightColor, 1, 1, 0 );
 		break;
 
 	case WP_SHOTGUN:
@@ -122,16 +120,12 @@ tryagain:
 		MAKERGB( pi->flashDlightColor, 0.6f, 0.6f, 1 );
 		break;
 
-	case WP_RAILGUN:
+/*	case WP_RAILGUN:
 		MAKERGB( pi->flashDlightColor, 1, 0.5f, 0 );
-		break;
+		break;*/
 
 	case WP_PLASMAGUN:
 		MAKERGB( pi->flashDlightColor, 0.6f, 0.6f, 1 );
-		break;
-
-	case WP_BFG:
-		MAKERGB( pi->flashDlightColor, 1, 0.7f, 1 );
 		break;
 
 	case WP_GRAPPLING_HOOK:
@@ -332,6 +326,10 @@ static void UI_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_
 	// cast away const because of compiler problems
 	MatrixMultiply( entity->axis, lerped.axis, tempAxis );
 	MatrixMultiply( tempAxis, ((refEntity_t *)parent)->axis, entity->axis );
+/*
+	MatrixMultiply( entity->axis, ((refEntity_t *)parent)->axis, tempAxis );
+	MatrixMultiply( lerped.axis, tempAxis, entity->axis );
+*/
 }
 
 
@@ -687,12 +685,12 @@ UI_DrawPlayer
 */
 void UI_DrawPlayer( float x, float y, float w, float h, playerInfo_t *pi, int time ) {
 	refdef_t		refdef;
-	refEntity_t		legs = {0};
-	refEntity_t		torso = {0};
-	refEntity_t		head = {0};
-	refEntity_t		gun = {0};
-	refEntity_t		barrel = {0};
-	refEntity_t		flash = {0};
+	refEntity_t		legs;
+	refEntity_t		torso;
+	refEntity_t		head;
+	refEntity_t		gun;
+	refEntity_t		barrel;
+	refEntity_t		flash;
 	vec3_t			origin;
 	int				renderfx;
 	vec3_t			mins = {-16, -16, -24};
@@ -706,10 +704,10 @@ void UI_DrawPlayer( float x, float y, float w, float h, playerInfo_t *pi, int ti
 
 	dp_realtime = time;
 
-	if ( pi->pendingWeapon != WP_NUM_WEAPONS && dp_realtime > pi->weaponTimer ) {
+	if ( pi->pendingWeapon != -1 && dp_realtime > pi->weaponTimer ) {
 		pi->weapon = pi->pendingWeapon;
 		pi->lastWeapon = pi->pendingWeapon;
-		pi->pendingWeapon = WP_NUM_WEAPONS;
+		pi->pendingWeapon = -1;
 		pi->weaponTimer = 0;
 		if( pi->currentWeapon != pi->weapon ) {
 			trap_S_StartLocalSound( weaponChangeSound, CHAN_LOCAL );
@@ -817,12 +815,13 @@ void UI_DrawPlayer( float x, float y, float w, float h, playerInfo_t *pi, int ti
 	if ( pi->currentWeapon != WP_NONE ) {
 		memset( &gun, 0, sizeof(gun) );
 		gun.hModel = pi->weaponModel;
-		if( pi->currentWeapon == WP_RAILGUN ) {
+		/*if( pi->currentWeapon == WP_RAILGUN ) {
 			Byte4Copy( pi->c1RGBA, gun.shaderRGBA );
 		}
 		else {
 			Byte4Copy( colorWhite, gun.shaderRGBA );
-		}
+		}*/
+		Byte4Copy( colorWhite, gun.shaderRGBA );
 		VectorCopy( origin, gun.lightingOrigin );
 		UI_PositionEntityOnTag( &gun, &torso, pi->torsoModel, "tag_weapon");
 		gun.renderfx = renderfx;
@@ -832,7 +831,7 @@ void UI_DrawPlayer( float x, float y, float w, float h, playerInfo_t *pi, int ti
 	//
 	// add the spinning barrel
 	//
-	if ( pi->realWeapon == WP_MACHINEGUN || pi->realWeapon == WP_GAUNTLET || pi->realWeapon == WP_BFG ) {
+	if ( pi->realWeapon == WP_GAUNTLET || pi->realWeapon == WP_CHAINGUN ) {
 		vec3_t	angles;
 
 		memset( &barrel, 0, sizeof(barrel) );
@@ -843,6 +842,10 @@ void UI_DrawPlayer( float x, float y, float w, float h, playerInfo_t *pi, int ti
 		angles[YAW] = 0;
 		angles[PITCH] = 0;
 		angles[ROLL] = UI_MachinegunSpinAngle( pi );
+		/*if( pi->realWeapon == WP_GAUNTLET ) {
+			angles[PITCH] = angles[ROLL];
+			angles[ROLL] = 0;
+		}*/
 		AnglesToAxis( angles, barrel.axis );
 
 		UI_PositionRotatedEntityOnTag( &barrel, &gun, pi->weaponModel, "tag_barrel");
@@ -857,12 +860,13 @@ void UI_DrawPlayer( float x, float y, float w, float h, playerInfo_t *pi, int ti
 		if ( pi->flashModel ) {
 			memset( &flash, 0, sizeof(flash) );
 			flash.hModel = pi->flashModel;
-			if( pi->currentWeapon == WP_RAILGUN ) {
+			/*if( pi->currentWeapon == WP_RAILGUN ) {
 				Byte4Copy( pi->c1RGBA, flash.shaderRGBA );
 			}
 			else {
 				Byte4Copy( colorWhite, flash.shaderRGBA );
-			}
+			}*/
+			Byte4Copy( colorWhite, flash.shaderRGBA );
 			VectorCopy( origin, flash.lightingOrigin );
 			UI_PositionEntityOnTag( &flash, &gun, pi->weaponModel, "tag_flash");
 			flash.renderfx = renderfx;
@@ -1127,10 +1131,10 @@ UI_PlayerInfo_SetModel
 void UI_PlayerInfo_SetModel( playerInfo_t *pi, const char *model ) {
 	memset( pi, 0, sizeof(*pi) );
 	UI_RegisterClientModelname( pi, model );
-	pi->weapon = WP_MACHINEGUN;
+	pi->weapon = WP_SHOTGUN;
 	pi->currentWeapon = pi->weapon;
 	pi->lastWeapon = pi->weapon;
-	pi->pendingWeapon = WP_NUM_WEAPONS;
+	pi->pendingWeapon = -1;
 	pi->weaponTimer = 0;
 	pi->chat = qfalse;
 	pi->newModel = qtrue;
@@ -1196,11 +1200,11 @@ void UI_PlayerInfo_SetInfo( playerInfo_t *pi, int legsAnim, int torsoAnim, vec3_
 		pi->torso.yawAngle = viewAngles[YAW];
 		pi->torso.yawing = qfalse;
 
-		if ( weaponNumber != WP_NUM_WEAPONS ) {
+		if ( weaponNumber != -1 ) {
 			pi->weapon = weaponNumber;
 			pi->currentWeapon = weaponNumber;
 			pi->lastWeapon = weaponNumber;
-			pi->pendingWeapon = WP_NUM_WEAPONS;
+			pi->pendingWeapon = -1;
 			pi->weaponTimer = 0;
 			UI_PlayerInfo_SetWeapon( pi, pi->weapon );
 		}
@@ -1209,8 +1213,8 @@ void UI_PlayerInfo_SetInfo( playerInfo_t *pi, int legsAnim, int torsoAnim, vec3_
 	}
 
 	// weapon
-	if ( weaponNumber == WP_NUM_WEAPONS ) {
-		pi->pendingWeapon = WP_NUM_WEAPONS;
+	if ( weaponNumber == -1 ) {
+		pi->pendingWeapon = -1;
 		pi->weaponTimer = 0;
 	}
 	else if ( weaponNumber != WP_NONE ) {

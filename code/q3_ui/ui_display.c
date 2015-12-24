@@ -152,7 +152,7 @@ static void UI_DisplayOptionsMenu_Init( void ) {
 	displayOptionsInfo.graphics.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	displayOptionsInfo.graphics.generic.id			= ID_GRAPHICS;
 	displayOptionsInfo.graphics.generic.callback	= UI_DisplayOptionsMenu_Event;
-	displayOptionsInfo.graphics.generic.x			= 216;
+	displayOptionsInfo.graphics.generic.x			= 136; //216;
 	displayOptionsInfo.graphics.generic.y			= 240 - 2 * PROP_HEIGHT;
 	displayOptionsInfo.graphics.string				= "GRAPHICS";
 	displayOptionsInfo.graphics.style				= UI_RIGHT;
@@ -162,7 +162,7 @@ static void UI_DisplayOptionsMenu_Init( void ) {
 	displayOptionsInfo.display.generic.flags		= QMF_RIGHT_JUSTIFY;
 	displayOptionsInfo.display.generic.id			= ID_DISPLAY;
 	displayOptionsInfo.display.generic.callback		= UI_DisplayOptionsMenu_Event;
-	displayOptionsInfo.display.generic.x			= 216;
+	displayOptionsInfo.display.generic.x			= 136;
 	displayOptionsInfo.display.generic.y			= 240 - PROP_HEIGHT;
 	displayOptionsInfo.display.string				= "DISPLAY";
 	displayOptionsInfo.display.style				= UI_RIGHT;
@@ -172,7 +172,7 @@ static void UI_DisplayOptionsMenu_Init( void ) {
 	displayOptionsInfo.sound.generic.flags			= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	displayOptionsInfo.sound.generic.id				= ID_SOUND;
 	displayOptionsInfo.sound.generic.callback		= UI_DisplayOptionsMenu_Event;
-	displayOptionsInfo.sound.generic.x				= 216;
+	displayOptionsInfo.sound.generic.x				= 136;
 	displayOptionsInfo.sound.generic.y				= 240;
 	displayOptionsInfo.sound.string					= "SOUND";
 	displayOptionsInfo.sound.style					= UI_RIGHT;
@@ -182,7 +182,7 @@ static void UI_DisplayOptionsMenu_Init( void ) {
 	displayOptionsInfo.network.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	displayOptionsInfo.network.generic.id			= ID_NETWORK;
 	displayOptionsInfo.network.generic.callback		= UI_DisplayOptionsMenu_Event;
-	displayOptionsInfo.network.generic.x			= 216;
+	displayOptionsInfo.network.generic.x			= 136;
 	displayOptionsInfo.network.generic.y			= 240 + PROP_HEIGHT;
 	displayOptionsInfo.network.string				= "NETWORK";
 	displayOptionsInfo.network.style				= UI_RIGHT;

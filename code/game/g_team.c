@@ -49,7 +49,7 @@ void Team_InitGame( void ) {
 	case GT_CTF:
 		teamgame.redStatus = -1; // Invalid to force update
 		Team_SetFlagStatus( TEAM_RED, FLAG_ATBASE );
-		 teamgame.blueStatus = -1; // Invalid to force update
+		teamgame.blueStatus = -1; // Invalid to force update
 		Team_SetFlagStatus( TEAM_BLUE, FLAG_ATBASE );
 		break;
 #ifdef MISSIONPACK
@@ -73,13 +73,24 @@ int OtherTeam(int team) {
 
 const char *TeamName(int team)  {
 	if (team==TEAM_RED)
-		return "RED";
+		return S_COLOR_RED "RED" S_COLOR_WHITE;
 	else if (team==TEAM_BLUE)
-		return "BLUE";
+		return S_COLOR_BLUE "BLUE" S_COLOR_WHITE;
 	else if (team==TEAM_SPECTATOR)
-		return "SPECTATOR";
-	return "FREE";
+		return S_COLOR_CYAN "SPECTATOR" S_COLOR_WHITE;
+	return S_COLOR_YELLOW "FREE" S_COLOR_WHITE;
 }
+
+// this was moved into 'g_main.c'
+/*const char *ShortTeamName(int team)  {
+	if (team==TEAM_RED)
+		return S_COLOR_RED"[R]"S_COLOR_WHITE;
+	else if (team==TEAM_BLUE)
+		return S_COLOR_BLUE"[B]"S_COLOR_WHITE;
+	else if (team==TEAM_SPECTATOR)
+		return S_COLOR_CYAN"[S]"S_COLOR_WHITE;
+	return S_COLOR_YELLOW"[F]"S_COLOR_WHITE;
+}*/
 
 const char *TeamColorString(int team) {
 	if (team==TEAM_RED)
@@ -87,7 +98,7 @@ const char *TeamColorString(int team) {
 	else if (team==TEAM_BLUE)
 		return S_COLOR_BLUE;
 	else if (team==TEAM_SPECTATOR)
-		return S_COLOR_YELLOW;
+		return S_COLOR_CYAN;
 	return S_COLOR_WHITE;
 }
 
@@ -96,7 +107,7 @@ static __attribute__ ((format (printf, 2, 3))) void QDECL PrintMsg( gentity_t *e
 	char		msg[1024];
 	va_list		argptr;
 	char		*p;
-	
+
 	va_start (argptr,fmt);
 	if (Q_vsnprintf (msg, sizeof(msg), fmt, argptr) >= sizeof(msg)) {
 		G_Error ( "PrintMsg overrun" );
@@ -107,7 +118,8 @@ static __attribute__ ((format (printf, 2, 3))) void QDECL PrintMsg( gentity_t *e
 	while ((p = strchr(msg, '"')) != NULL)
 		*p = '\'';
 
-	trap_SendServerCommand ( ( (ent == NULL) ? -1 : ent-g_entities ), va("print \"%s\"", msg ));
+	//trap_SendServerCommand ( ( (ent == NULL) ? -1 : ent-g_entities ), va("print \"%s\"", msg ));
+	trap_SendServerCommand ( ( (ent == NULL) ? -1 : ent-g_entities ), va("notify %i\"%s\"", NF_FLAG, msg ));
 }
 
 /*
@@ -120,40 +132,18 @@ AddTeamScore
 */
 void AddTeamScore(vec3_t origin, int team, int score) {
 	gentity_t	*te;
+	int		counts[TEAM_NUM_TEAMS];
 
-	te = G_TempEntity(origin, EV_GLOBAL_TEAM_SOUND );
-	te->r.svFlags |= SVF_BROADCAST;
+	// no scoring during pre-match warmup
+	if ( level.warmupTime ) {
+		return;
+	}
 
-	if ( team == TEAM_RED ) {
-		if ( level.teamScores[ TEAM_RED ] + score == level.teamScores[ TEAM_BLUE ] ) {
-			//teams are tied sound
-			te->s.eventParm = GTS_TEAMS_ARE_TIED;
-		}
-		else if ( level.teamScores[ TEAM_RED ] <= level.teamScores[ TEAM_BLUE ] &&
-					level.teamScores[ TEAM_RED ] + score > level.teamScores[ TEAM_BLUE ]) {
-			// red took the lead sound
-			te->s.eventParm = GTS_REDTEAM_TOOK_LEAD;
-		}
-		else {
-			// red scored sound
-			te->s.eventParm = GTS_REDTEAM_SCORED;
-		}
+	// no scoring after the match has ended
+	if ( level.intermissionQueued ) {
+		return;
 	}
-	else {
-		if ( level.teamScores[ TEAM_BLUE ] + score == level.teamScores[ TEAM_RED ] ) {
-			//teams are tied sound
-			te->s.eventParm = GTS_TEAMS_ARE_TIED;
-		}
-		else if ( level.teamScores[ TEAM_BLUE ] <= level.teamScores[ TEAM_RED ] &&
-					level.teamScores[ TEAM_BLUE ] + score > level.teamScores[ TEAM_RED ]) {
-			// blue took the lead sound
-			te->s.eventParm = GTS_BLUETEAM_TOOK_LEAD;
-		}
-		else {
-			// blue scored sound
-			te->s.eventParm = GTS_BLUETEAM_SCORED;
-		}
-	}
+
 	level.teamScores[ team ] += score;
 }
 
@@ -280,6 +270,10 @@ void Team_FragBonuses(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker
 	vec3_t v1, v2;
 	int team;
 
+	// only add bonuses in CTF
+	if (g_gametype.integer != GT_CTF)
+		return;
+
 	// no bonus for fragging yourself or team mates
 	if (!targ->client || !attacker->client || targ == attacker || OnSameTeam(targ, attacker))
 		return;
@@ -301,7 +295,7 @@ void Team_FragBonuses(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker
 #ifdef MISSIONPACK
 	if (g_gametype.integer == GT_1FCTF) {
 		enemy_flag_pw = PW_NEUTRALFLAG;
-	} 
+	}
 #endif
 
 	// did the attacker frag the flag carrier?
@@ -315,8 +309,8 @@ void Team_FragBonuses(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker
 		attacker->client->pers.teamState.lastfraggedcarrier = level.time;
 		AddScore(attacker, targ->r.currentOrigin, CTF_FRAG_CARRIER_BONUS);
 		attacker->client->pers.teamState.fragcarrier++;
-		PrintMsg(NULL, "%s" S_COLOR_WHITE " fragged %s's flag carrier!\n",
-			attacker->client->pers.netname, TeamName(team));
+		PrintMsg(NULL, "%s%s" S_COLOR_WHITE " fragged %s's flag carrier!\n",
+			ShortTeamName(attacker->client->sess.sessionTeam), attacker->client->pers.netname, TeamName(team));
 
 		// the target had the flag, clear the hurt carrier
 		// field on the other team
@@ -333,8 +327,8 @@ void Team_FragBonuses(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker
 		attacker->client->pers.teamState.lastfraggedcarrier = level.time;
 		AddScore(attacker, targ->r.currentOrigin, CTF_FRAG_CARRIER_BONUS * tokens * tokens);
 		attacker->client->pers.teamState.fragcarrier++;
-		PrintMsg(NULL, "%s" S_COLOR_WHITE " fragged %s's skull carrier!\n",
-			attacker->client->pers.netname, TeamName(team));
+		PrintMsg(NULL, "%s%s" S_COLOR_WHITE " fragged %s's skull carrier!\n",
+			ShortTeamName(attacker->client->sess.sessionTeam), attacker->client->pers.netname, TeamName(team));
 
 		// the target had the flag, clear the hurt carrier
 		// field on the other team
@@ -386,7 +380,7 @@ void Team_FragBonuses(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker
 
 	// we have to find the flag and carrier entities
 
-#ifdef MISSIONPACK	
+#ifdef MISSIONPACK
 	if( g_gametype.integer == GT_OBELISK ) {
 		// find the team obelisk
 		switch (attacker->client->sess.sessionTeam) {
@@ -395,11 +389,11 @@ void Team_FragBonuses(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker
 			break;
 		case TEAM_BLUE:
 			c = "team_blueobelisk";
-			break;		
+			break;
 		default:
 			return;
 		}
-		
+
 	} else if (g_gametype.integer == GT_HARVESTER ) {
 		// find the center obelisk
 		c = "team_neutralobelisk";
@@ -412,7 +406,7 @@ void Team_FragBonuses(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker
 		break;
 	case TEAM_BLUE:
 		c = "team_CTF_blueflag";
-		break;		
+		break;
 	default:
 		return;
 	}
@@ -588,7 +582,7 @@ void Team_TakeFlagSound( gentity_t *ent, int team ) {
 
 	// only play sound when the flag was at the base
 	// or not picked up the last 10 seconds
-	switch(team) {
+	/*switch(team) {
 		case TEAM_RED:
 			if( teamgame.blueStatus != FLAG_ATBASE ) {
 				if (teamgame.blueTakenTime > level.time - 10000)
@@ -597,14 +591,14 @@ void Team_TakeFlagSound( gentity_t *ent, int team ) {
 			teamgame.blueTakenTime = level.time;
 			break;
 
-		case TEAM_BLUE:	// CTF
+		case TEAM_BLUE:
 			if( teamgame.redStatus != FLAG_ATBASE ) {
 				if (teamgame.redTakenTime > level.time - 10000)
 					return;
 			}
 			teamgame.redTakenTime = level.time;
 			break;
-	}
+	}*/
 
 	te = G_TempEntity( ent->s.pos.trBase, EV_GLOBAL_TEAM_SOUND );
 	if( team == TEAM_BLUE ) {
@@ -693,6 +687,13 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	gentity_t	*player;
 	gclient_t	*cl = other->client;
 	int			enemy_flag;
+	int			flagScore;
+
+	// don't touch flags after the match has ended
+	if ( /*level.matchEnded == qtrue*/ level.intermissionQueued ) {
+		//G_Printf ("^3TEST RETURN\n"); // debug
+		return 0;
+	}
 
 #ifdef MISSIONPACK
 	if( g_gametype.integer == GT_1FCTF ) {
@@ -708,8 +709,8 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 	if ( ent->flags & FL_DROPPED_ITEM ) {
 		// hey, it's not home.  return it by teleporting it back
-		PrintMsg( NULL, "%s" S_COLOR_WHITE " returned the %s flag!\n", 
-			cl->pers.netname, TeamName(team));
+		PrintMsg( NULL, "%s%s" S_COLOR_WHITE " returned the %s flag!\n",
+			ShortTeamName(cl->sess.sessionTeam), cl->pers.netname, TeamName(team));
 		AddScore(other, ent->r.currentOrigin, CTF_RECOVERY_BONUS);
 		other->client->pers.teamState.flagrecovery++;
 		other->client->pers.teamState.lastreturnedflag = level.time;
@@ -731,7 +732,8 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	}
 	else {
 #endif
-	PrintMsg( NULL, "%s" S_COLOR_WHITE " captured the %s flag!\n", cl->pers.netname, TeamName(OtherTeam(team)));
+	PrintMsg( NULL, "%s%s" S_COLOR_WHITE " captured the %s flag!\n", ShortTeamName(cl->sess.sessionTeam), cl->pers.netname, TeamName(OtherTeam(team)));
+	cl->pers.captures++; // add flag capture to stats
 #ifdef MISSIONPACK
 	}
 #endif
@@ -742,7 +744,16 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	teamgame.last_capture_team = team;
 
 	// Increase the team's score
-	AddTeamScore(ent->s.pos.trBase, other->client->sess.sessionTeam, 1);
+	if ( level.rs_popCTF ) {
+		AddTeamScore(ent->s.pos.trBase, other->client->sess.sessionTeam, 1);
+	} else {
+		if ( cl->sess.sessionTeam == TEAM_RED ) {
+			flagScore = g_blueTeamCount.integer * CTF_TEAM_CAPTURE_MULTI;
+		} else {
+			flagScore = g_redTeamCount.integer * CTF_TEAM_CAPTURE_MULTI;
+		}
+		AddTeamScore(ent->s.pos.trBase, other->client->sess.sessionTeam, flagScore);
+	}
 	Team_ForceGesture(other->client->sess.sessionTeam);
 
 	other->client->pers.teamState.captures++;
@@ -770,11 +781,9 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 			player->client->pers.teamState.lasthurtcarrier = -5;
 		} else if (player->client->sess.sessionTeam ==
 			cl->sess.sessionTeam) {
-#ifdef MISSIONPACK
-			AddScore(player, ent->r.currentOrigin, CTF_TEAM_BONUS);
-#endif
+
 			// award extra points for capture assists
-			if (player->client->pers.teamState.lastreturnedflag + 
+			if (player->client->pers.teamState.lastreturnedflag +
 				CTF_RETURN_FLAG_ASSIST_TIMEOUT > level.time) {
 				AddScore (player, ent->r.currentOrigin, CTF_RETURN_FLAG_ASSIST_BONUS);
 				other->client->pers.teamState.assists++;
@@ -785,8 +794,8 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 				player->client->ps.eFlags |= EF_AWARD_ASSIST;
 				player->client->rewardTime = level.time + REWARD_SPRITE_TIME;
 
-			} 
-			if (player->client->pers.teamState.lastfraggedcarrier + 
+			}
+			if (player->client->pers.teamState.lastfraggedcarrier +
 				CTF_FRAG_CARRIER_ASSIST_TIMEOUT > level.time) {
 				AddScore(player, ent->r.currentOrigin, CTF_FRAG_CARRIER_ASSIST_BONUS);
 				other->client->pers.teamState.assists++;
@@ -808,6 +817,11 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 	gclient_t *cl = other->client;
 
+	// no scoring after the match has ended
+	if ( /*level.matchEnded == qtrue*/ level.intermissionQueued ) {
+		return -1;
+	}
+
 #ifdef MISSIONPACK
 	if( g_gametype.integer == GT_1FCTF ) {
 		PrintMsg (NULL, "%s" S_COLOR_WHITE " got the flag!\n", other->client->pers.netname );
@@ -823,8 +837,8 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 	}
 	else{
 #endif
-		PrintMsg (NULL, "%s" S_COLOR_WHITE " got the %s flag!\n",
-			other->client->pers.netname, TeamName(team));
+		PrintMsg (NULL, "%s%s" S_COLOR_WHITE " got the %s flag!\n",
+			ShortTeamName(other->client->sess.sessionTeam), other->client->pers.netname, TeamName(team));
 
 		if (team == TEAM_RED)
 			cl->ps.powerups[PW_REDFLAG] = INT_MAX; // flags never expire
@@ -948,7 +962,7 @@ qboolean Team_GetLocationMsg(gentity_t *ent, char *loc, int loclen)
 	gentity_t *best;
 
 	best = Team_GetLocation( ent );
-	
+
 	if (!best)
 		return qfalse;
 
@@ -972,6 +986,7 @@ qboolean Team_GetLocationMsg(gentity_t *ent, char *loc, int loclen)
 SelectRandomTeamSpawnPoint
 
 go to a random point that doesn't telefrag
+TODO - change "team_CTF_*" items into "team_base_*" items
 ================
 */
 #define	MAX_TEAM_SPAWN_POINTS	32
@@ -983,17 +998,21 @@ gentity_t *SelectRandomTeamSpawnPoint( int teamstate, team_t team ) {
 	char		*classname;
 
 	if (teamstate == TEAM_BEGIN) {
-		if (team == TEAM_RED)
-			classname = "team_CTF_redplayer";
-		else if (team == TEAM_BLUE)
-			classname = "team_CTF_blueplayer";
+		if (team == TEAM_RED) {
+			classname = "team_base_redplayer";
+		}
+		else if (team == TEAM_BLUE) {
+			classname = "team_base_blueplayer";
+		}
 		else
 			return NULL;
 	} else {
-		if (team == TEAM_RED)
-			classname = "team_CTF_redspawn";
-		else if (team == TEAM_BLUE)
-			classname = "team_CTF_bluespawn";
+		if (team == TEAM_RED) {
+			classname = "team_base_redspawn";
+		}
+		else if (team == TEAM_BLUE) {
+			classname = "team_base_bluespawn";
+		}
 		else
 			return NULL;
 	}
@@ -1010,7 +1029,51 @@ gentity_t *SelectRandomTeamSpawnPoint( int teamstate, team_t team ) {
 			break;
 	}
 
-	if ( !count ) {	// no spots that won't telefrag
+	// no spots that won't telefrag
+	if ( !count ) {
+		if ((spot = G_Find (spot, FOFS(classname), classname)) != NULL) {
+			return spot;
+		}
+	} else {
+		selection = rand() % count;
+		return spots[ selection ];
+	}
+
+	// perhaps mapper didn't use the correct spawn names?
+	if (teamstate == TEAM_BEGIN) {
+		if (team == TEAM_RED) {
+			classname = "team_CTF_redplayer";
+		}
+		else if (team == TEAM_BLUE) {
+			classname = "team_CTF_blueplayer";
+		}
+		else
+			return NULL;
+	} else {
+		if (team == TEAM_RED) {
+			classname = "team_CTF_redspawn";
+		}
+		else if (team == TEAM_BLUE) {
+			classname = "team_CTF_bluespawn";
+		}
+		else
+			return NULL;
+	}
+	//count = 0;
+
+	//spot = NULL;
+
+	while ((spot = G_Find (spot, FOFS(classname), classname)) != NULL) {
+		if ( SpotWouldTelefrag( spot ) ) {
+			continue;
+		}
+		spots[ count ] = spot;
+		if (++count == MAX_TEAM_SPAWN_POINTS)
+			break;
+	}
+
+	// no spots that won't telefrag
+	if ( !count ) {
 		return G_Find( NULL, FOFS(classname), classname);
 	}
 
@@ -1053,20 +1116,22 @@ static int QDECL SortClients( const void *a, const void *b ) {
 TeamplayLocationsMessage
 
 Format:
-	clientNum location health armor weapon powerups
+	clientNum location health armor weapon powerups posX posY
 
+TODO: allow spectators to see team info
 ==================
 */
 void TeamplayInfoMessage( gentity_t *ent ) {
 	char		entry[1024];
 	char		string[8192];
-	int			stringlength;
-	int			i, j;
+	int		stringlength;
+	int		i, j;
 	gentity_t	*player;
-	int			cnt;
-	int			h, a;
-	int			clients[TEAM_MAXOVERLAY];
-	int			team;
+	int		cnt;
+	int		h, a;
+	int		clients[TEAM_MAXOVERLAY];
+	int		team;
+	int		posX, posY;
 
 	if ( ! ent->client->pers.teamInfo )
 		return;
@@ -1105,18 +1170,22 @@ void TeamplayInfoMessage( gentity_t *ent ) {
 
 	for (i = 0, cnt = 0; i < g_maxclients.integer && cnt < TEAM_MAXOVERLAY; i++) {
 		player = g_entities + i;
-		if (player->inuse && player->client->sess.sessionTeam == team ) {
+		if ( (player->inuse && player->client->sess.sessionTeam == team) || g_playersLocOverlay.integer ) {
 
 			h = player->client->ps.stats[STAT_HEALTH];
 			a = player->client->ps.stats[STAT_ARMOR];
 			if (h < 0) h = 0;
 			if (a < 0) a = 0;
 
+			posX = (float)player->r.currentOrigin[0];
+			posY = (float)player->r.currentOrigin[1];
+
 			Com_sprintf (entry, sizeof(entry),
-				" %i %i %i %i %i %i", 
-//				level.sortedClients[i], player->client->pers.teamState.location, h, a, 
-				i, player->client->pers.teamState.location, h, a, 
-				player->client->ps.weapon, player->s.powerups);
+				" %i %i %i %i %i %i %i %i",
+				/*level.sortedClients[i], player->client->pers.teamState.location, h, a, */
+				i, player->client->pers.teamState.location, h, a,
+				player->client->ps.weapon, player->s.powerups,
+				posX, posY);
 			j = strlen(entry);
 			if (stringlength + j >= sizeof(string))
 				break;
@@ -1195,6 +1264,35 @@ potential spawning position for blue team in CTF games.
 Targets will be fired when someone spawns in on them.
 */
 void SP_team_CTF_bluespawn(gentity_t *ent) {
+}
+
+
+/*QUAKED team_base_redplayer (1 0 0) (-16 -16 -16) (16 16 32)
+Only in games that require players to spawn at their respected base.
+Red players spawn here at game start.
+*/
+void SP_team_base_redplayer( gentity_t *ent ) {
+}
+
+/*QUAKED team_base_blueplayer (0 0 1) (-16 -16 -16) (16 16 32)
+Only in games that require players to spawn at their respected base.
+Blue players spawn here at game start.
+*/
+void SP_team_base_blueplayer( gentity_t *ent ) {
+}
+
+/*QUAKED team_base_redspawn (1 0 0) (-16 -16 -24) (16 16 32)
+potential spawning position for red team in CTF games.
+Targets will be fired when someone spawns in on them.
+*/
+void SP_team_base_redspawn(gentity_t *ent) {
+}
+
+/*QUAKED team_base_bluespawn (0 0 1) (-16 -16 -24) (16 16 32)
+potential spawning position for blue team in CTF games.
+Targets will be fired when someone spawns in on them.
+*/
+void SP_team_base_bluespawn(gentity_t *ent) {
 }
 
 
@@ -1293,7 +1391,7 @@ static void ObeliskTouch( gentity_t *self, gentity_t *other, trace_t *trace ) {
 	other->client->ps.eFlags |= EF_AWARD_CAP;
 	other->client->rewardTime = level.time + REWARD_SPRITE_TIME;
 	other->client->ps.persistant[PERS_CAPTURES] += tokens;
-	
+
 	other->client->ps.generic1 = 0;
 	CalculateRanks();
 

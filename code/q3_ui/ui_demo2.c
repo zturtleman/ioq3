@@ -36,8 +36,8 @@ DEMOS MENU
 #define ART_BACK1			"menu/art/back_1"	
 #define ART_GO0				"menu/art/play_0"
 #define ART_GO1				"menu/art/play_1"
-#define ART_FRAMEL			"menu/art/frame2_l"
-#define ART_FRAMER			"menu/art/frame1_r"
+/*#define ART_FRAMEL			"menu/art/frame2_l"
+#define ART_FRAMER			"menu/art/frame1_r"*/
 #define ART_ARROWS			"menu/art/arrows_horz_0"
 #define ART_ARROWLEFT		"menu/art/arrows_horz_left"
 #define ART_ARROWRIGHT		"menu/art/arrows_horz_right"
@@ -59,8 +59,8 @@ typedef struct {
 	menuframework_s	menu;
 
 	menutext_s		banner;
-	menubitmap_s	framel;
-	menubitmap_s	framer;
+	/*menubitmap_s	framel;
+	menubitmap_s	framer;*/
 
 	menulist_s		list;
 
@@ -136,7 +136,7 @@ static void Demos_MenuInit( void ) {
 	s_demos.banner.color			= color_white;
 	s_demos.banner.style			= UI_CENTER;
 
-	s_demos.framel.generic.type		= MTYPE_BITMAP;
+	/*s_demos.framel.generic.type		= MTYPE_BITMAP;
 	s_demos.framel.generic.name		= ART_FRAMEL;
 	s_demos.framel.generic.flags	= QMF_INACTIVE;
 	s_demos.framel.generic.x		= 0;  
@@ -150,7 +150,7 @@ static void Demos_MenuInit( void ) {
 	s_demos.framer.generic.x		= 376;
 	s_demos.framer.generic.y		= 76;
 	s_demos.framer.width			= 256;
-	s_demos.framer.height			= 334;
+	s_demos.framer.height			= 334;*/
 
 	s_demos.arrows.generic.type		= MTYPE_BITMAP;
 	s_demos.arrows.generic.name		= ART_ARROWS;
@@ -213,13 +213,15 @@ static void Demos_MenuInit( void ) {
 	s_demos.list.itemnames			= (const char **)s_demos.demolist;
 	s_demos.list.columns			= 3;
 
-	protocolLegacy = trap_Cvar_VariableValue("com_legacyprotocol");
+	/*protocolLegacy = trap_Cvar_VariableValue("com_legacyprotocol");
 	protocol = trap_Cvar_VariableValue("com_protocol");
 
 	if(!protocol)
 		protocol = trap_Cvar_VariableValue("protocol");
 	if(protocolLegacy == protocol)
-		protocolLegacy = 0;
+		protocolLegacy = 0;*/
+
+	protocol = trap_Cvar_VariableValue("protocol"); // mmp - keep it simple guys, ffs
 
 	Com_sprintf(extension, sizeof(extension), ".%s%d", DEMOEXT, protocol);
 	s_demos.numDemos = trap_FS_GetFileList("demos", extension, s_demos.names, ARRAY_LEN(s_demos.names));
@@ -266,8 +268,8 @@ static void Demos_MenuInit( void ) {
 	}
 
 	Menu_AddItem( &s_demos.menu, &s_demos.banner );
-	Menu_AddItem( &s_demos.menu, &s_demos.framel );
-	Menu_AddItem( &s_demos.menu, &s_demos.framer );
+	/*Menu_AddItem( &s_demos.menu, &s_demos.framel );
+	Menu_AddItem( &s_demos.menu, &s_demos.framer );*/
 	Menu_AddItem( &s_demos.menu, &s_demos.list );
 	Menu_AddItem( &s_demos.menu, &s_demos.arrows );
 	Menu_AddItem( &s_demos.menu, &s_demos.left );
@@ -286,8 +288,8 @@ void Demos_Cache( void ) {
 	trap_R_RegisterShaderNoMip( ART_BACK1 );
 	trap_R_RegisterShaderNoMip( ART_GO0 );
 	trap_R_RegisterShaderNoMip( ART_GO1 );
-	trap_R_RegisterShaderNoMip( ART_FRAMEL );
-	trap_R_RegisterShaderNoMip( ART_FRAMER );
+	/*trap_R_RegisterShaderNoMip( ART_FRAMEL );
+	trap_R_RegisterShaderNoMip( ART_FRAMER );*/
 	trap_R_RegisterShaderNoMip( ART_ARROWS );
 	trap_R_RegisterShaderNoMip( ART_ARROWLEFT );
 	trap_R_RegisterShaderNoMip( ART_ARROWRIGHT );

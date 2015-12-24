@@ -83,6 +83,7 @@ LPALBUFFERDATA qalBufferData;
 LPALGETBUFFERF qalGetBufferf;
 LPALGETBUFFERI qalGetBufferi;
 LPALDOPPLERFACTOR qalDopplerFactor;
+LPALDOPPLERVELOCITY qalDopplerVelocity; // old - mmp
 LPALSPEEDOFSOUND qalSpeedOfSound;
 LPALDISTANCEMODEL qalDistanceModel;
 
@@ -201,6 +202,7 @@ qboolean QAL_Init(const char *libname)
 	qalGetBufferf = GPA("alGetBufferf");
 	qalGetBufferi = GPA("alGetBufferi");
 	qalDopplerFactor = GPA("alDopplerFactor");
+	qalDopplerVelocity = GPA("alDopplerVelocity"); // old - mmp
 	qalSpeedOfSound = GPA("alSpeedOfSound");
 	qalDistanceModel = GPA("alDistanceModel");
 
@@ -300,6 +302,7 @@ void QAL_Shutdown( void )
 	qalGetBufferf = NULL;
 	qalGetBufferi = NULL;
 	qalDopplerFactor = NULL;
+	qalDopplerVelocity = NULL; // old - mmp
 	qalSpeedOfSound = NULL;
 	qalDistanceModel = NULL;
 

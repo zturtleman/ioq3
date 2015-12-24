@@ -35,7 +35,7 @@ localEntity_t	*cg_freeLocalEntities;		// single linked list
 ===================
 CG_InitLocalEntities
 
-This is called at startup and for tournement restarts
+This is called at startup and for tournament restarts
 ===================
 */
 void	CG_InitLocalEntities( void ) {
@@ -74,7 +74,7 @@ void CG_FreeLocalEntity( localEntity_t *le ) {
 ===================
 CG_AllocLocalEntity
 
-Will always succeed, even if it requires freeing an old active entity
+Will allways succeed, even if it requires freeing an old active entity
 ===================
 */
 localEntity_t	*CG_AllocLocalEntity( void ) {

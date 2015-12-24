@@ -38,6 +38,8 @@ cvar_t	*sv_privatePassword;		// password for the privateClient slots
 cvar_t	*sv_allowDownload;
 cvar_t	*sv_maxclients;
 
+/*cvar_t	*sv_realHumanPlayers;*/
+
 cvar_t	*sv_privateClients;		// number of clients reserved for password
 cvar_t	*sv_hostname;
 cvar_t	*sv_master[MAX_MASTER_SERVERS];	// master server ip address
@@ -61,6 +63,14 @@ cvar_t	*sv_lanForceRate; // dedicated 1 (LAN) server forces local client rates t
 cvar_t	*sv_strictAuth;
 #endif
 cvar_t	*sv_banFile;
+// mmp
+cvar_t	*sv_spoofHP;
+cvar_t	*sv_spoofList;
+cvar_t	*sv_spoofNames;
+cvar_t	*sv_spoofNamesOffset;
+cvar_t	*sv_useVQ3Protocol;
+cvar_t	*sv_hideClientInfo;
+cvar_t	*sv_gameMismatchError;
 
 serverBan_t serverBans[SERVER_MAXBANS];
 int serverBansCount = 0;
@@ -252,9 +262,6 @@ void SV_MasterHeartbeat(const char *message)
 	if ( svs.time < svs.nextHeartbeatTime )
 		return;
 
-	if ( !Q_stricmp( com_gamename->string, LEGACY_MASTER_GAMENAME ) )
-		message = LEGACY_HEARTBEAT_FOR_MASTER;
-
 	svs.nextHeartbeatTime = svs.time + HEARTBEAT_MSEC;
 
 	// send to group masters
@@ -357,13 +364,30 @@ CONNECTIONLESS COMMANDS
 ==============================================================================
 */
 
+typedef struct leakyBucket_s leakyBucket_t;
+struct leakyBucket_s {
+	netadrtype_t	type;
+
+	union {
+		byte	_4[4];
+		byte	_6[16];
+	} ipv;
+
+	int						lastTime;
+	signed char		burst;
+
+	long					hash;
+
+	leakyBucket_t *prev, *next;
+};
+
 // This is deliberately quite large to make it more of an effort to DoS
 #define MAX_BUCKETS			16384
 #define MAX_HASHES			1024
 
 static leakyBucket_t buckets[ MAX_BUCKETS ];
 static leakyBucket_t *bucketHashes[ MAX_HASHES ];
-leakyBucket_t outboundLeakyBucket;
+static leakyBucket_t outboundLeakyBucket;
 
 /*
 ================
@@ -480,7 +504,7 @@ static leakyBucket_t *SVC_BucketForAddress( netadr_t address, int burst, int per
 SVC_RateLimit
 ================
 */
-qboolean SVC_RateLimit( leakyBucket_t *bucket, int burst, int period ) {
+static qboolean SVC_RateLimit( leakyBucket_t *bucket, int burst, int period ) {
 	if ( bucket != NULL ) {
 		int now = Sys_Milliseconds();
 		int interval = now - bucket->lastTime;
@@ -512,11 +536,88 @@ SVC_RateLimitAddress
 Rate limit for a particular address
 ================
 */
-qboolean SVC_RateLimitAddress( netadr_t from, int burst, int period ) {
+static qboolean SVC_RateLimitAddress( netadr_t from, int burst, int period ) {
 	leakyBucket_t *bucket = SVC_BucketForAddress( from, burst, period );
 
 	return SVC_RateLimit( bucket, burst, period );
 }
+
+
+//====================================================================
+
+/*
+================
+SVC_GetSingleValue
+================
+*/
+
+char *SVC_GetSingleValue ( const char *s, int n ) {
+	static		char out[BIG_INFO_VALUE];	// return value
+	int			l = 0;
+	char		*o;
+
+	if ( n < 0 ) {
+		return "";
+	}
+	if ( *s != '\\' ) {
+		return "";
+	}
+
+	while ( l < n) {
+		s++;
+		while (*s != '\\') {
+			if (!*s) {
+				return "";
+			}
+			s++;
+		}
+
+		l++;
+	}
+
+	s++;
+
+	o = out;
+	while (*s != '\\' && *s)
+	{
+		*o++ = *s++;
+	}
+	*o = 0;
+
+	return out;
+
+}
+
+/*
+================
+SVC_GetSingleCount
+================
+*/
+
+int SVC_GetSingleCount ( const char *s ) {
+	int			l;
+
+	if ( *s != '\\' ) {
+		return 0;
+	}
+
+	l = 0;
+
+	while (1) {
+		s++;
+		while (*s != '\\') {
+			if (!*s) {
+				return l;
+			}
+			s++;
+		}
+
+		l++;
+	}
+
+}
+
+//====================================================================
 
 /*
 ================
@@ -536,6 +637,8 @@ static void SVC_Status( netadr_t from ) {
 	int		statusLength;
 	int		playerLength;
 	char	infostring[MAX_INFO_STRING];
+	int		nameOffset;
+	int		maxFakePlayerTable;
 
 	// ignore if we are in single player
 	if ( Cvar_VariableValue( "g_gametype" ) == GT_SINGLE_PLAYER || Cvar_VariableValue("ui_singlePlayerActive")) {
@@ -569,12 +672,48 @@ static void SVC_Status( netadr_t from ) {
 	status[0] = 0;
 	statusLength = 0;
 
-	for (i=0 ; i < sv_maxclients->integer ; i++) {
-		cl = &svs.clients[i];
-		if ( cl->state >= CS_CONNECTED ) {
-			ps = SV_GameClientNum( i );
-			Com_sprintf (player, sizeof(player), "%i %i \"%s\"\n", 
-				ps->persistant[PERS_SCORE], cl->ping, cl->name);
+	if ( sv_hideClientInfo->integer < 2 ) {
+
+		for (i=0 ; i < sv_maxclients->integer ; i++) {
+			cl = &svs.clients[i];
+			if ( cl->state >= CS_CONNECTED ) {
+				ps = SV_GameClientNum( i );
+				// mmp
+				if ( sv_hideClientInfo->integer ) {
+					Com_sprintf (player, sizeof(player), "666 666 \"%s\"\n", 
+						cl->name);
+				} else {
+					if (ps->persistant[PERS_TEAM]==TEAM_SPECTATOR) {
+						Com_sprintf (player, sizeof(player), "666 666 \"%s\"\n", 
+							cl->name);
+					} else {
+						Com_sprintf (player, sizeof(player), "%i %i \"%s\"\n", 
+							ps->persistant[PERS_SCORE], cl->ping, cl->name);
+					}
+				}
+				playerLength = strlen(player);
+				if (statusLength + playerLength >= sizeof(status) ) {
+					break;		// can't hold any more
+				}
+				strcpy (status + statusLength, player);
+				statusLength += playerLength;
+			}
+		}
+
+	}
+
+	if ( sv_spoofList->integer > 0 ) {
+		maxFakePlayerTable = SVC_GetSingleCount( sv_spoofNames->string );
+		i = sv_spoofList->integer;
+		nameOffset = sv_spoofNamesOffset->integer;
+
+		//rndSize = 0.4 + random()*0.6
+		while ( i ) {
+			i--;
+			Com_sprintf (player, sizeof(player), "%i %i \"%s\"\n",
+					(int) (random()*5), 32 + (int) (random()*64),
+					SVC_GetSingleValue ( sv_spoofNames->string, i + nameOffset ) );
+
 			playerLength = strlen(player);
 			if (statusLength + playerLength >= sizeof(status) ) {
 				break;		// can't hold any more
@@ -596,8 +735,10 @@ if a user is interested in a server to do a full status
 ================
 */
 void SVC_Info( netadr_t from ) {
-	int		i, count, humans;
+	int		i, count, humans, realHumans;
+	char	*proMode;
 	char	*gamedir;
+	char	*info;
 	char	infostring[MAX_INFO_STRING];
 
 	// ignore if we are in single player
@@ -629,15 +770,37 @@ void SVC_Info( netadr_t from ) {
 		return;
 
 	// don't count privateclients
-	count = humans = 0;
-	for ( i = sv_privateClients->integer ; i < sv_maxclients->integer ; i++ ) {
-		if ( svs.clients[i].state >= CS_CONNECTED ) {
-			count++;
-			if (svs.clients[i].netchan.remoteAddress.type != NA_BOT) {
-				humans++;
+	count = humans = realHumans = 0;
+
+	// mmp - TODO - clean up
+	if ( sv_spoofHP->integer >= 0 ) {
+		// spoof amount of players
+		count = sv_spoofHP->integer;
+		humans = count;
+	} else {
+		// broadcast client count, and human players
+		for ( i = sv_privateClients->integer ; i < sv_maxclients->integer ; i++ ) {
+			if ( svs.clients[i].state >= CS_CONNECTED ) {
+				count++;
+				if (svs.clients[i].netchan.remoteAddress.type != NA_BOT || sv_spoofHP->integer == -2) {
+					humans++;
+				}
 			}
 		}
 	}
+
+	if ( sv_spoofList->integer > 0 ) {
+		humans += sv_spoofList->integer;
+		count += sv_spoofList->integer;
+	}
+
+	// get actual human players, to use for bookkeeping
+	/*for ( i = sv_privateClients->integer ; i < sv_maxclients->integer ; i++ ) {
+		if ( svs.clients[i].state >= CS_CONNECTED && svs.clients[i].netchan.remoteAddress.type != NA_BOT ) {
+			realHumans++;
+		}
+	}
+	Cvar_Set("sv_realHumanPlayers", va("%i", realHumans) );*/
 
 	infostring[0] = 0;
 
@@ -657,12 +820,12 @@ void SVC_Info( netadr_t from ) {
 	Info_SetValueForKey( infostring, "hostname", sv_hostname->string );
 	Info_SetValueForKey( infostring, "mapname", sv_mapname->string );
 	Info_SetValueForKey( infostring, "clients", va("%i", count) );
-	Info_SetValueForKey(infostring, "g_humanplayers", va("%i", humans));
+	Info_SetValueForKey( infostring, "g_humanplayers", va("%i", humans));
 	Info_SetValueForKey( infostring, "sv_maxclients", 
 		va("%i", sv_maxclients->integer - sv_privateClients->integer ) );
 	Info_SetValueForKey( infostring, "gametype", va("%i", sv_gametype->integer ) );
 	Info_SetValueForKey( infostring, "pure", va("%i", sv_pure->integer ) );
-	Info_SetValueForKey(infostring, "g_needpass", va("%d", Cvar_VariableIntegerValue("g_needpass")));
+	Info_SetValueForKey( infostring, "g_needpass", va("%d", Cvar_VariableIntegerValue("g_needpass")));
 
 #ifdef USE_VOIP
 	if (sv_voip->integer) {
@@ -679,6 +842,15 @@ void SVC_Info( netadr_t from ) {
 	gamedir = Cvar_VariableString( "fs_game" );
 	if( *gamedir ) {
 		Info_SetValueForKey( infostring, "game", gamedir );
+	}
+	// mmp
+	info = Cvar_VariableString( "info" );
+	if( *info ) {
+		Info_SetValueForKey( infostring, "info", info );
+	}
+	proMode = Cvar_VariableString( "g_proMode" );
+	if( *proMode ) {
+		Info_SetValueForKey( infostring, "g_proMode", proMode );
 	}
 
 	NET_OutOfBandPrint( NS_SERVER, from, "infoResponse\n%s", infostring );
@@ -898,15 +1070,15 @@ static void SV_CalcPings( void ) {
 	for (i=0 ; i < sv_maxclients->integer ; i++) {
 		cl = &svs.clients[i];
 		if ( cl->state != CS_ACTIVE ) {
-			cl->ping = 999;
+			cl->ping = 666 /*999*/;
 			continue;
 		}
 		if ( !cl->gentity ) {
-			cl->ping = 999;
+			cl->ping = 666 /*999*/;
 			continue;
 		}
 		if ( cl->gentity->r.svFlags & SVF_BOT ) {
-			cl->ping = 0;
+			cl->ping = 666 /*0*/;
 			continue;
 		}
 
@@ -921,7 +1093,7 @@ static void SV_CalcPings( void ) {
 			total += delta;
 		}
 		if (!count) {
-			cl->ping = 999;
+			cl->ping = 666 /*999*/;
 		} else {
 			cl->ping = total/count;
 			if ( cl->ping > 999 ) {
@@ -1078,7 +1250,7 @@ void SV_Frame( int msec ) {
 
 	// if it isn't time for the next frame, do nothing
 	if ( sv_fps->integer < 1 ) {
-		Cvar_Set( "sv_fps", "10" );
+		Cvar_Set( "sv_fps", "40" );
 	}
 
 	frameMsec = 1000 / sv_fps->integer * com_timescale->value;

@@ -117,7 +117,7 @@ cvar_t	*r_nobind;
 cvar_t	*r_singleShader;
 cvar_t	*r_roundImagesDown;
 cvar_t	*r_colorMipLevels;
-cvar_t	*r_picmip;
+cvar_t	*r_hqTextures;
 cvar_t	*r_showtris;
 cvar_t	*r_showsky;
 cvar_t	*r_shownormals;
@@ -137,6 +137,7 @@ cvar_t	*r_subdivisions;
 cvar_t	*r_lodCurveError;
 
 cvar_t	*r_fullscreen;
+cvar_t	*r_autoVidRestart;
 cvar_t  *r_noborder;
 
 cvar_t	*r_customwidth;
@@ -969,7 +970,7 @@ void GfxInfo_f( void )
 	}
 
 	ri.Printf( PRINT_ALL, "texturemode: %s\n", r_textureMode->string );
-	ri.Printf( PRINT_ALL, "picmip: %d\n", r_picmip->integer );
+	ri.Printf( PRINT_ALL, "hq textures: %d\n", r_hqTextures->integer );
 	ri.Printf( PRINT_ALL, "texture bits: %d\n", r_texturebits->integer );
 	ri.Printf( PRINT_ALL, "multitexture: %s\n", enablestrings[qglActiveTextureARB != 0] );
 	ri.Printf( PRINT_ALL, "compiled vertex arrays: %s\n", enablestrings[qglLockArraysEXT != 0 ] );
@@ -1016,10 +1017,10 @@ void R_Register( void )
 			"0", CVAR_ARCHIVE | CVAR_LATCH );
 	r_ext_max_anisotropy = ri.Cvar_Get( "r_ext_max_anisotropy", "2", CVAR_ARCHIVE | CVAR_LATCH );
 
-	r_picmip = ri.Cvar_Get ("r_picmip", "1", CVAR_ARCHIVE | CVAR_LATCH );
+	r_hqTextures = ri.Cvar_Get ("r_hqTextures", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_roundImagesDown = ri.Cvar_Get ("r_roundImagesDown", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_colorMipLevels = ri.Cvar_Get ("r_colorMipLevels", "0", CVAR_LATCH );
-	ri.Cvar_CheckRange( r_picmip, 0, 16, qtrue );
+
 	r_detailTextures = ri.Cvar_Get( "r_detailtextures", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_texturebits = ri.Cvar_Get( "r_texturebits", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	r_colorbits = ri.Cvar_Get( "r_colorbits", "0", CVAR_ARCHIVE | CVAR_LATCH );
@@ -1030,10 +1031,11 @@ void R_Register( void )
 	r_overBrightBits = ri.Cvar_Get ("r_overBrightBits", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_ignorehwgamma = ri.Cvar_Get( "r_ignorehwgamma", "0", CVAR_ARCHIVE | CVAR_LATCH);
 	r_mode = ri.Cvar_Get( "r_mode", "3", CVAR_ARCHIVE | CVAR_LATCH );
-	r_fullscreen = ri.Cvar_Get( "r_fullscreen", "1", CVAR_ARCHIVE );
+	r_fullscreen = ri.Cvar_Get( "r_fullscreen", "0", CVAR_ARCHIVE );
+	r_autoVidRestart = ri.Cvar_Get( "r_autoVidRestart", "1", CVAR_ARCHIVE ); // mmp
 	r_noborder = ri.Cvar_Get("r_noborder", "0", CVAR_ARCHIVE | CVAR_LATCH);
-	r_customwidth = ri.Cvar_Get( "r_customwidth", "1600", CVAR_ARCHIVE | CVAR_LATCH );
-	r_customheight = ri.Cvar_Get( "r_customheight", "1024", CVAR_ARCHIVE | CVAR_LATCH );
+	r_customwidth = ri.Cvar_Get( "r_customwidth", "640", CVAR_ARCHIVE | CVAR_LATCH );
+	r_customheight = ri.Cvar_Get( "r_customheight", "480", CVAR_ARCHIVE | CVAR_LATCH );
 	r_customPixelAspect = ri.Cvar_Get( "r_customPixelAspect", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_simpleMipMaps = ri.Cvar_Get( "r_simpleMipMaps", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_vertexLight = ri.Cvar_Get( "r_vertexLight", "0", CVAR_ARCHIVE | CVAR_LATCH );

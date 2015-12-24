@@ -91,8 +91,10 @@ static void InGame_QuitAction( qboolean result ) {
 	if( !result ) {
 		return;
 	}
-	UI_PopMenu();
-	UI_CreditMenu();
+	/*UI_PopMenu();
+	UI_CreditMenu();*/
+	trap_Cmd_ExecuteText( EXEC_APPEND, "quit\n" );
+	
 }
 
 
@@ -124,7 +126,8 @@ void InGame_Event( void *ptr, int notification ) {
 		break;
 
 	case ID_QUIT:
-		UI_ConfirmMenu( "EXIT GAME?",  0, InGame_QuitAction );
+		/*UI_ConfirmMenu( "EXIT GAME?",  0, InGame_QuitAction );*/
+		InGame_QuitAction( qtrue );
 		break;
 
 	case ID_SERVERINFO:
@@ -177,7 +180,8 @@ void InGame_MenuInit( void ) {
 	s_ingame.frame.height				= 332;//256;
 
 	//y = 96;
-	y = 88;
+	//y = 88;
+	y = 108;
 	s_ingame.team.generic.type			= MTYPE_PTEXT;
 	s_ingame.team.generic.flags			= QMF_CENTER_JUSTIFY|QMF_PULSEIFFOCUS;
 	s_ingame.team.generic.x				= 320;

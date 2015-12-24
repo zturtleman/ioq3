@@ -67,7 +67,9 @@ static void SV_Netchan_Encode(client_t *client, msg_t *msg, const char *clientCo
 		// modify the key with the last received and with this message acknowledged client command
 		if (!string[index])
 			index = 0;
-		if (string[index] > 127 || string[index] == '%') {
+		// mmp - allows extended char set
+		if (/*string[index] > 127*/ (string[index] > 127 && string[index] < 160) ||
+								string[index] == 14 || string[index] == '%') {
 			key ^= '.' << (i & 1);
 		}
 		else {
@@ -118,7 +120,9 @@ static void SV_Netchan_Decode( client_t *client, msg_t *msg ) {
 		// modify the key with the last sent and acknowledged server command
 		if (!string[index])
 			index = 0;
-		if (string[index] > 127 || string[index] == '%') {
+		// mmp - allows extended char set
+		if (/*string[index] > 127*/ (string[index] > 127 && string[index] < 160) ||
+								string[index] == 14 || string[index] == '%') {
 			key ^= '.' << (i & 1);
 		}
 		else {

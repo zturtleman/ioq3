@@ -26,50 +26,55 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
-#ifdef STANDALONE
-  #define PRODUCT_NAME				"iofoo3"
-  #define BASEGAME					"foobar"
-  #define CLIENT_WINDOW_TITLE		"changeme"
-  #define CLIENT_WINDOW_MIN_TITLE	"changeme2"
-  #define HOMEPATH_NAME_UNIX		".foo"
-  #define HOMEPATH_NAME_WIN			"FooBar"
-  #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
-//  #define STEAMPATH_NAME			"Foo Bar"
-//  #define STEAMPATH_APPID         ""
-  #define GAMENAME_FOR_MASTER		"foobar"	// must NOT contain whitespace
-//  #define LEGACY_PROTOCOL	// You probably don't need this for your standalone game
-#else
-  #define PRODUCT_NAME				"ioq3"
-  #define BASEGAME					"baseq3"
-  #define CLIENT_WINDOW_TITLE		"ioquake3"
-  #define CLIENT_WINDOW_MIN_TITLE	"ioq3"
-  #define HOMEPATH_NAME_UNIX		".q3a"
-  #define HOMEPATH_NAME_WIN			"Quake3"
-  #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
-  #define STEAMPATH_NAME			"Quake 3 Arena"
-  #define STEAMPATH_APPID			"2200"
-  #define GAMENAME_FOR_MASTER		"Quake3Arena"
-  #define LEGACY_PROTOCOL
-#endif
+
+#define PRODUCT_NAME				"MFArena"
+#define BASEGAME					"basemf"
+#define CLIENT_WINDOW_TITLE     	"MFArena"
+#define CLIENT_WINDOW_MIN_TITLE 	"mfa"
+//#define HOMEPATH_NAME_UNIX			".mfa"
+#define HOMEPATH_NAME_UNIX			".config/mfarena"
+#define HOMEPATH_NAME_MACOSX		"MFArena"
+#define HOMEPATH_NAME_WIN			HOMEPATH_NAME_MACOSX
+//#define GAMENAME_FOR_MASTER		"MFArena"	// must NOT contain whitespace
+//#define GAMENAME_FOR_MASTER		"OpenArena"	// remove when done trolling
+#define GAMENAME_FOR_MASTER			"Quake3Arena"	// remove when done trolling
+
+/* FOR REFERENCE v v v
+#define PRODUCT_NAME				"ioq3"
+#define BASEGAME					"baseq3"
+#define CLIENT_WINDOW_TITLE     	"ioquake3"
+#define CLIENT_WINDOW_MIN_TITLE 	"ioq3"
+#define HOMEPATH_NAME_UNIX			".q3a"
+#define HOMEPATH_NAME_MACOSX		"Quake3"
+#define HOMEPATH_NAME_WIN			HOMEPATH_NAME_MACOSX
+#define GAMENAME_FOR_MASTER			"Quake3Arena"
+#define LEGACY_PROTOCOL
+*/
 
 // Heartbeat for dpmaster protocol. You shouldn't change this unless you know what you're doing
-#define HEARTBEAT_FOR_MASTER		"DarkPlaces"
-
-// When com_gamename is LEGACY_MASTER_GAMENAME, use quake3 master protocol.
-// You shouldn't change this unless you know what you're doing
-#define LEGACY_MASTER_GAMENAME		"Quake3Arena"
-#define LEGACY_HEARTBEAT_FOR_MASTER	"QuakeArena-1"
+#define HEARTBEAT_FOR_MASTER		"QuakeArena-1"
+//#define HEARTBEAT_FOR_MASTER		"DarkPlaces"
 
 #define BASETA				"missionpack"
 
 #ifndef PRODUCT_VERSION
-  #define PRODUCT_VERSION "1.36"
+#define PRODUCT_VERSION		"151108.h" //"1.36"
 #endif
+
+#define SVINFO_VERSION_YR	15
+#define SVINFO_VERSION_SV	2
 
 #define Q3_VERSION PRODUCT_NAME " " PRODUCT_VERSION
 
 #define MAX_TEAMNAME		32
-#define MAX_MASTER_SERVERS      5	// number of supported master servers
+#define MAX_MASTER_SERVERS	5	// number of supported master servers
+
+#define SERVER_PING_GREEN	50	// Great ping
+#define SERVER_PING_YELLOW	90	// Good ping
+#define SERVER_PING_AMBER	130	// OK ping
+#define SERVER_PING_RED		999	// Red ping
+
+#define MAX_GAME_STATS		32	// number of stats to display at the end of a match
 
 #define DEMOEXT	"dm_"			// standard demo extension
 
@@ -236,11 +241,11 @@ typedef int		clipHandle_t;
 #define	MAX_TOKEN_CHARS		1024	// max length of an individual token
 
 #define	MAX_INFO_STRING		1024
-#define	MAX_INFO_KEY		  1024
+#define	MAX_INFO_KEY		1024
 #define	MAX_INFO_VALUE		1024
 
 #define	BIG_INFO_STRING		8192  // used for system info key only
-#define	BIG_INFO_KEY		  8192
+#define	BIG_INFO_KEY		8192
 #define	BIG_INFO_VALUE		8192
 
 
@@ -252,6 +257,8 @@ typedef int		clipHandle_t;
 #endif
 
 #define	MAX_NAME_LENGTH		32		// max length of a client name
+#define	MAX_CLAN_LENGTH		16		// max length of a client tag
+#define	MAX_CLAN_CHAR_LENGTH	8	// max length of visible characters in a client tag
 
 #define	MAX_SAY_TEXT	150
 
@@ -295,9 +302,10 @@ typedef enum {
 
 // font rendering values used by ui and cgame
 
-#define PROP_GAP_WIDTH			3
+#define PROP_GAP_WIDTH			0 // was 3
 #define PROP_SPACE_WIDTH		8
-#define PROP_HEIGHT				27
+#define PROP_GRID_SIZE			16
+#define PROP_HEIGHT				16 //27
 #define PROP_SMALL_SIZE_SCALE	0.75
 
 #define BLINK_DIVISOR			200
@@ -314,6 +322,129 @@ typedef enum {
 #define UI_BLINK		0x00001000
 #define UI_INVERSE		0x00002000
 #define UI_PULSE		0x00004000
+#define UI_DIGIT		0x00010000
+#define UI_NOCHARRANGE	0x80000000	// disables the char range limitation
+
+// notifier filters (used for the client to filter)
+#define	NF_FRAG			1 // when a player gets fragged
+#define	NF_FLAG			2 // info about flag status
+#define	NF_CONNECTION	4 // client connecting and disconnecting
+#define	NF_GAMEINFO		8 // game changing info
+#define	NF_READY		16 // update on who is ready
+#define	NF_ERROR		32 // issue with use of command
+#define	NF_MESSAGE		64 // generic messages, mainly from the map
+#define	NF_STREAKS		128 // messages on a player who's on a streak
+#define	NF_NAMECHANGES	256 // player's name change
+#define	NF_SPAM			512 // server spam
+
+// types of records for stats from clients
+typedef enum {
+	RS_NOTHING,
+
+	RS_ENDSCORE,
+	RS_DISCONNECTED,
+	RS_FAILED_CONNECTION,
+	RS_KICKED,
+	RS_SUSPENDED,
+
+	RS_MAXTYPE
+} recordTypes_t;
+
+// g_info usage
+typedef enum {
+	INFO_POS_VERSION_Y,
+	INFO_POS_VERSION_S,
+	INFO_POS_CKSUM,
+
+	INFO_POS_GAMETYPE,
+	INFO_POS_CLIENTCOUNT,
+	INFO_POS_PLAYERCOUNT,
+
+	INFO_POS_BITFLAGS_LO,
+	INFO_POS_BITFLAGS_HI,
+
+	INFO_POS_TIMELIMIT,
+	INFO_POS_OVERTIME,
+	INFO_POS_SCORELIMIT_LO,
+	INFO_POS_SCORELIMIT_HI,
+	INFO_POS_MERCYLIMIT_LO,
+	INFO_POS_MERCYLIMIT_HI,
+
+	INFO_POS_MATCHMODE,
+	INFO_POS_WEAPONRESPAWN,
+	INFO_POS_FORCERESPAWN,
+	INFO_POS_KEYCARDRESPAWN,
+
+	INFO_POS_ENEMYATTACKLEVEL,
+
+	INFO_POS_BITFLAGSEXT_LO,
+	INFO_POS_BITFLAGSEXT_HI,
+
+	INFO_POS_TEAMSIZE,
+
+	INFO_MAXPOS
+} infoUsage_t;
+
+// g_info bit flags
+#define	INFO_BIT_RULESET				0x0001 // ruleset enabled flag, not the actual ruleset
+#define	INFO_BIT_FRIENDLYFIRE			0x0002
+#define	INFO_BIT_TEAMLOCOVERLAY			0x0004
+#define	INFO_BIT_HITSOUND				0x0008
+#define	INFO_BIT_RANDOMSPAWN			0x0010
+#define	INFO_BIT_FREESELECT_PHYSICS		0x0020
+#define	INFO_BIT_QUADMODE				0x0040
+#define	INFO_BIT_SELFDAMAGE				0x0080
+#define	INFO_BIT_DOUBLEAMMO				0x0100
+#define	INFO_BIT_KEYCARD_DROPABLE		0x0200
+#define	INFO_BIT_SCOREBALANCE			0x0400
+#define	INFO_BIT_NO_ARENA_GRENADES		0x0800
+#define	INFO_BIT_NO_ARENA_LIGHTNINGGUN	0x1000
+#define	INFO_BIT_POWERUPS				0x2000
+#define	INFO_BIT_ARMOR					0x4000
+#define	INFO_BIT_POPCTF					0x8000
+
+// g_info extended bit flags
+#define	INFO_BIT_SHORTGAME				0x0001
+
+
+// disconnection info
+typedef enum {
+	DI_NOTHING, // cannot be anything but nothing
+	DI_OTHER,
+	DI_DISCONNECT,
+	DI_TIMEOUT,
+	DI_KICKED,
+	DI_BANNED,
+
+	DI_MAX
+} disconnectInfo_t;
+
+// soundcall info
+typedef enum {
+	SC_NOTHING, // cannot be anything but nothing
+	SC_CONNECT,
+	SC_DISCONNECT,
+	SC_TIMELIMIT,
+	SC_OVERTIME,
+	SC_EXPLOSION,
+	SC_EXPLOSION_GLOBAL,
+
+	SC_AN_SHIT,
+	SC_AN_YES,
+	SC_AN_GREAT,
+	SC_AN_OK,
+	SC_AN_EXCELLENT,
+	SC_AN_SUPERB,
+	SC_AN_KEEPITUP,
+	SC_AN_WONDERFUL,
+	SC_AN_FUCKEM,
+	SC_AN_YOUSUCK,
+
+	SC_AN_COMBO_BREAKER,
+	SC_AN_PERFECT,
+
+	SC_MAX // max value
+} soundCall_t;
 
 #if !defined(NDEBUG) && !defined(BSPC)
 	#define HUNK_DEBUG
@@ -397,29 +528,47 @@ extern	vec4_t		colorMdGrey;
 extern	vec4_t		colorDkGrey;
 
 #define Q_COLOR_ESCAPE	'^'
-#define Q_IsColorString(p)	((p) && *(p) == Q_COLOR_ESCAPE && *((p)+1) && isalnum(*((p)+1))) // ^[0-9a-zA-Z]
+//#define Q_IsColorString(p)	((p) && *(p) == Q_COLOR_ESCAPE && *((p)+1) && isalnum(*((p)+1))) // ^[0-9a-zA-Z]
+//mmp - from aftershock
+#define Q_IsColorString(p)	((p) && *(p) == Q_COLOR_ESCAPE && *((p)+1) && ( ( *((p)+1) >= '0' && *((p)+1) <= '9' ) || ( *((p)+1) >= 'a' && *((p)+1) <= 'z' ) || ( *((p)+1) >= 'A' && *((p)+1) <= 'Z') ) ) // ^[0-9a-zA-Z]
 
-#define COLOR_BLACK	'0'
-#define COLOR_RED	'1'
-#define COLOR_GREEN	'2'
+#define COLOR_BLACK		'0'
+#define COLOR_RED		'1'
+#define COLOR_GREEN		'2'
 #define COLOR_YELLOW	'3'
-#define COLOR_BLUE	'4'
-#define COLOR_CYAN	'5'
+#define COLOR_BLUE		'4'
+#define COLOR_CYAN		'5'
 #define COLOR_MAGENTA	'6'
-#define COLOR_WHITE	'7'
-#define ColorIndexForNumber(c) ((c) & 0x07)
-#define ColorIndex(c) (ColorIndexForNumber((c) - '0'))
+#define COLOR_WHITE		'7'
+#define COLOR_ORANGE	'B'
+#define COLOR_GRAY		'M'
+//#define ColorIndex(c)	(((c) - '0') & 0x07)
+//mmp - from aftershock
+#define ColorIndex(c)   ( (((c)) >= 'a' && ((c)) <= 'z') ? (((c))-'a'+36) : ((((c)) >= 'A' && ((c)) <= 'Z')?(((c))-'A'+10):(((c))-'0')) )
 
 #define S_COLOR_BLACK	"^0"
-#define S_COLOR_RED	"^1"
+#define S_COLOR_RED		"^1"
 #define S_COLOR_GREEN	"^2"
 #define S_COLOR_YELLOW	"^3"
 #define S_COLOR_BLUE	"^4"
 #define S_COLOR_CYAN	"^5"
 #define S_COLOR_MAGENTA	"^6"
 #define S_COLOR_WHITE	"^7"
+#define S_COLOR_AMBER	"^B"
+#define S_COLOR_BROWN	"^o"
+#define S_COLOR_GRAY	"^M"
+#define S_COLOR_LTGRAY	"^Z"
+#define S_COLOR_ORANGE	"^B"
+#define S_COLOR_PINK	"^Y"
+#define S_COLOR_PURPLE	"^x"
+#define S_COLOR_ROSE	"^L"
+#define S_COLOR_SEA		"^H"
+#define S_COLOR_SKY		"^U"
 
-extern vec4_t	g_color_table[8];
+#define MAX_CCODES	62
+
+//extern vec4_t	g_color_table[8];
+extern vec4_t	g_color_table[MAX_CCODES];// mmp - from aftershock
 
 #define	MAKERGB( v, r, g, b ) v[0]=r;v[1]=g;v[2]=b
 #define	MAKERGBA( v, r, g, b, a ) v[0]=r;v[1]=g;v[2]=b;v[3]=a
@@ -495,7 +644,7 @@ int Q_isnan(float x);
 static ID_INLINE float Q_rsqrt( float number ) {
 		float x = 0.5f * number;
                 float y;
-#ifdef __GNUC__            
+#ifdef __GNUC__
                 asm("frsqrte %0,%1" : "=f" (y) : "f" (number));
 #else
 		y = __frsqrte( number );
@@ -503,10 +652,10 @@ static ID_INLINE float Q_rsqrt( float number ) {
 		return y * (1.5f - (x * y * y));
 	}
 
-#ifdef __GNUC__            
+#ifdef __GNUC__
 static ID_INLINE float Q_fabs(float x) {
     float abs_x;
-    
+
     asm("fabs %0,%1" : "=f" (abs_x) : "f" (x));
     return abs_x;
 }
@@ -567,7 +716,7 @@ typedef struct {
 #define Byte4Copy(a,b)			((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2],(b)[3]=(a)[3])
 
 #define	SnapVector(v) {v[0]=((int)(v[0]));v[1]=((int)(v[1]));v[2]=((int)(v[2]));}
-// just in case you don't want to use the macros
+// just in case you do't want to use the macros
 vec_t _DotProduct( const vec3_t v1, const vec3_t v2 );
 void _VectorSubtract( const vec3_t veca, const vec3_t vecb, vec3_t out );
 void _VectorAdd( const vec3_t veca, const vec3_t vecb, vec3_t out );
@@ -588,7 +737,7 @@ void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs );
 static ID_INLINE int VectorCompare( const vec3_t v1, const vec3_t v2 ) {
 	if (v1[0] != v2[0] || v1[1] != v2[1] || v1[2] != v2[2]) {
 		return 0;
-	}			
+	}
 	return 1;
 }
 
@@ -769,6 +918,8 @@ void Parse1DMatrix (char **buf_p, int x, float *m);
 void Parse2DMatrix (char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (char **buf_p, int z, int y, int x, float *m);
 int Com_HexStrToInt( const char *str );
+int Com_HexToByte( const char *str, int valueOffset );
+char *Com_ByteToHex( int value );
 
 int QDECL Com_sprintf (char *dest, int size, const char *fmt, ...) __attribute__ ((format (printf, 3, 4)));
 
@@ -803,6 +954,7 @@ qboolean Q_isintegral( float f );
 // portable case insensitive compare
 int		Q_stricmp (const char *s1, const char *s2);
 int		Q_strncmp (const char *s1, const char *s2, int n);
+int		Q_stricmpf (const char *s1, const char *s2, int n);
 int		Q_stricmpn (const char *s1, const char *s2, int n);
 char	*Q_strlwr( char *s1 );
 char	*Q_strupr( char *s1 );
@@ -905,6 +1057,9 @@ default values.
 #define CVAR_VM_CREATED		0x1000	// cvar was created exclusively in one of the VMs.
 #define CVAR_PROTECTED		0x2000	// prevent modifying this var from VMs or the server
 // These flags are only returned by the Cvar_Flags() function
+
+#define	CVAR_RULESET		0x4000	// indicate a cvar used for a ruleset
+
 #define CVAR_MODIFIED		0x40000000	// Cvar was modified
 #define CVAR_NONEXISTENT	0x80000000	// Cvar doesn't exist.
 
@@ -1115,7 +1270,7 @@ typedef struct {
 #define	MAX_STATS				16
 #define	MAX_PERSISTANT			16
 #define	MAX_POWERUPS			16
-#define	MAX_WEAPONS				16		
+#define	MAX_WEAPONS				16
 
 #define	MAX_PS_EVENTS			2
 
@@ -1126,16 +1281,16 @@ typedef struct {
 // nothing outside of pmove should modify these, or some degree of prediction error
 // will occur
 
-// you can't add anything to this without modifying the code in msg.c
+// you can't add anything to this without modifying the code in /qcommon/msg.c
 
 // playerState_t is a full superset of entityState_t as it is used by players,
 // so if a playerState_t is transmitted, the entityState_t can be fully derived
 // from it.
 typedef struct playerState_s {
-	int			commandTime;	// cmd->serverTime of last executed command
+	int			commandTime;		// cmd->serverTime of last executed command
 	int			pm_type;
-	int			bobCycle;		// for view bobbing and footstep generation
-	int			pm_flags;		// ducked, jump_held, etc
+	int			bobCycle;			// for view bobbing and footstep generation
+	int			pm_flags;			// ducked, jump_held, etc
 	int			pm_time;
 
 	vec3_t		origin;
@@ -1146,55 +1301,55 @@ typedef struct playerState_s {
 	int			delta_angles[3];	// add to command angles to get view direction
 									// changed by spawns, rotating objects, and teleporters
 
-	int			groundEntityNum;// ENTITYNUM_NONE = in air
+	int			groundEntityNum;	// ENTITYNUM_NONE = in air
 
-	int			legsTimer;		// don't change low priority animations until this runs out
-	int			legsAnim;		// mask off ANIM_TOGGLEBIT
+	int			legsTimer;			// don't change low priority animations until this runs out
+	int			legsAnim;			// mask off ANIM_TOGGLEBIT
 
-	int			torsoTimer;		// don't change low priority animations until this runs out
-	int			torsoAnim;		// mask off ANIM_TOGGLEBIT
+	int			torsoTimer;			// don't change low priority animations until this runs out
+	int			torsoAnim;			// mask off ANIM_TOGGLEBIT
 
-	int			movementDir;	// a number 0 to 7 that represents the relative angle
-								// of movement to the view angle (axial and diagonals)
-								// when at rest, the value will remain unchanged
-								// used to twist the legs during strafing
+	int			movementDir;		// a number 0 to 7 that represents the relative angle
+									// of movement to the view angle (axial and diagonals)
+									// when at rest, the value will remain unchanged
+									// used to twist the legs during strafing
 
-	vec3_t		grapplePoint;	// location of grapple to pull towards if PMF_GRAPPLE_PULL
+	vec3_t		grapplePoint;		// location of grapple to pull towards if PMF_GRAPPLE_PULL
 
-	int			eFlags;			// copied to entityState_t->eFlags
+	int			eFlags;				// copied to entityState_t->eFlags
 
-	int			eventSequence;	// pmove generated events
+	int			eventSequence;		// pmove generated events
 	int			events[MAX_PS_EVENTS];
 	int			eventParms[MAX_PS_EVENTS];
 
-	int			externalEvent;	// events set on player from another source
+	int			externalEvent;		// events set on player from another source
 	int			externalEventParm;
 	int			externalEventTime;
 
-	int			clientNum;		// ranges from 0 to MAX_CLIENTS-1
-	int			weapon;			// copied to entityState_t->weapon
+	int			clientNum;			// ranges from 0 to MAX_CLIENTS-1
+	int			weapon;				// copied to entityState_t->weapon
 	int			weaponstate;
 
-	vec3_t		viewangles;		// for fixed views
+	vec3_t		viewangles;			// for fixed views
 	int			viewheight;
 
 	// damage feedback
-	int			damageEvent;	// when it changes, latch the other parms
+	int			damageEvent;		// when it changes, latch the other parms
 	int			damageYaw;
 	int			damagePitch;
 	int			damageCount;
 
 	int			stats[MAX_STATS];
 	int			persistant[MAX_PERSISTANT];	// stats that aren't cleared on death
-	int			powerups[MAX_POWERUPS];	// level.time that the powerup runs out
+	int			powerups[MAX_POWERUPS];		// level.time that the powerup runs out
 	int			ammo[MAX_WEAPONS];
 
 	int			generic1;
 	int			loopSound;
-	int			jumppad_ent;	// jumppad entity hit this frame
+	int			jumppad_ent;		// jumppad entity hit this frame
 
 	// not communicated over the net at all
-	int			ping;			// server to game info for scoreboard
+	int			ping;				// server to game info for scoreboard
 	int			pmove_framecount;
 	int			jumppad_frame;
 	int			entityEventSequence;
@@ -1225,17 +1380,20 @@ typedef struct playerState_s {
 #define BUTTON_PATROL		512
 #define BUTTON_FOLLOWME		1024
 
-#define	BUTTON_ANY			2048			// any key whatsoever
+#define	BUTTON_ANY		2048				// any key whatsoever
 
-#define	MOVE_RUN			120			// if forwardmove or rightmove are >= MOVE_RUN,
-										// then BUTTON_WALKING should be set
+//mmp
+#define BUTTON_PHYSICS		4096			// physics select (button 12)
+
+#define	MOVE_RUN		120			// if forwardmove or rightmove are >= MOVE_RUN,
+							// then BUTTON_WALKING should be set
 
 // usercmd_t is sent to the server each client frame
 typedef struct usercmd_s {
 	int				serverTime;
 	int				angles[3];
 	int 			buttons;
-	byte			weapon;           // weapon 
+	byte			weapon;           // weapon
 	signed char	forwardmove, rightmove, upmove;
 } usercmd_t;
 
@@ -1315,7 +1473,7 @@ typedef struct entityState_s {
 typedef enum {
 	CA_UNINITIALIZED,
 	CA_DISCONNECTED, 	// not talking to a server
-	CA_AUTHORIZING,		// not used any more, was checking cd key 
+	CA_AUTHORIZING,		// not used any more, was checking cd key
 	CA_CONNECTING,		// sending request packets to the server
 	CA_CHALLENGING,		// sending challenge packets to the server
 	CA_CONNECTED,		// netchan_t established, getting gamestate
@@ -1325,7 +1483,7 @@ typedef enum {
 	CA_CINEMATIC		// playing a cinematic or a static pic, not connected to a server
 } connstate_t;
 
-// font support 
+// font support
 
 #define GLYPH_START 0
 #define GLYPH_END 255
@@ -1376,9 +1534,9 @@ typedef struct qtime_s {
 // server browser sources
 // TTimo: AS_MPLAYER is no longer used
 #define AS_LOCAL			0
-#define AS_MPLAYER		1
+#define AS_MPLAYER			1
 #define AS_GLOBAL			2
-#define AS_FAVORITES	3
+#define AS_FAVORITES			3
 
 
 // cinematic states
@@ -1403,9 +1561,9 @@ typedef enum _flag_status {
 
 
 #define	MAX_GLOBAL_SERVERS				4096
-#define	MAX_OTHER_SERVERS					128
-#define MAX_PINGREQUESTS					32
-#define MAX_SERVERSTATUSREQUESTS	16
+#define	MAX_OTHER_SERVERS				128
+#define MAX_PINGREQUESTS				32
+#define MAX_SERVERSTATUSREQUESTS			16
 
 #define SAY_ALL		0
 #define SAY_TEAM	1

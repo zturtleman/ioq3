@@ -57,6 +57,12 @@ void multi_trigger( gentity_t *ent, gentity_t *activator ) {
 			activator->client->sess.sessionTeam != TEAM_BLUE ) {
 			return;
 		}
+
+		// check to see if keycard is needed, and if client has that keycard with him
+		if ( ent->keycard && !(ent->keycard & activator->client->ps.stats[STAT_INVENTORY] )) {
+			return;
+		}
+
 	}
 
 	G_UseTargets (ent, ent->activator);
@@ -87,6 +93,7 @@ void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace ) {
 /*QUAKED trigger_multiple (.5 .5 .5) ?
 "wait" : Seconds between triggerings, 0.5 default, -1 = one time only.
 "random"	wait variance, default is 0
+"keycard"	requires either a (1) blue, (2) red or (4) yellow keycard
 Variable sized repeatable trigger.  Must be targeted at one or more entities.
 so, the basic time between firing is a random time between
 (wait - random) and (wait + random)
@@ -94,6 +101,7 @@ so, the basic time between firing is a random time between
 void SP_trigger_multiple( gentity_t *ent ) {
 	G_SpawnFloat( "wait", "0.5", &ent->wait );
 	G_SpawnFloat( "random", "0", &ent->random );
+	G_SpawnInt( "keycard", "0", &ent->keycard );
 
 	if ( ent->random >= ent->wait && ent->wait >= 0 ) {
 		ent->random = ent->wait - FRAMETIME;
@@ -204,6 +212,10 @@ void SP_trigger_push( gentity_t *self ) {
 
 	// make sure the client precaches this sound
 	G_SoundIndex("sound/world/jumppad.wav");
+
+	// TODO: add movement lock for restricted physics mode, which would help players with accel pads
+	// this would only prevent movement until the player lands
+	// free-select physics mode will not use this however
 
 	self->s.eType = ET_PUSH_TRIGGER;
 	self->touch = trigger_push_touch;

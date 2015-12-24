@@ -36,12 +36,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 
-#define	RESPAWN_ARMOR		25
-#define	RESPAWN_HEALTH		35
-#define	RESPAWN_AMMO		40
-#define	RESPAWN_HOLDABLE	60
-#define	RESPAWN_MEGAHEALTH	35//120
-#define	RESPAWN_POWERUP		120
+#define	RESPAWN_ARMOR			20
+#define	RESPAWN_HEALTH			30 // is 35 in q3a
+#define	RESPAWN_AMMO			30 // is 40 in q3a
+#define	RESPAWN_AMMO_WEAPONSTAY	15 // is 40 in q3a
+#define	RESPAWN_HOLDABLE		120 // 2 minutes, is 60 seconds in q3a
+#define	RESPAWN_MEGAHEALTH		20 // 35 in q3a, and was at one point 120  :/
+								   // was 30 in earlier mfa proto releases
+#define	RESPAWN_QUAD			150 // 2.5 minutes, is 120 in q3a, and 60 in qw
+#define	RESPAWN_PENT			300 // 5 minutes
+#define	RESPAWN_RING			300 // 5 minutes
+
 
 
 //======================================================================
@@ -54,7 +59,7 @@ int Pickup_Powerup( gentity_t *ent, gentity_t *other ) {
 	if ( !other->client->ps.powerups[ent->item->giTag] ) {
 		// round timing to seconds to make multiple powerup timers
 		// count in sync
-		other->client->ps.powerups[ent->item->giTag] = 
+		other->client->ps.powerups[ent->item->giTag] =
 			level.time - ( level.time % 1000 );
 	}
 
@@ -64,9 +69,15 @@ int Pickup_Powerup( gentity_t *ent, gentity_t *other ) {
 		quantity = ent->item->quantity;
 	}
 
+	// mmp - this fix not only prevents the count from overflowing,
+	// but keeps the player from stacking up the count (eg: 500 second quad)
+	other->client->ps.powerups[ent->item->giTag] = level.time + quantity * 1000;
+	/*
 	other->client->ps.powerups[ent->item->giTag] += quantity * 1000;
+	*/
 
 	// give any nearby players a "denied" anti-reward
+	/*
 	for ( i = 0 ; i < level.maxclients ; i++ ) {
 		vec3_t		delta;
 		float		len;
@@ -84,11 +95,11 @@ int Pickup_Powerup( gentity_t *ent, gentity_t *other ) {
 			continue;
 		}
 
-    // if same team in team game, no sound
-    // cannot use OnSameTeam as it expects to g_entities, not clients
-  	if ( g_gametype.integer >= GT_TEAM && other->client->sess.sessionTeam == client->sess.sessionTeam  ) {
-      continue;
-    }
+		// if same team in team game, no sound
+		// cannot use OnSameTeam as it expects to g_entities, not clients
+		if ( g_gametype.integer >= GT_TEAM && other->client->sess.sessionTeam == client->sess.sessionTeam  ) {
+			continue;
+		}
 
 		// if too far away, no sound
 		VectorSubtract( ent->s.pos.trBase, client->ps.origin, delta );
@@ -112,7 +123,16 @@ int Pickup_Powerup( gentity_t *ent, gentity_t *other ) {
 		// anti-reward
 		client->ps.persistant[PERS_PLAYEREVENTS] ^= PLAYEREVENT_DENIEDREWARD;
 	}
-	return RESPAWN_POWERUP;
+	*/
+
+	switch ( ent->item->giTag ) {
+		case PW_QUAD:
+			return RESPAWN_QUAD;
+		case PW_PENT:
+			return RESPAWN_PENT;
+		default:
+			return RESPAWN_PENT;
+	}
 }
 
 //======================================================================
@@ -206,11 +226,43 @@ int Pickup_Holdable( gentity_t *ent, gentity_t *other ) {
 
 //======================================================================
 
+// TODO: change int weapon to int ammo
 void Add_Ammo (gentity_t *ent, int weapon, int count)
 {
+	// if ammo count is zero, then fuck it
+	if ( count == 0 ) {
+		return;
+	}
+
+	// if negative or no ammo, then fuck it
+	/*if ( count <= 0 && !level.warmupTime ) {
+		return;
+	}*/
+
+	if ( level.rs_doubleAmmo ) {
+		count += count;
+	}
 	ent->client->ps.ammo[weapon] += count;
-	if ( ent->client->ps.ammo[weapon] > 200 ) {
+
+	/*if ( ent->client->ps.ammo[weapon] > 200 ) {
 		ent->client->ps.ammo[weapon] = 200;
+	}*/
+	switch ( weapon ) {
+		case AT_BULLETS:
+			if ( ent->client->ps.ammo[weapon] > WC_HIGH_AMMO ) {
+				ent->client->ps.ammo[weapon] = WC_HIGH_AMMO;
+			}
+			break;
+		case AT_CELLS:
+			if ( ent->client->ps.ammo[weapon] > WC_MED_AMMO ) {
+				ent->client->ps.ammo[weapon] = WC_MED_AMMO;
+			}
+			break;
+		default:
+			if ( ent->client->ps.ammo[weapon] > WC_LOW_AMMO ) {
+				ent->client->ps.ammo[weapon] = WC_LOW_AMMO;
+			}
+			break;
 	}
 }
 
@@ -218,13 +270,16 @@ int Pickup_Ammo (gentity_t *ent, gentity_t *other)
 {
 	int		quantity;
 
-	if ( ent->count ) {
-		quantity = ent->count;
-	} else {
-		quantity = ent->item->quantity;
-	}
+	// don't add ammo in warmup
+	if ( !level.warmupTime ) {
+		if ( ent->count ) {
+			quantity = ent->count;
+		} else {
+			quantity = ent->item->quantity;
+		}
 
-	Add_Ammo (other, ent->item->giTag, quantity);
+		Add_Ammo (other, ent->item->giTag, quantity);
+	}
 
 	return RESPAWN_AMMO;
 }
@@ -232,44 +287,83 @@ int Pickup_Ammo (gentity_t *ent, gentity_t *other)
 //======================================================================
 
 
-int Pickup_Weapon (gentity_t *ent, gentity_t *other) {
+int Pickup_Weapon (gentity_t *ent, gentity_t *other, int weaponRespawn ) {
 	int		quantity;
 
-	if ( ent->count < 0 ) {
-		quantity = 0; // None for you, sir!
-	} else {
-		if ( ent->count ) {
-			quantity = ent->count;
-		} else {
-			quantity = ent->item->quantity;
-		}
+	if ( level.rs_matchMode == MM_PICKUP_ONCE ) {
 
-		// dropped items and teamplay weapons always have full ammo
-		if ( ! (ent->flags & FL_DROPPED_ITEM) && g_gametype.integer != GT_TEAM ) {
-			// respawning rules
-			// drop the quantity if the already have over the minimum
-			if ( other->client->ps.ammo[ ent->item->giTag ] < quantity ) {
-				quantity = quantity - other->client->ps.ammo[ ent->item->giTag ];
-			} else {
-				quantity = 1;		// only add a single shot
-			}
+		/*
+		MM_PICKUP_ONCE,
+		MM_PICKUP_ALWAYS,
+		MM_ALLWEAPONS_MAXAMMO,
+		MM_ALLWEAPONS,
+		*/
+
+		// do we have the weapon?  if so, don't pick it up again (qw non-dmm1 style)
+		if ( (other->client->ps.stats[STAT_WEAPONS] & ( 1 << ent->item->giTag ) ) ) {
+			return 0;
 		}
+	}
+
+	if ( level.warmupTime ) {
+		// don't give a fuck about ammo in warmup
+		quantity = -1;
+	} else {
+		// get the ammo amount
+		if ( ent->count )
+			quantity = ent->count;
+		else
+			quantity = ent->item->quantity;
 	}
 
 	// add the weapon
 	other->client->ps.stats[STAT_WEAPONS] |= ( 1 << ent->item->giTag );
 
-	Add_Ammo( other, ent->item->giTag, quantity );
+	Add_Ammo( other, ammoGroup[ent->item->giTag].ammo, quantity );
 
-	if (ent->item->giTag == WP_GRAPPLING_HOOK)
-		other->client->ps.ammo[ent->item->giTag] = -1; // unlimited ammo
+	if ( weaponRespawn ) {
+		// return value is expecting the respawn time if the player can grab the weapon
+		return weaponRespawn;
+	} else {
+		// return value is expecting "if" the player can grab the weapon
+		return 1;
+	}
+}
 
-	// team deathmatch has slow weapon respawns
-	if ( g_gametype.integer == GT_TEAM ) {
-		return g_weaponTeamRespawn.integer;
+
+//======================================================================
+
+
+int Pickup_Keycard (gentity_t *ent, gentity_t *other, int respawnTimer) {
+	int		quantity;
+
+	// add keycard to inventory
+	other->client->ps.stats[STAT_INVENTORY] |= ( 1 << ent->item->giTag );
+
+	return respawnTimer;
+
+}
+
+
+//======================================================================
+
+
+void HealthDecay (gentity_t *ent) {
+
+	if (!ent->activator) {
+		ent->think = RespawnItem;
+		ent->nextthink = level.time + RESPAWN_MEGAHEALTH * 1000;
+		return;
 	}
 
-	return g_weaponRespawn.integer;
+	if (strcmp(ent->activator->classname,"player")
+		|| ent->activator->client->ps.stats[STAT_HEALTH] <= 100) {
+		ent->nextthink = level.time + RESPAWN_MEGAHEALTH * 1000;
+		ent->think = RespawnItem;
+		return;
+	}
+
+	ent->nextthink = level.time + 1000;
 }
 
 
@@ -280,16 +374,23 @@ int Pickup_Health (gentity_t *ent, gentity_t *other) {
 	int			quantity;
 
 	// small and mega healths will go over the max
-#ifdef MISSIONPACK
-	if( bg_itemlist[other->client->ps.stats[STAT_PERSISTANT_POWERUP]].giTag == PW_GUARD ) {
-		max = other->client->ps.stats[STAT_MAX_HEALTH];
-	}
-	else
-#endif
 	if ( ent->item->quantity != 5 && ent->item->quantity != 100 ) {
 		max = other->client->ps.stats[STAT_MAX_HEALTH];
 	} else {
-		max = other->client->ps.stats[STAT_MAX_HEALTH] * 2;
+		if ( level.rs_matchMode == MM_ALLWEAPONS_MAXAMMO ) {
+			max = other->client->ps.stats[STAT_MAX_HEALTH] * 2.5; // max health is 250
+		} else {
+			/*
+			max = other->client->ps.stats[STAT_MAX_HEALTH] * 2; // max health is 200
+			*/
+			max = 666; // cannot be more powerful than the devil
+		}
+		other->client->healthDecayTime = level.time + HEALTH_DECAY_TIME * 1000;
+
+		// increase health decay by the number of megas taken while over max health
+		if ( ent->item->quantity == 100 ) {
+			other->client->healthDecayRate++;
+		}
 	}
 
 	if ( ent->count ) {
@@ -305,8 +406,12 @@ int Pickup_Health (gentity_t *ent, gentity_t *other) {
 	}
 	other->client->ps.stats[STAT_HEALTH] = other->health;
 
-	if ( ent->item->quantity == 100 ) {		// mega health respawns slow
-		return RESPAWN_MEGAHEALTH;
+	// mega health respawns slow
+	if ( ent->item->quantity == 100 ) {
+		ent->think = HealthDecay;
+		ent->activator = other;
+		return 1;
+		/*return RESPAWN_MEGAHEALTH;*/
 	}
 
 	return RESPAWN_HEALTH;
@@ -315,30 +420,124 @@ int Pickup_Health (gentity_t *ent, gentity_t *other) {
 //======================================================================
 
 int Pickup_Armor( gentity_t *ent, gentity_t *other ) {
-#ifdef MISSIONPACK
-	int		upperBound;
 
-	other->client->ps.stats[STAT_ARMOR] += ent->item->quantity;
-
-	if( other->client && bg_itemlist[other->client->ps.stats[STAT_PERSISTANT_POWERUP]].giTag == PW_GUARD ) {
-		upperBound = other->client->ps.stats[STAT_MAX_HEALTH];
-	}
-	else {
-		upperBound = other->client->ps.stats[STAT_MAX_HEALTH] * 2;
-	}
-
-	if ( other->client->ps.stats[STAT_ARMOR] > upperBound ) {
-		other->client->ps.stats[STAT_ARMOR] = upperBound;
-	}
-#else
-	other->client->ps.stats[STAT_ARMOR] += ent->item->quantity;
+	/*other->client->ps.stats[STAT_ARMOR] += ent->item->quantity;
 	if ( other->client->ps.stats[STAT_ARMOR] > other->client->ps.stats[STAT_MAX_HEALTH] * 2 ) {
 		other->client->ps.stats[STAT_ARMOR] = other->client->ps.stats[STAT_MAX_HEALTH] * 2;
+	}*/
+
+	if (ent->item->quantity == AR_TIER3MAXPOINT) // armor_body
+	{
+		other->client->ps.stats[STAT_ARMOR] = AR_TIER3MAXPOINT;
+		other->client->ps.stats[STAT_ARMORTIER] = 3; // armor_body protection
 	}
-#endif
+	else if (ent->item->quantity == AR_TIER2MAXPOINT) // armor_combat
+	{
+		other->client->ps.stats[STAT_ARMOR] = AR_TIER2MAXPOINT;
+		other->client->ps.stats[STAT_ARMORTIER] = 2; // armor_combat protection
+	}
+	else if (ent->item->quantity == AR_TIER1MAXPOINT) // armor_jacket
+	{
+		other->client->ps.stats[STAT_ARMOR] = AR_TIER1MAXPOINT;
+		other->client->ps.stats[STAT_ARMORTIER] = 1; // armor_jacket protection
+	}
+	else // Shard
+	{
+		// if no armor tier is set, then give armor_jacket protection by default
+		if (other->client->ps.stats[STAT_ARMOR] <= 0)
+			other->client->ps.stats[STAT_ARMORTIER] = 1; // armor_jacket protection
+		other->client->ps.stats[STAT_ARMOR] += 5;
+
+		// just so we can't go over 200 units
+		/*if (other->client->ps.stats[STAT_ARMOR] > 200)
+			other->client->ps.stats[STAT_ARMOR] = 200;*/
+
+		switch( other->client->ps.stats[STAT_ARMORTIER] ) {
+			case 3:
+				// cap the armor points to 200
+				if (other->client->ps.stats[STAT_ARMOR] > AR_TIER3MAXPOINT)
+					other->client->ps.stats[STAT_ARMOR] = AR_TIER3MAXPOINT;
+				break;
+			case 2:
+				// cap the armor points to 150
+				if (other->client->ps.stats[STAT_ARMOR] > AR_TIER2MAXPOINT)
+					other->client->ps.stats[STAT_ARMOR] = AR_TIER2MAXPOINT;
+				break;
+			default:
+				// cap the armor points to 100
+				if (other->client->ps.stats[STAT_ARMOR] > AR_TIER1MAXPOINT)
+					other->client->ps.stats[STAT_ARMOR] = AR_TIER1MAXPOINT;
+		}
+	}
 
 	return RESPAWN_ARMOR;
 }
+
+
+//======================================================================
+// TODO: complete this function
+
+void Pickup_Backpack (gentity_t *ent, gentity_t *other) {
+
+	int		quantity; // for health bonus
+	int		max;
+
+	int		backpackSlot;
+
+	// get backpack slot
+	if ( ent->count )
+		backpackSlot = ent->count;
+	else
+		backpackSlot = 0; // just fuck it
+
+	// check if we're giving bonus health
+	if ( backpack[backpackSlot].shells < 0 ||
+			backpack[backpackSlot].rockets < 0 ||
+			backpack[backpackSlot].cells < 0 ||
+			backpack[backpackSlot].bullets < 0 ||
+			backpack[backpackSlot].gas < 0 )
+	{
+
+		max = 666; // cannot be more powerful than the devil
+		other->client->healthDecayTime = level.time + HEALTH_DECAY_TIME * 1000;
+
+		other->health += 10;
+
+		if (other->health > max ) {
+			other->health = max;
+		}
+
+		other->client->ps.stats[STAT_HEALTH] = other->health;
+
+	} else {
+
+		// add the weapon
+		other->client->ps.stats[STAT_WEAPONS] |= ( 1 << backpack[backpackSlot].lastWeap );
+
+		// add the ammo
+		if ( backpack[backpackSlot].shells > 0 )
+			Add_Ammo( other, AT_SHELLS, backpack[backpackSlot].shells );
+		if ( backpack[backpackSlot].rockets > 0 )
+			Add_Ammo( other, AT_ROCKETS, backpack[backpackSlot].rockets );
+		if ( backpack[backpackSlot].cells > 0 )
+			Add_Ammo( other, AT_CELLS, backpack[backpackSlot].cells );
+		if ( backpack[backpackSlot].bullets > 0 )
+			Add_Ammo( other, AT_BULLETS, backpack[backpackSlot].bullets );
+		if ( backpack[backpackSlot].gas > 0 )
+			Add_Ammo( other, AT_GAS, backpack[backpackSlot].gas );
+
+	}
+
+	//G_Printf ("^3DEBUG PICKUP = '%i'\n", backpackSlot); // debug
+
+	/*if (ent->item->giTag == WP_GRAPPLING_HOOK)
+		other->client->ps.ammo[ent->item->giTag] = -1; // unlimited ammo
+	*/
+
+	return;
+
+}
+
 
 //======================================================================
 
@@ -349,6 +548,38 @@ RespawnItem
 */
 void RespawnItem( gentity_t *ent ) {
 	if (!ent) {
+		return;
+	}
+
+	// disable power-ups and holdable items via ruleset
+	if (!level.rs_powerUps) {
+		if (ent->item->giType == IT_POWERUP || ent->item->giType == IT_HOLDABLE) {
+			return;
+		}
+	}
+
+	// disable armor spawns via ruleset
+	if (!level.rs_armor) {
+		if (ent->item->giType == IT_ARMOR) {
+			return;
+		}
+	}
+
+	// if game type is not ctf, don't spawn ctf flags
+	if ( ent->item->giType == IT_TEAM ) {
+		if ( ent->item->giTag == PW_REDFLAG || ent->item->giTag == PW_BLUEFLAG ) {
+			if ( g_gametype.integer != GT_CTF ) {
+				return;
+			}
+		}
+	}
+
+	/*if(ent->item->giType == IT_POWERUP && ent->item->giTag == PW_QUAD && g_quadfactor.value <= 1.0) {
+		return;
+	}*/
+
+	// disable quad from spawning if quadmode is set
+	if(ent->item->giType == IT_POWERUP && ent->item->giTag == PW_QUAD && level.rs_quadMode) {
 		return;
 	}
 
@@ -368,12 +599,8 @@ void RespawnItem( gentity_t *ent ) {
 
 		choice = rand() % count;
 
-		for (count = 0, ent = master; ent && count < choice; ent = ent->teamchain, count++)
+		for (count = 0, ent = master; count < choice; ent = ent->teamchain, count++)
 			;
-	}
-
-	if (!ent) {
-		return;
 	}
 
 	ent->r.contents = CONTENTS_TRIGGER;
@@ -411,8 +638,16 @@ void RespawnItem( gentity_t *ent ) {
 		te->r.svFlags |= SVF_BROADCAST;
 	}
 
-	// play the normal respawn sound only to nearby clients
-	G_AddEvent( ent, EV_ITEM_RESPAWN, 0 );
+	// determine what type of item spawn sound to play
+	if ( ent->item->giType == IT_POWERUP ||
+			( ent->item->giType == IT_ARMOR && ent->item->quantity == AR_TIER3MAXPOINT ) ||
+			( ent->item->giType == IT_HEALTH && ent->item->quantity >= 100 ) ) {
+		// play the super respawn sound
+		G_AddEvent( ent, EV_ITEM_SUPERRESPAWN, 0 );
+	} else {
+		// play the normal respawn sound only to nearby clients
+		G_AddEvent( ent, EV_ITEM_RESPAWN, 0 );
+	}
 
 	ent->nextthink = 0;
 }
@@ -425,31 +660,86 @@ Touch_Item
 */
 void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	int			respawn;
-	qboolean	predict;
+	int			alwaysSpawned = 0;
+	qboolean		predict;
+	int			weaponRespawn;
+	int			respawnValue;
 
 	if (!other->client)
 		return;
 	if (other->health < 1)
 		return;		// dead people can't pickup
 
+	// don't pick up items if not allowed (meant to delay pickups when player spawns on an item)
+	if ( other->client->disallowItemPickUp ) {
+		return;
+	}
+
+	// enemies in AA1 cannot pickup items
+	if ( other->client->ps.persistant[PERS_MISC] & PMSC_NEVER_PICKUP_ANY_ITEM ) {
+		return;
+	}
+
 	// the same pickup rules are used for client side and server side
 	if ( !BG_CanItemBeGrabbed( g_gametype.integer, &ent->s, &other->client->ps ) ) {
 		return;
 	}
 
-	G_LogPrintf( "Item: %i %s\n", other->s.number, ent->item->classname );
+	// don't pick up if item has been freshly tossed by player
+	if( ent->pickupDelay > level.time )
+		return;
+
+	G_VerboseLogPrintf( 2, "Item: %i %s\n", other->s.number, ent->item->classname );
 
 	predict = other->client->pers.predictItemPickup;
 
 	// call the item-specific pickup function
 	switch( ent->item->giType ) {
 	case IT_WEAPON:
-		respawn = Pickup_Weapon(ent, other);
+		weaponRespawn = level.rs_weaponRespawn;
+		if ( level.rs_matchMode == MM_PICKUP_ALWAYS || level.rs_matchMode == MM_PICKUP_ALWAYS_NOAMMO ) {
+			if ( weaponRespawn < 1 ) {
+				weaponRespawn = 30;
+			}
+		}
+
+		if (weaponRespawn > 0) {
+			respawn = Pickup_Weapon(ent, other, weaponRespawn);
+			alwaysSpawned = 0; // this shouldn't be needed, will remove later
+		} else {
+			alwaysSpawned = Pickup_Weapon(ent, other, 0);
+			respawn = 0;
+		}
 //		predict = qfalse;
 		break;
 	case IT_AMMO:
 		respawn = Pickup_Ammo(ent, other);
+
+		// if matchmode is set to weaponstay, then make ammo respawn more often
+		if (respawn == RESPAWN_AMMO && level.rs_matchMode == MM_PICKUP_ONCE) {
+			respawn = RESPAWN_AMMO_WEAPONSTAY;
+		}
 //		predict = qfalse;
+		break;
+	case IT_BACKPACK:
+		Pickup_Backpack(ent, other);
+		respawn = -1;
+		break;
+	case IT_KEYCARD: // mmp - wip
+		respawnValue = level.rs_keycardRespawn;
+
+		if (respawnValue > 0) {
+			respawn = Pickup_Keycard(ent, other, respawnValue);
+			alwaysSpawned = 0; // this shouldn't be needed, will remove later
+		} else {
+			alwaysSpawned = Pickup_Keycard(ent, other, 0);
+			respawn = 0;
+		}
+
+//		alwaysSpawned = Pickup_Keycard(ent, other);
+//		respawn = -1;
+////		respawn = Pickup_Keycard(ent, other);
+////		predict = qfalse;
 		break;
 	case IT_ARMOR:
 		respawn = Pickup_Armor(ent, other);
@@ -476,7 +766,7 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 		return;
 	}
 
-	if ( !respawn ) {
+	if ( !respawn && !alwaysSpawned ) {
 		return;
 	}
 
@@ -488,7 +778,7 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	}
 
 	// powerup pickups are global broadcasts
-	if ( ent->item->giType == IT_POWERUP || ent->item->giType == IT_TEAM) {
+	/*if ( ent->item->giType == IT_POWERUP || ent->item->giType == IT_TEAM) {
 		// if we want the global sound to play
 		if (!ent->speed) {
 			gentity_t	*te;
@@ -505,10 +795,14 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 			te->r.svFlags |= SVF_SINGLECLIENT;
 			te->r.singleClient = other->s.number;
 		}
-	}
+	}*/
 
 	// fire item targets
 	G_UseTargets (ent, other);
+
+	// some items and all weapons don't respawn, since they're always available
+	if ( alwaysSpawned )
+		return;
 
 	// wait of -1 will not respawn
 	if ( ent->wait == -1 ) {
@@ -520,7 +814,7 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	}
 
 	// non zero wait overrides respawn time
-	if ( ent->wait ) {
+	if ( ent->wait && ent->think != HealthDecay ) {
 		respawn = ent->wait;
 	}
 
@@ -545,15 +839,16 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	ent->r.contents = 0;
 
 	// ZOID
-	// A negative respawn times means to never respawn this item (but don't 
-	// delete it).  This is used by items that are respawned by third party 
+	// A negative respawn times means to never respawn this item (but don't
+	// delete it).  This is used by items that are respawned by third party
 	// events such as ctf flags
 	if ( respawn <= 0 ) {
 		ent->nextthink = 0;
 		ent->think = 0;
 	} else {
 		ent->nextthink = level.time + respawn * 1000;
-		ent->think = RespawnItem;
+		if ( ent->think != HealthDecay ) ent->think = RespawnItem;
+		/*ent->think = RespawnItem;*/
 	}
 	trap_LinkEntity( ent );
 }
@@ -592,21 +887,90 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 
 	dropped->s.eFlags |= EF_BOUNCE_HALF;
 #ifdef MISSIONPACK
-	if ((g_gametype.integer == GT_CTF || g_gametype.integer == GT_1FCTF)			&& item->giType == IT_TEAM) { // Special case for CTF flags
+	if ((g_gametype.integer == GT_CTF || g_gametype.integer == GT_1FCTF)
+			&& item->giType == IT_TEAM) // Special case for CTF flags
 #else
-	if (g_gametype.integer == GT_CTF && item->giType == IT_TEAM) { // Special case for CTF flags
+	if (g_gametype.integer == GT_CTF && item->giType == IT_TEAM) // Special case for CTF flags
 #endif
+	{
 		dropped->think = Team_DroppedFlagThink;
-		dropped->nextthink = level.time + 30000;
+		dropped->nextthink = level.time + ( FLAG_RETURN_TIME - level.c_flagReturnDecrease);
 		Team_CheckDroppedItem( dropped );
-	} else { // auto-remove after 30 seconds
+	} else if (level.rs_keycardDropable && item->giType == IT_KEYCARD) {
 		dropped->think = G_FreeEntity;
-		dropped->nextthink = level.time + 30000;
+		dropped->nextthink = level.time + KEYCARD_DESPAWN_TIME;
+	} else if (item->giType == IT_BACKPACK) {
+		dropped->think = G_FreeEntity;
+		dropped->nextthink = level.time + BACKPACK_DESPAWN_TIME;
+	} else { // auto-remove after 20 seconds
+		dropped->think = G_FreeEntity;
+		dropped->nextthink = level.time + DEFAULT_DESPAWN_TIME;
 	}
 
 	dropped->flags = FL_DROPPED_ITEM;
 
 	trap_LinkEntity (dropped);
+
+	return dropped;
+}
+
+/*
+================
+LaunchItem_Weapon
+
+Spawns a weapon and tosses it forward
+================
+*/
+gentity_t *LaunchItem_Weapon( gitem_t *item, vec3_t origin, vec3_t velocity, int dropTime, int weapon ) {
+	gentity_t	*dropped;
+
+	dropped = G_Spawn();
+
+	dropped->s.eType = ET_ITEM;
+	dropped->s.modelindex = item - bg_itemlist;	// store item number in modelindex
+	dropped->s.modelindex2 = 1; // This is non-zero is it's a dropped item
+
+	dropped->classname = item->classname;
+	dropped->item = item;
+	VectorSet (dropped->r.mins, -ITEM_RADIUS, -ITEM_RADIUS, -ITEM_RADIUS);
+	VectorSet (dropped->r.maxs, ITEM_RADIUS, ITEM_RADIUS, ITEM_RADIUS);
+	dropped->r.contents = CONTENTS_TRIGGER;
+
+	dropped->touch = Touch_Item;
+
+	G_SetOrigin( dropped, origin );
+	dropped->s.pos.trType = TR_GRAVITY;
+	dropped->s.pos.trTime = level.time;
+	VectorCopy( velocity, dropped->s.pos.trDelta );
+
+	dropped->s.eFlags |= EF_BOUNCE_HALF;
+
+	dropped->think = G_FreeEntity;
+	dropped->nextthink = level.time + 30000;
+
+	dropped->flags = FL_DROPPED_ITEM;
+
+	dropped->pickupDelay = dropTime + 500;
+
+	// remember slot
+	dropped->count = level.currentBackpackSlot;
+
+	// add ammo and current weapon in backpack
+	// TODO: code this better
+	backpack[level.currentBackpackSlot].lastWeap = weapon;
+	backpack[level.currentBackpackSlot].shells = 0;
+	backpack[level.currentBackpackSlot].rockets = 0;
+	backpack[level.currentBackpackSlot].cells = 0;
+	backpack[level.currentBackpackSlot].bullets = 0;
+	backpack[level.currentBackpackSlot].gas = 0;
+
+	// move to next backpack slot
+	level.currentBackpackSlot++;
+	if ( level.currentBackpackSlot >= MAX_BACKPACK_CONTENTS ) {
+		level.currentBackpackSlot = 0;
+	}
+
+	trap_LinkEntity(dropped);
 
 	return dropped;
 }
@@ -629,8 +993,47 @@ gentity_t *Drop_Item( gentity_t *ent, gitem_t *item, float angle ) {
 	AngleVectors( angles, velocity, NULL, NULL );
 	VectorScale( velocity, 150, velocity );
 	velocity[2] += 200 + crandom() * 50;
-	
+
 	return LaunchItem( item, ent->s.pos.trBase, velocity );
+}
+
+
+/*
+================
+Drop_Item_Weapon
+
+Spawns an item and tosses it forward
+================
+*/
+//TODO: Switch to next weapon
+
+gentity_t *Drop_Item_Weapon( gentity_t *ent, gitem_t *item, float angle, int weapon ) {
+	vec3_t	velocity;
+	vec3_t	angles;
+	vec3_t	position;
+	int		ammoCount;
+	int		dropTime;
+
+	VectorCopy( ent->s.apos.trBase, angles );
+	angles[YAW] += angle;
+	angles[PITCH] = 0; // always forward
+
+	AngleVectors( angles, velocity, NULL, NULL );
+	VectorScale( velocity, 0, velocity );
+	VectorAdd( velocity, ent->s.pos.trBase, position );
+
+	AngleVectors( angles, velocity, NULL, NULL );
+	VectorScale( velocity, 150, velocity );
+	velocity[2] += 200 + crandom() * 50;
+
+/*	ammoCount = ent->client->ps.ammo[item->giTag];
+
+	ent->client->ps.ammo[item->giTag] = 0;
+	ent->client->ps.stats[STAT_WEAPONS] &= ~( 1 << item->giTag );*/
+
+	dropTime = level.time;
+
+	return LaunchItem_Weapon( item, position, velocity, dropTime, weapon );
 }
 
 
@@ -697,14 +1100,37 @@ void FinishSpawningItem( gentity_t *ent ) {
 		return;
 	}
 
+	// mmp
+	if ( level.rs_matchMode >= MM_ALLWEAPONS_MAXAMMO ) {
+		if (ent->item->giType == IT_WEAPON) {
+			ent->s.eFlags |= EF_NODRAW;
+			ent->r.contents = 0;
+			return;
+		}
+		if ( level.rs_matchMode == MM_ALLWEAPONS_MAXAMMO ) {
+			if (ent->item->giType == IT_AMMO) {
+				ent->s.eFlags |= EF_NODRAW;
+				ent->r.contents = 0;
+				return;
+			}
+		}
+	} else if ( level.rs_matchMode == MM_PICKUP_ALWAYS_NOAMMO ) {
+		if (ent->item->giType == IT_AMMO) {
+			ent->s.eFlags |= EF_NODRAW;
+			ent->r.contents = 0;
+			return;
+		}
+	}
+
 	// powerups don't spawn in for a while
 	if ( ent->item->giType == IT_POWERUP ) {
 		float	respawn;
 
-		respawn = 45 + crandom() * 15;
+//		respawn = 45 + crandom() * 15;
 		ent->s.eFlags |= EF_NODRAW;
 		ent->r.contents = 0;
-		ent->nextthink = level.time + respawn * 1000;
+//		ent->nextthink = level.time + respawn * 1000;
+		ent->nextthink = level.time + 30 * 1000;
 		ent->think = RespawnItem;
 		return;
 	}
@@ -809,8 +1235,14 @@ void ClearRegisteredItems( void ) {
 	memset( itemRegistered, 0, sizeof( itemRegistered ) );
 
 	// players always start with the base weapon
-	RegisterItem( BG_FindItemForWeapon( WP_MACHINEGUN ) );
-	RegisterItem( BG_FindItemForWeapon( WP_GAUNTLET ) );
+	RegisterItem( BG_FindItemForWeapon( WP_BLASTER ) );
+
+	// players always leave behind a backpack when fragged
+	RegisterItem( BG_FindItemForBackpack() );
+
+	// test weapon - mmp
+	//RegisterItem( BG_FindItemForWeapon( WP_SUPER_SHOTGUN ) );
+
 #ifdef MISSIONPACK
 	if( g_gametype.integer == GT_HARVESTER ) {
 		RegisterItem( BG_FindItem( "Red Cube" ) );
@@ -893,7 +1325,48 @@ void G_SpawnItem (gentity_t *ent, gitem_t *item) {
 	if ( G_ItemDisabled(item) )
 		return;
 
+	// disable armor spawns via ruleset
+	if (!level.rs_armor) {
+		if (item->giType == IT_ARMOR) {
+			return;
+		}
+	}
+
+	// if game type is not ctf, don't spawn ctf flags
+	if ( item->giType == IT_TEAM ) {
+		if ( item->giTag == PW_REDFLAG || item->giTag == PW_BLUEFLAG ) {
+			if ( g_gametype.integer != GT_CTF ) {
+				return;
+			}
+		}
+	}
+
+	if ( level.rs_matchMode >= MM_ALLWEAPONS_MAXAMMO ) {
+		if (item->giType == IT_WEAPON) {
+			return;
+		}
+		if ( level.rs_matchMode == MM_ALLWEAPONS_MAXAMMO ) {
+			if (item->giType == IT_AMMO) {
+				return;
+			}
+		}
+	} else if ( level.rs_matchMode == MM_PICKUP_ALWAYS_NOAMMO ) {
+		if (item->giType == IT_AMMO) {
+			return;
+		}
+	}
+
+	/*if ( level.rs_matchMode >= MM_ALLWEAPONS_MAXAMMO ) {
+		if (item->giType == IT_WEAPON) {
+			return;
+		}
+		if (item->giType == IT_AMMO) {
+			return;
+		}
+	}*/
+
 	ent->item = item;
+
 	// some movers spawn on the second frame, so delay item
 	// spawns until the third frame so they can ride trains
 	ent->nextthink = level.time + FRAMETIME * 2;
@@ -911,6 +1384,7 @@ void G_SpawnItem (gentity_t *ent, gitem_t *item) {
 		ent->s.generic1 = ent->spawnflags;
 	}
 #endif
+
 }
 
 
@@ -984,7 +1458,7 @@ void G_RunItem( gentity_t *ent ) {
 	} else {
 		mask = MASK_PLAYERSOLID & ~CONTENTS_BODY;//MASK_SOLID;
 	}
-	trap_Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, 
+	trap_Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin,
 		ent->r.ownerNum, mask );
 
 	VectorCopy( tr.endpos, ent->r.currentOrigin );

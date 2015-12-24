@@ -161,7 +161,7 @@ int BotSortTeamMatesByBaseTravelTime(bot_state_t *bs, int *teammates, int maxtea
 		//skip spectators
 		if (atoi(Info_ValueForKey(buf, "t")) == TEAM_SPECTATOR) continue;
 		//
-		if (BotSameTeam(bs, i) && goal) {
+		if (BotSameTeam(bs, i)) {
 			//
 			traveltime = BotClientTravelTimeToGoal(i, goal);
 			//
@@ -258,6 +258,8 @@ void BotSayTeamOrderAlways(bot_state_t *bs, int toclient) {
 	char buf[MAX_MESSAGE_SIZE];
 	char name[MAX_NETNAME];
 
+	//if (bot_nochat.integer>2) return;
+
 	//if the bot is talking to itself
 	if (bs->client == toclient) {
 		//don't show the message just put it in the console message queue
@@ -337,7 +339,7 @@ BotCTFOrders
 */
 void BotCTFOrders_BothFlagsNotAtBase(bot_state_t *bs) {
 	int numteammates, defenders, attackers, i, other;
-	int teammates[MAX_CLIENTS] = {0};
+	int teammates[MAX_CLIENTS];
 	char name[MAX_NETNAME], carriername[MAX_NETNAME];
 
 	numteammates = BotSortTeamMatesByBaseTravelTime(bs, teammates, sizeof(teammates));
@@ -695,7 +697,7 @@ BotCTFOrders
 */
 void BotCTFOrders_BothFlagsAtBase(bot_state_t *bs) {
 	int numteammates, defenders, attackers, i;
-	int teammates[MAX_CLIENTS] = {0};
+	int teammates[MAX_CLIENTS];
 	char name[MAX_NETNAME];
 
 	//sort team mates by travel time to base

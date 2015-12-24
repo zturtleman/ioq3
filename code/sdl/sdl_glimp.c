@@ -134,14 +134,15 @@ static void GLimp_DetectAvailableModes(void)
 	SDL_Rect *modes;
 	int numModes = 0;
 
+
 	SDL_DisplayMode windowMode;
 	int display = SDL_GetWindowDisplayIndex( SDL_window );
-	if( display < 0 )
-	{
+	if( display < 0 ) {
 		ri.Printf( PRINT_WARNING, "Couldn't get window display index, no resolutions detected: %s\n", SDL_GetError() );
 		return;
 	}
 	numSDLModes = SDL_GetNumDisplayModes( display );
+
 
 	if( SDL_GetWindowDisplayMode( SDL_window, &windowMode ) < 0 || numSDLModes <= 0 )
 	{
@@ -436,7 +437,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 			glConfig.stereoEnabled = qfalse;
 			SDL_GL_SetAttribute(SDL_GL_STEREO, 0);
 		}
-		
+
 		SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 
 #if 0 // if multisampling is enabled on X11, this causes create window to fail.
@@ -548,7 +549,7 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 		r_fullscreen->modified = qfalse;
 		fullscreen = qfalse;
 	}
-	
+
 	err = GLimp_SetMode(mode, fullscreen, noborder);
 
 	switch ( err )

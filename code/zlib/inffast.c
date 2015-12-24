@@ -298,6 +298,7 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
                                  257 + (end - out) : 257 - (out - end));
     state->hold = hold;
     state->bits = bits;
+    return;
 }
 
 /*

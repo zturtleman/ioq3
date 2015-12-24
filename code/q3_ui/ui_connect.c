@@ -175,17 +175,20 @@ void UI_DrawConnectScreen( qboolean overlay ) {
 	// see what information we should display
 	trap_GetClientState( &cstate );
 
-	info[0] = '\0';
+	/*info[0] = '\0';
 	if( trap_GetConfigString( CS_SERVERINFO, info, sizeof(info) ) ) {
 		UI_DrawProportionalString( 320, 16, va( "Loading %s", Info_ValueForKey( info, "mapname" ) ), UI_BIGFONT|UI_CENTER|UI_DROPSHADOW, color_white );
+	}*/
+
+	info[0] = '\0';
+	if( !trap_GetConfigString( CS_SERVERINFO, info, sizeof(info) ) ) {
+		UI_DrawProportionalString( 320, 64, va("Connecting to %s", cstate.servername), UI_CENTER|UI_SMALLFONT/*|UI_DROPSHADOW*/, menu_text_color );
+		//UI_DrawProportionalString( 320, 96, "Press Esc to abort", UI_CENTER|UI_SMALLFONT|UI_DROPSHADOW, menu_text_color );
 	}
 
-	UI_DrawProportionalString( 320, 64, va("Connecting to %s", cstate.servername), UI_CENTER|UI_SMALLFONT|UI_DROPSHADOW, menu_text_color );
-	//UI_DrawProportionalString( 320, 96, "Press Esc to abort", UI_CENTER|UI_SMALLFONT|UI_DROPSHADOW, menu_text_color );
-
 	// display global MOTD at bottom
-	UI_DrawProportionalString( SCREEN_WIDTH/2, SCREEN_HEIGHT-32, 
-		Info_ValueForKey( cstate.updateInfoString, "motd" ), UI_CENTER|UI_SMALLFONT|UI_DROPSHADOW, menu_text_color );
+	/*UI_DrawProportionalString( SCREEN_WIDTH/2, SCREEN_HEIGHT-32, 
+		Info_ValueForKey( cstate.updateInfoString, "motd" ), UI_CENTER|UI_SMALLFONT|UI_DROPSHADOW, menu_text_color );*/
 	
 	// print any server info (server full, bad version, etc)
 	if ( cstate.connState < CA_CONNECTED ) {

@@ -266,6 +266,7 @@ typedef struct {
 	menulist_s		mode;
 	menulist_s		driver;
 	menuslider_s	tq;
+	menulist_s  	hqTextures;
 	menulist_s  	fs;
 	menulist_s  	lighting;
 	menulist_s  	allow_extensions;
@@ -282,7 +283,8 @@ typedef struct
 {
 	int mode;
 	qboolean fullscreen;
-	int tq;
+	/*int tq;*/
+	int hqTextures;
 	int lighting;
 	int texturebits;
 	int geometry;
@@ -296,6 +298,27 @@ static graphicsoptions_t		s_graphicsoptions;
 
 static InitialVideoOptions_s s_ivo_templates[] =
 {
+	{
+		6, qtrue, 1, 0, 2, 2, 1, 0, qtrue
+	},
+	{
+		4, qtrue, 1, 0, 2, 1, 1, 0, qtrue	// JDC: this was tq 3
+	},
+	{
+		3, qtrue, 1, 0, 0, 1, 0, 0, qtrue
+	},
+	{
+		2, qtrue, 0, 0, 0, 0, 0, 0, qtrue
+	},
+	{
+		2, qtrue, 0, 1, 0, 0, 0, 0, qtrue
+	},
+	{
+		3, qtrue, 0, 0, 0, 1, 0, 0, qtrue
+	}
+
+// old
+/*
 	{
 		6, qtrue, 3, 0, 2, 2, 1, 0, qtrue
 	},
@@ -314,6 +337,8 @@ static InitialVideoOptions_s s_ivo_templates[] =
 	{
 		3, qtrue, 1, 0, 0, 1, 0, 0, qtrue
 	}
+*/
+
 };
 
 #define NUM_IVO_TEMPLATES ( ARRAY_LEN( s_ivo_templates ) )
@@ -466,15 +491,16 @@ GraphicsOptions_GetInitialVideo
 */
 static void GraphicsOptions_GetInitialVideo( void )
 {
-	s_ivo.driver      = s_graphicsoptions.driver.curvalue;
-	s_ivo.mode        = s_graphicsoptions.mode.curvalue;
-	s_ivo.fullscreen  = s_graphicsoptions.fs.curvalue;
-	s_ivo.extensions  = s_graphicsoptions.allow_extensions.curvalue;
-	s_ivo.tq          = s_graphicsoptions.tq.curvalue;
-	s_ivo.lighting    = s_graphicsoptions.lighting.curvalue;
-	s_ivo.geometry    = s_graphicsoptions.geometry.curvalue;
-	s_ivo.filter      = s_graphicsoptions.filter.curvalue;
-	s_ivo.texturebits = s_graphicsoptions.texturebits.curvalue;
+	s_ivo.driver		= s_graphicsoptions.driver.curvalue;
+	s_ivo.mode			= s_graphicsoptions.mode.curvalue;
+	s_ivo.fullscreen	= s_graphicsoptions.fs.curvalue;
+	s_ivo.extensions	= s_graphicsoptions.allow_extensions.curvalue;
+	/*s_ivo.tq			= s_graphicsoptions.tq.curvalue;*/
+	s_ivo.hqTextures	= s_graphicsoptions.hqTextures.curvalue;
+	s_ivo.lighting		= s_graphicsoptions.lighting.curvalue;
+	s_ivo.geometry		= s_graphicsoptions.geometry.curvalue;
+	s_ivo.filter		= s_graphicsoptions.filter.curvalue;
+	s_ivo.texturebits	= s_graphicsoptions.texturebits.curvalue;
 }
 
 /*
@@ -523,7 +549,7 @@ static void GraphicsOptions_CheckConfig( void )
 			continue;
 		if ( s_ivo_templates[i].fullscreen != s_graphicsoptions.fs.curvalue )
 			continue;
-		if ( s_ivo_templates[i].tq != s_graphicsoptions.tq.curvalue )
+		if ( s_ivo_templates[i].hqTextures != s_graphicsoptions.hqTextures.curvalue )
 			continue;
 		if ( s_ivo_templates[i].lighting != s_graphicsoptions.lighting.curvalue )
 			continue;
@@ -580,7 +606,7 @@ static void GraphicsOptions_UpdateMenuItems( void )
 	{
 		s_graphicsoptions.apply.generic.flags &= ~(QMF_HIDDEN|QMF_INACTIVE);
 	}
-	if ( s_ivo.tq != s_graphicsoptions.tq.curvalue )
+	if ( s_ivo.hqTextures != s_graphicsoptions.hqTextures.curvalue )
 	{
 		s_graphicsoptions.apply.generic.flags &= ~(QMF_HIDDEN|QMF_INACTIVE);
 	}
@@ -630,7 +656,7 @@ static void GraphicsOptions_ApplyChanges( void *unused, int notification )
 		trap_Cvar_SetValue( "r_texturebits", 32 );
 		break;
 	}
-	trap_Cvar_SetValue( "r_picmip", 3 - s_graphicsoptions.tq.curvalue );
+	trap_Cvar_SetValue( "r_hqTextures", s_graphicsoptions.hqTextures.curvalue );
 	trap_Cvar_SetValue( "r_allowExtensions", s_graphicsoptions.allow_extensions.curvalue );
 
 	if( resolutionsDetected )
@@ -731,7 +757,7 @@ static void GraphicsOptions_Event( void* ptr, int event ) {
 		s_graphicsoptions.mode.curvalue        = GraphicsOptions_FindDetectedResolution(ivo->mode);
 		s_graphicsoptions.ratio.curvalue =
 			resToRatio[ s_graphicsoptions.mode.curvalue ];
-		s_graphicsoptions.tq.curvalue          = ivo->tq;
+		s_graphicsoptions.hqTextures.curvalue  = ivo->hqTextures;
 		s_graphicsoptions.lighting.curvalue    = ivo->lighting;
 		s_graphicsoptions.texturebits.curvalue = ivo->texturebits;
 		s_graphicsoptions.geometry.curvalue    = ivo->geometry;
@@ -777,7 +803,7 @@ static void GraphicsOptions_TQEvent( void *ptr, int event ) {
 	if( event != QM_ACTIVATED ) {
 	 	return;
 	}
-	s_graphicsoptions.tq.curvalue = (int)(s_graphicsoptions.tq.curvalue + 0.5);
+	/*s_graphicsoptions.tq.curvalue = (int)(s_graphicsoptions.tq.curvalue + 0.5);*/
 }
 
 
@@ -835,14 +861,14 @@ static void GraphicsOptions_SetMenuItems( void )
 		resToRatio[ s_graphicsoptions.mode.curvalue ];
 	s_graphicsoptions.fs.curvalue = trap_Cvar_VariableValue("r_fullscreen");
 	s_graphicsoptions.allow_extensions.curvalue = trap_Cvar_VariableValue("r_allowExtensions");
-	s_graphicsoptions.tq.curvalue = 3-trap_Cvar_VariableValue( "r_picmip");
-	if ( s_graphicsoptions.tq.curvalue < 0 )
+	s_graphicsoptions.hqTextures.curvalue = trap_Cvar_VariableValue( "r_hqTextures");
+	if ( s_graphicsoptions.hqTextures.curvalue < 0 )
 	{
-		s_graphicsoptions.tq.curvalue = 0;
+		s_graphicsoptions.hqTextures.curvalue = 0;
 	}
-	else if ( s_graphicsoptions.tq.curvalue > 3 )
+	else if ( s_graphicsoptions.hqTextures.curvalue > 1 )
 	{
-		s_graphicsoptions.tq.curvalue = 3;
+		s_graphicsoptions.hqTextures.curvalue = 1;
 	}
 
 	s_graphicsoptions.lighting.curvalue = trap_Cvar_VariableValue( "r_vertexLight" ) != 0;
@@ -901,6 +927,13 @@ void GraphicsOptions_MenuInit( void )
 	};
 
 	static const char *tq_names[] =
+	{
+		"Low",
+		"High",
+		NULL
+	};
+
+	static const char *td_names[] =
 	{
 		"Default",
 		"16 bit",
@@ -987,7 +1020,7 @@ void GraphicsOptions_MenuInit( void )
 	s_graphicsoptions.graphics.generic.flags	= QMF_RIGHT_JUSTIFY;
 	s_graphicsoptions.graphics.generic.id		= ID_GRAPHICS;
 	s_graphicsoptions.graphics.generic.callback	= GraphicsOptions_Event;
-	s_graphicsoptions.graphics.generic.x		= 216;
+	s_graphicsoptions.graphics.generic.x		= 136;
 	s_graphicsoptions.graphics.generic.y		= 240 - 2 * PROP_HEIGHT;
 	s_graphicsoptions.graphics.string			= "GRAPHICS";
 	s_graphicsoptions.graphics.style			= UI_RIGHT;
@@ -997,7 +1030,7 @@ void GraphicsOptions_MenuInit( void )
 	s_graphicsoptions.display.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	s_graphicsoptions.display.generic.id		= ID_DISPLAY;
 	s_graphicsoptions.display.generic.callback	= GraphicsOptions_Event;
-	s_graphicsoptions.display.generic.x			= 216;
+	s_graphicsoptions.display.generic.x			= 136;
 	s_graphicsoptions.display.generic.y			= 240 - PROP_HEIGHT;
 	s_graphicsoptions.display.string			= "DISPLAY";
 	s_graphicsoptions.display.style				= UI_RIGHT;
@@ -1007,7 +1040,7 @@ void GraphicsOptions_MenuInit( void )
 	s_graphicsoptions.sound.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	s_graphicsoptions.sound.generic.id			= ID_SOUND;
 	s_graphicsoptions.sound.generic.callback	= GraphicsOptions_Event;
-	s_graphicsoptions.sound.generic.x			= 216;
+	s_graphicsoptions.sound.generic.x			= 136;
 	s_graphicsoptions.sound.generic.y			= 240;
 	s_graphicsoptions.sound.string				= "SOUND";
 	s_graphicsoptions.sound.style				= UI_RIGHT;
@@ -1017,7 +1050,7 @@ void GraphicsOptions_MenuInit( void )
 	s_graphicsoptions.network.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	s_graphicsoptions.network.generic.id		= ID_NETWORK;
 	s_graphicsoptions.network.generic.callback	= GraphicsOptions_Event;
-	s_graphicsoptions.network.generic.x			= 216;
+	s_graphicsoptions.network.generic.x			= 136;
 	s_graphicsoptions.network.generic.y			= 240 + PROP_HEIGHT;
 	s_graphicsoptions.network.string			= "NETWORK";
 	s_graphicsoptions.network.style				= UI_RIGHT;
@@ -1101,7 +1134,7 @@ void GraphicsOptions_MenuInit( void )
 	y += BIGCHAR_HEIGHT+2;
 
 	// references/modifies "r_picmip"
-	s_graphicsoptions.tq.generic.type	= MTYPE_SLIDER;
+	/*s_graphicsoptions.tq.generic.type	= MTYPE_SLIDER;
 	s_graphicsoptions.tq.generic.name	= "Texture Detail:";
 	s_graphicsoptions.tq.generic.flags	= QMF_PULSEIFFOCUS|QMF_SMALLFONT;
 	s_graphicsoptions.tq.generic.x		= 400;
@@ -1109,15 +1142,24 @@ void GraphicsOptions_MenuInit( void )
 	s_graphicsoptions.tq.minvalue       = 0;
 	s_graphicsoptions.tq.maxvalue       = 3;
 	s_graphicsoptions.tq.generic.callback = GraphicsOptions_TQEvent;
+	y += BIGCHAR_HEIGHT+2;*/
+
+	// references/modifies "r_hqTextures"
+	s_graphicsoptions.hqTextures.generic.type  = MTYPE_SPINCONTROL;
+	s_graphicsoptions.hqTextures.generic.name	= "Texture Quality:";
+	s_graphicsoptions.hqTextures.generic.flags	= QMF_PULSEIFFOCUS|QMF_SMALLFONT;
+	s_graphicsoptions.hqTextures.generic.x	    = 400;
+	s_graphicsoptions.hqTextures.generic.y	    = y;
+	s_graphicsoptions.hqTextures.itemnames     = tq_names;
 	y += BIGCHAR_HEIGHT+2;
 
 	// references/modifies "r_textureBits"
 	s_graphicsoptions.texturebits.generic.type  = MTYPE_SPINCONTROL;
-	s_graphicsoptions.texturebits.generic.name	= "Texture Quality:";
+	s_graphicsoptions.texturebits.generic.name	= "Texture Depth:"; // was texture quality
 	s_graphicsoptions.texturebits.generic.flags	= QMF_PULSEIFFOCUS|QMF_SMALLFONT;
 	s_graphicsoptions.texturebits.generic.x	    = 400;
 	s_graphicsoptions.texturebits.generic.y	    = y;
-	s_graphicsoptions.texturebits.itemnames     = tq_names;
+	s_graphicsoptions.texturebits.itemnames     = td_names;
 	y += BIGCHAR_HEIGHT+2;
 
 	// references/modifies "r_textureMode"
@@ -1138,6 +1180,7 @@ void GraphicsOptions_MenuInit( void )
 	s_graphicsoptions.driverinfo.string           = "Driver Info";
 	s_graphicsoptions.driverinfo.style            = UI_CENTER|UI_SMALLFONT;
 	s_graphicsoptions.driverinfo.color            = color_red;
+	y += BIGCHAR_HEIGHT+2;
 
 	s_graphicsoptions.back.generic.type	    = MTYPE_BITMAP;
 	s_graphicsoptions.back.generic.name     = GRAPHICSOPTIONS_BACK0;
@@ -1177,7 +1220,8 @@ void GraphicsOptions_MenuInit( void )
 	Menu_AddItem( &s_graphicsoptions.menu, ( void * ) &s_graphicsoptions.fs );
 	Menu_AddItem( &s_graphicsoptions.menu, ( void * ) &s_graphicsoptions.lighting );
 	Menu_AddItem( &s_graphicsoptions.menu, ( void * ) &s_graphicsoptions.geometry );
-	Menu_AddItem( &s_graphicsoptions.menu, ( void * ) &s_graphicsoptions.tq );
+	/*Menu_AddItem( &s_graphicsoptions.menu, ( void * ) &s_graphicsoptions.tq );*/
+	Menu_AddItem( &s_graphicsoptions.menu, ( void * ) &s_graphicsoptions.hqTextures );
 	Menu_AddItem( &s_graphicsoptions.menu, ( void * ) &s_graphicsoptions.texturebits );
 	Menu_AddItem( &s_graphicsoptions.menu, ( void * ) &s_graphicsoptions.filter );
 	Menu_AddItem( &s_graphicsoptions.menu, ( void * ) &s_graphicsoptions.driverinfo );

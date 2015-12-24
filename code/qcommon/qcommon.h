@@ -95,12 +95,15 @@ float	MSG_ReadAngle16 (msg_t *sb);
 void	MSG_ReadData (msg_t *sb, void *buffer, int size);
 int		MSG_LookaheadByte (msg_t *msg);
 
+/*void MSG_WriteDeltaUsercmd( msg_t *msg, struct usercmd_s *from, struct usercmd_s *to );
+void MSG_ReadDeltaUsercmd( msg_t *msg, struct usercmd_s *from, struct usercmd_s *to );*/
+
 void MSG_WriteDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *to );
 void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *to );
 
 void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entityState_s *to
 						   , qboolean force );
-void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to, 
+void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 						 int number );
 
 void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to );
@@ -215,7 +218,7 @@ typedef struct {
 
 	// incoming fragment assembly buffer
 	int			fragmentSequence;
-	int			fragmentLength;	
+	int			fragmentLength;
 	byte		fragmentBuffer[MAX_MSGLEN];
 
 	// outgoing fragment buffer
@@ -251,8 +254,10 @@ PROTOCOL
 ==============================================================
 */
 
-#define	PROTOCOL_VERSION	71
-#define PROTOCOL_LEGACY_VERSION	68
+//#define	PROTOCOL_VERSION		71
+#define	PROTOCOL_VERSION		72
+#define PROTOCOL_LEGACY_VERSION	72
+// 1.32 - 68
 // 1.31 - 67
 
 // maintain a list of compatible protocols for demo playing
@@ -260,20 +265,25 @@ PROTOCOL
 extern int demo_protocols[];
 
 #if !defined UPDATE_SERVER_NAME && !defined STANDALONE
-#define	UPDATE_SERVER_NAME	"update.quake3arena.com"
+//#define	UPDATE_SERVER_NAME	"update.quake3arena.com"
+#define	UPDATE_SERVER_NAME	""
 #endif
 // override on command line, config files etc.
 #ifndef MASTER_SERVER_NAME
-#define MASTER_SERVER_NAME	"master.quake3arena.com"
+//#define MASTER_SERVER_NAME	"master.quake3arena.com"
+//#define MASTER_SERVER_NAME	"master.ioquake3.org"
+#define MASTER_SERVER_NAME	"dpmaster.deathmask.net"
+#define TROLL_MASTER_SERVER_NAME	""
 #endif
 
 #ifndef STANDALONE
-  #ifndef AUTHORIZE_SERVER_NAME
-    #define	AUTHORIZE_SERVER_NAME	"authorize.quake3arena.com"
-  #endif
-  #ifndef PORT_AUTHORIZE
-  #define	PORT_AUTHORIZE		27952
-  #endif
+	#ifndef AUTHORIZE_SERVER_NAME
+		//#define	AUTHORIZE_SERVER_NAME	"authorize.quake3arena.com"
+		#define	AUTHORIZE_SERVER_NAME	""
+	#endif
+	#ifndef PORT_AUTHORIZE
+		#define	PORT_AUTHORIZE		27952
+	#endif
 #endif
 
 #define	PORT_MASTER			27950
@@ -309,7 +319,7 @@ enum svc_ops_e {
 //
 enum clc_ops_e {
 	clc_bad,
-	clc_nop, 		
+	clc_nop,
 	clc_move,				// [[usercmd_t]
 	clc_moveNoDelta,		// [[usercmd_t]
 	clc_clientCommand,		// [string] message
@@ -354,7 +364,7 @@ typedef enum {
 } sharedTraps_t;
 
 void	VM_Init( void );
-vm_t	*VM_Create( const char *module, intptr_t (*systemCalls)(intptr_t *), 
+vm_t	*VM_Create( const char *module, intptr_t (*systemCalls)(intptr_t *),
 				   vmInterpret_t interpret );
 // module should be bare: "cgame", not "cgame.dll" or "vm/cgame.qvm"
 
@@ -561,8 +571,8 @@ char	*Cvar_InfoString_Big( int bit );
 // returns an info string containing all the cvars that have the given bit set
 // in their flags ( CVAR_USERINFO, CVAR_SERVERINFO, CVAR_SYSTEMINFO, etc )
 void	Cvar_InfoStringBuffer( int bit, char *buff, int buffsize );
-void Cvar_CheckRange( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
-void Cvar_SetDescription( cvar_t *var, const char *var_description );
+void	Cvar_CheckRange( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
+void	Cvar_SetDescription( cvar_t *var, const char *var_description );
 
 void	Cvar_Restart(qboolean unsetVM);
 void	Cvar_Restart_f( void );
@@ -595,12 +605,15 @@ issues.
 #define NUM_ID_PAKS		9
 #define NUM_TA_PAKS		4
 
+// mmp - number of paks that won't be auto downloaded
+#define NUM_MFA_PAKS		10 // range of pak0.pk3 - pak9.pk3
+
 #define	MAX_FILE_HANDLES	64
 
 #ifdef DEDICATED
-#	define Q3CONFIG_CFG "q3config_server.cfg"
+#	define MFCONFIG_CFG "mfconfig_server.cfg"
 #else
-#	define Q3CONFIG_CFG "q3config.cfg"
+#	define MFCONFIG_CFG "mfconfig.cfg"
 #endif
 
 qboolean FS_Initialized( void );
@@ -625,7 +638,7 @@ qboolean FS_FileExists( const char *file );
 
 qboolean FS_CreatePath (char *OSPath);
 
-int FS_FindVM(void **startSearch, char *found, int foundlen, const char *name, int enableDll);
+vmInterpret_t FS_FindVM(void **startSearch, char *found, int foundlen, const char *name, int enableDll);
 
 char   *FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 qboolean FS_CompareZipChecksum(const char *zipfile);
@@ -641,9 +654,9 @@ fileHandle_t	FS_FCreateOpenPipeFile( const char *filename );
 // will properly create any needed paths and deal with seperater character issues
 
 fileHandle_t FS_SV_FOpenFileWrite( const char *filename );
-long		FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp );
+long	FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp );
 void	FS_SV_Rename( const char *from, const char *to, qboolean safe );
-long		FS_FOpenFileRead( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
+long	FS_FOpenFileRead( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
 // if uniqueFILE is true, then a new FILE will be fopened even if the file
 // is found in an already open pak file.  If uniqueFILE is false, you must call
 // FS_FCloseFile instead of fclose, otherwise the pak FILE would be improperly closed
@@ -695,7 +708,7 @@ int		FS_FOpenFileByMode( const char *qpath, fileHandle_t *f, fsMode_t mode );
 // opens a file for reading, writing, or appending depending on the value of mode
 
 int		FS_Seek( fileHandle_t f, long offset, int origin );
-// seek on a file
+// seek on a file (doesn't work for zip files!!!!!!!!)
 
 qboolean FS_FilenameCompare( const char *s1, const char *s2 );
 
@@ -708,9 +721,9 @@ const char *FS_LoadedPakPureChecksums( void );
 const char *FS_ReferencedPakNames( void );
 const char *FS_ReferencedPakChecksums( void );
 const char *FS_ReferencedPakPureChecksums( void );
-// Returns a space separated string containing the checksums of all loaded 
-// AND referenced pk3 files. Servers with sv_pure set will get this string 
-// back from clients for pure validation 
+// Returns a space separated string containing the checksums of all loaded
+// AND referenced pk3 files. Servers with sv_pure set will get this string
+// back from clients for pure validation
 
 void FS_ClearPakReferences( int flags );
 // clears referenced booleans on loaded pk3s
@@ -1064,6 +1077,19 @@ void	* QDECL Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(in
 				  intptr_t (QDECL *systemcalls)(intptr_t, ...) );
 void	Sys_UnloadDll( void *dllHandle );
 
+void	Sys_UnloadGame( void );
+void	*Sys_GetGameAPI( void *parms );
+
+void	Sys_UnloadCGame( void );
+void	*Sys_GetCGameAPI( void );
+
+void	Sys_UnloadUI( void );
+void	*Sys_GetUIAPI( void );
+
+//bot libraries
+void	Sys_UnloadBotLib( void );
+void	*Sys_GetBotLibAPI( void *parms );
+
 char	*Sys_GetCurrentUser( void );
 
 void	QDECL Sys_Error( const char *error, ...) __attribute__ ((noreturn, format (printf, 1, 2)));
@@ -1075,6 +1101,8 @@ void	Sys_Print( const char *msg );
 // Sys_Milliseconds should only be used for profiling purposes,
 // any game related timing information should come from event timestamps
 int		Sys_Milliseconds (void);
+
+/*void	Sys_SnapVector( float *v );*/
 
 qboolean Sys_RandomBytes( byte *string, int len );
 
@@ -1099,7 +1127,6 @@ FILE	*Sys_Mkfifo( const char *ospath );
 char	*Sys_Cwd( void );
 void	Sys_SetDefaultInstallPath(const char *path);
 char	*Sys_DefaultInstallPath(void);
-char	*Sys_SteamPath(void);
 
 #ifdef MACOS_X
 char    *Sys_DefaultAppPath(void);
@@ -1148,7 +1175,7 @@ qboolean Sys_WritePIDFile( void );
 #define INTERNAL_NODE (HMAX+1)
 
 typedef struct nodetype {
-	struct	nodetype *left, *right, *parent; /* tree structure */ 
+	struct	nodetype *left, *right, *parent; /* tree structure */
 	struct	nodetype *next, *prev; /* doubly-linked list */
 	struct	nodetype **head; /* highest ranked node in block */
 	int		weight;

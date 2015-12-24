@@ -178,7 +178,7 @@ static void G_LoadArenas( void ) {
 		G_LoadArenasFromFile(filename);
 	}
 	trap_Print( va( "%i arenas parsed\n", g_numArenas ) );
-	
+
 	for( n = 0; n < g_numArenas; n++ ) {
 		Info_SetValueForKey( g_arenaInfos[n], "num", va( "%i", n ) );
 	}
@@ -288,6 +288,8 @@ void G_AddRandomBot( int team ) {
 				if (team == TEAM_RED) teamstr = "red";
 				else if (team == TEAM_BLUE) teamstr = "blue";
 				else teamstr = "";
+				/*strncpy(netname, value, sizeof(netname)-1);
+				netname[sizeof(netname)-1] = '\0';*/
 				Q_strncpyz(netname, value, sizeof(netname));
 				Q_CleanStr(netname);
 				trap_SendConsoleCommand( EXEC_INSERT, va("addbot %s %f %s %i\n", netname, skill, teamstr, 0) );
@@ -558,7 +560,7 @@ qboolean G_BotConnect( int clientNum, qboolean restart ) {
 G_AddBot
 ===============
 */
-static void G_AddBot( const char *name, float skill, const char *team, int delay, char *altname) {
+static void G_AddBot( const char *name, float skill, const char *team, int delay, char *altname, int handicap) {
 	int				clientNum;
 	char			*botinfo;
 	char			*key;
@@ -599,16 +601,7 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 	Info_SetValueForKey( userinfo, "rate", "25000" );
 	Info_SetValueForKey( userinfo, "snaps", "20" );
 	Info_SetValueForKey( userinfo, "skill", va("%.2f", skill) );
-
-	if ( skill >= 1 && skill < 2 ) {
-		Info_SetValueForKey( userinfo, "handicap", "50" );
-	}
-	else if ( skill >= 2 && skill < 3 ) {
-		Info_SetValueForKey( userinfo, "handicap", "70" );
-	}
-	else if ( skill >= 3 && skill < 4 ) {
-		Info_SetValueForKey( userinfo, "handicap", "90" );
-	}
+	Info_SetValueForKey( userinfo, "handicap", va("%i", handicap) );
 
 	key = "model";
 	model = Info_ValueForKey( botinfo, key );
@@ -696,11 +689,17 @@ Svcmd_AddBot_f
 */
 void Svcmd_AddBot_f( void ) {
 	float			skill;
-	int				delay;
+	int			delay;
+	int			handicap;
 	char			name[MAX_TOKEN_CHARS];
 	char			altname[MAX_TOKEN_CHARS];
 	char			string[MAX_TOKEN_CHARS];
 	char			team[MAX_TOKEN_CHARS];
+
+	// disallow bots in dedicated servers
+	if (g_dedicated.integer > 0 && !g_iUnderstandBotsAreBroken.integer) {
+		return;
+	}
 
 	// are bots enabled?
 	if ( !trap_Cvar_VariableIntegerValue( "bot_enable" ) ) {
@@ -710,7 +709,7 @@ void Svcmd_AddBot_f( void ) {
 	// name
 	trap_Argv( 1, name, sizeof( name ) );
 	if ( !name[0] ) {
-		trap_Print( "Usage: Addbot <botname> [skill 1-5] [team] [msec delay] [altname]\n" );
+		trap_Print( "Usage: Addbot <botname> [skill 1-5] [team] [msec delay] [altname] [handicap 1-100]\n" );
 		return;
 	}
 
@@ -738,7 +737,16 @@ void Svcmd_AddBot_f( void ) {
 	// alternative name
 	trap_Argv( 5, altname, sizeof( altname ) );
 
-	G_AddBot( name, skill, team, delay, altname );
+	// handicap
+	trap_Argv( 6, string, sizeof( string ) );
+	if ( !string[0] ) {
+		handicap = 0;
+	}
+	else {
+		handicap = atoi( string );
+	}
+
+	G_AddBot( name, skill, team, delay, altname, handicap );
 
 	// if this was issued during gameplay and we are playing locally,
 	// go ahead and load the bot's media immediately
@@ -883,6 +891,11 @@ static void G_LoadBots( void ) {
 	int			i;
 	int			dirlen;
 
+	// disallow bots in dedicated servers
+	if (g_dedicated.integer > 0 && !g_iUnderstandBotsAreBroken.integer) {
+		return;
+	}
+
 	if ( !trap_Cvar_VariableIntegerValue( "bot_enable" ) ) {
 		return;
 	}
@@ -961,7 +974,7 @@ void G_InitBots( qboolean restart ) {
 	G_LoadBots();
 	G_LoadArenas();
 
-	trap_Cvar_Register( &bot_minplayers, "bot_minplayers", "0", CVAR_SERVERINFO );
+	trap_Cvar_Register( &bot_minplayers, "bot_minplayers", "0", /*CVAR_SERVERINFO*/ 0 );
 
 	if( g_gametype.integer == GT_SINGLE_PLAYER ) {
 		trap_GetServerinfo( serverinfo, sizeof(serverinfo) );

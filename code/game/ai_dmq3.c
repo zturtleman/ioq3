@@ -1724,35 +1724,37 @@ void BotUpdateInventory(bot_state_t *bs) {
 	//armor
 	bs->inventory[INVENTORY_ARMOR] = bs->cur_ps.stats[STAT_ARMOR];
 	//weapons
-	bs->inventory[INVENTORY_GAUNTLET] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_GAUNTLET)) != 0;
+	bs->inventory[INVENTORY_BLASTER] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_BLASTER)) != 0;
 	bs->inventory[INVENTORY_SHOTGUN] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_SHOTGUN)) != 0;
-	bs->inventory[INVENTORY_MACHINEGUN] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_MACHINEGUN)) != 0;
+	bs->inventory[INVENTORY_FLAMETHROWER] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_FLAMETHROWER)) != 0;
 	bs->inventory[INVENTORY_GRENADELAUNCHER] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_GRENADE_LAUNCHER)) != 0;
 	bs->inventory[INVENTORY_ROCKETLAUNCHER] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_ROCKET_LAUNCHER)) != 0;
 	bs->inventory[INVENTORY_LIGHTNING] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_LIGHTNING)) != 0;
+#ifdef MISSIONPACK
 	bs->inventory[INVENTORY_RAILGUN] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_RAILGUN)) != 0;
+#endif
 	bs->inventory[INVENTORY_PLASMAGUN] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_PLASMAGUN)) != 0;
-	bs->inventory[INVENTORY_BFG10K] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_BFG)) != 0;
 	bs->inventory[INVENTORY_GRAPPLINGHOOK] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_GRAPPLING_HOOK)) != 0;
 #ifdef MISSIONPACK
-	bs->inventory[INVENTORY_NAILGUN] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_NAILGUN)) != 0;;
+	bs->inventory[INVENTORY_NAILGUN] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_NAILGUN)) != 0;
 	bs->inventory[INVENTORY_PROXLAUNCHER] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_PROX_LAUNCHER)) != 0;;
-	bs->inventory[INVENTORY_CHAINGUN] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_CHAINGUN)) != 0;;
 #endif
+	bs->inventory[INVENTORY_CHAINGUN] = (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_CHAINGUN)) != 0;
 	//ammo
 	bs->inventory[INVENTORY_SHELLS] = bs->cur_ps.ammo[WP_SHOTGUN];
-	bs->inventory[INVENTORY_BULLETS] = bs->cur_ps.ammo[WP_MACHINEGUN];
+	bs->inventory[INVENTORY_GAS] = bs->cur_ps.ammo[WP_FLAMETHROWER];
 	bs->inventory[INVENTORY_GRENADES] = bs->cur_ps.ammo[WP_GRENADE_LAUNCHER];
 	bs->inventory[INVENTORY_CELLS] = bs->cur_ps.ammo[WP_PLASMAGUN];
 	bs->inventory[INVENTORY_LIGHTNINGAMMO] = bs->cur_ps.ammo[WP_LIGHTNING];
 	bs->inventory[INVENTORY_ROCKETS] = bs->cur_ps.ammo[WP_ROCKET_LAUNCHER];
+#ifdef MISSIONPACK
 	bs->inventory[INVENTORY_SLUGS] = bs->cur_ps.ammo[WP_RAILGUN];
-	bs->inventory[INVENTORY_BFGAMMO] = bs->cur_ps.ammo[WP_BFG];
+#endif
 #ifdef MISSIONPACK
 	bs->inventory[INVENTORY_NAILS] = bs->cur_ps.ammo[WP_NAILGUN];
 	bs->inventory[INVENTORY_MINES] = bs->cur_ps.ammo[WP_PROX_LAUNCHER];
-	bs->inventory[INVENTORY_BELT] = bs->cur_ps.ammo[WP_CHAINGUN];
 #endif
+	bs->inventory[INVENTORY_BELT] = bs->cur_ps.ammo[WP_CHAINGUN];
 	//powerups
 	bs->inventory[INVENTORY_HEALTH] = bs->cur_ps.stats[STAT_HEALTH];
 	bs->inventory[INVENTORY_TELEPORTER] = bs->cur_ps.stats[STAT_HOLDABLE_ITEM] == MODELINDEX_TELEPORTER;
@@ -1763,7 +1765,7 @@ void BotUpdateInventory(bot_state_t *bs) {
 	bs->inventory[INVENTORY_INVULNERABILITY] = bs->cur_ps.stats[STAT_HOLDABLE_ITEM] == MODELINDEX_INVULNERABILITY;
 #endif
 	bs->inventory[INVENTORY_QUAD] = bs->cur_ps.powerups[PW_QUAD] != 0;
-	bs->inventory[INVENTORY_ENVIRONMENTSUIT] = bs->cur_ps.powerups[PW_BATTLESUIT] != 0;
+	bs->inventory[INVENTORY_ENVIRONMENTSUIT] = bs->cur_ps.powerups[PW_PENT] != 0;
 	bs->inventory[INVENTORY_HASTE] = bs->cur_ps.powerups[PW_HASTE] != 0;
 	bs->inventory[INVENTORY_INVISIBILITY] = bs->cur_ps.powerups[PW_INVIS] != 0;
 	bs->inventory[INVENTORY_REGEN] = bs->cur_ps.powerups[PW_REGEN] != 0;
@@ -2084,7 +2086,7 @@ BotIsObserver
 */
 qboolean BotIsObserver(bot_state_t *bs) {
 	char buf[MAX_INFO_STRING];
-	if (bs->cur_ps.pm_type == PM_SPECTATOR) return qtrue;
+	if (bs->cur_ps.pm_type == PM_SPECTATOR || bs->cur_ps.pm_type == PM_GHOST) return qtrue;
 	trap_GetConfigstring(CS_PLAYERS+bs->client, buf, sizeof(buf));
 	if (atoi(Info_ValueForKey(buf, "t")) == TEAM_SPECTATOR) return qtrue;
 	return qfalse;
@@ -2200,9 +2202,10 @@ BotAggression
 */
 float BotAggression(bot_state_t *bs) {
 	//if the bot has quad
-	if (bs->inventory[INVENTORY_QUAD]) {
+	if (bs->inventory[INVENTORY_QUAD] || level.rs_quadMode) {
 		//if the bot is not holding the gauntlet or the enemy is really nearby
-		if (bs->weaponnum != WP_GAUNTLET ||
+		if ( bs->weaponnum != WP_BLASTER ||
+			/*bs->weaponnum != WP_GAUNTLET ||*/
 			bs->inventory[ENEMY_HORIZONTAL_DIST] < 80) {
 			return 70;
 		}
@@ -2217,11 +2220,13 @@ float BotAggression(bot_state_t *bs) {
 		if (bs->inventory[INVENTORY_ARMOR] < 40) return 0;
 	}
 	//if the bot can use the bfg
-	if (bs->inventory[INVENTORY_BFG10K] > 0 &&
-			bs->inventory[INVENTORY_BFGAMMO] > 7) return 100;
+	/*if (bs->inventory[INVENTORY_BFG10K] > 0 &&
+			bs->inventory[INVENTORY_BFGAMMO] > 7) return 100;*/
 	//if the bot can use the railgun
-	if (bs->inventory[INVENTORY_RAILGUN] > 0 &&
-			bs->inventory[INVENTORY_SLUGS] > 5) return 95;
+#ifdef MISSIONPACK
+	/*if (bs->inventory[INVENTORY_RAILGUN] > 0 &&
+			bs->inventory[INVENTORY_SLUGS] > 5) return 95;*/
+#endif
 	//if the bot can use the lightning gun
 	if (bs->inventory[INVENTORY_LIGHTNING] > 0 &&
 			bs->inventory[INVENTORY_LIGHTNINGAMMO] > 50) return 90;
@@ -2237,6 +2242,10 @@ float BotAggression(bot_state_t *bs) {
 	//if the bot can use the shotgun
 	if (bs->inventory[INVENTORY_SHOTGUN] > 0 &&
 			bs->inventory[INVENTORY_SHELLS] > 10) return 50;
+	//if the bot can use the flamethrower
+	if (bs->inventory[INVENTORY_FLAMETHROWER] > 0 &&
+			bs->inventory[INVENTORY_GAS] > 10 &&
+			bs->inventory[ENEMY_HORIZONTAL_DIST] < 80) return 50;
 	//otherwise the bot is not feeling too good
 	return 0;
 }
@@ -2247,13 +2256,13 @@ BotFeelingBad
 ==================
 */
 float BotFeelingBad(bot_state_t *bs) {
-	if (bs->weaponnum == WP_GAUNTLET) {
+	if (bs->weaponnum == WP_BLASTER) {
 		return 100;
 	}
 	if (bs->inventory[INVENTORY_HEALTH] < 40) {
 		return 100;
 	}
-	if (bs->weaponnum == WP_MACHINEGUN) {
+	if (bs->weaponnum == WP_SHOTGUN) {
 		return 90;
 	}
 	if (bs->inventory[INVENTORY_HEALTH] < 60) {
@@ -2396,7 +2405,7 @@ int BotCanAndWantsToRocketJump(bot_state_t *bs) {
 	//if low on rockets
 	if (bs->inventory[INVENTORY_ROCKETS] < 3) return qfalse;
 	//never rocket jump with the Quad
-	if (bs->inventory[INVENTORY_QUAD]) return qfalse;
+	if (bs->inventory[INVENTORY_QUAD] || (level.rs_quadMode && level.rs_selfDamage)) return qfalse;
 	//if low on health
 	if (bs->inventory[INVENTORY_HEALTH] < 60) return qfalse;
 	//if not full health
@@ -2432,24 +2441,26 @@ int BotHasPersistantPowerupAndWeapon(bot_state_t *bs) {
 		if (bs->inventory[INVENTORY_ARMOR] < 40) return qfalse;
 	}
 	//if the bot can use the bfg
-	if (bs->inventory[INVENTORY_BFG10K] > 0 &&
-			bs->inventory[INVENTORY_BFGAMMO] > 7) return qtrue;
+	/*if (bs->inventory[INVENTORY_BFG10K] > 0 &&
+			bs->inventory[INVENTORY_BFGAMMO] > 7) return qtrue;*/
 	//if the bot can use the railgun
+/*
 	if (bs->inventory[INVENTORY_RAILGUN] > 0 &&
 			bs->inventory[INVENTORY_SLUGS] > 5) return qtrue;
+*/
 	//if the bot can use the lightning gun
 	if (bs->inventory[INVENTORY_LIGHTNING] > 0 &&
 			bs->inventory[INVENTORY_LIGHTNINGAMMO] > 50) return qtrue;
 	//if the bot can use the rocketlauncher
 	if (bs->inventory[INVENTORY_ROCKETLAUNCHER] > 0 &&
 			bs->inventory[INVENTORY_ROCKETS] > 5) return qtrue;
-	//
+/*
 	if (bs->inventory[INVENTORY_NAILGUN] > 0 &&
 			bs->inventory[INVENTORY_NAILS] > 5) return qtrue;
 	//
 	if (bs->inventory[INVENTORY_PROXLAUNCHER] > 0 &&
 			bs->inventory[INVENTORY_MINES] > 5) return qtrue;
-	//
+*/
 	if (bs->inventory[INVENTORY_CHAINGUN] > 0 &&
 			bs->inventory[INVENTORY_BELT] > 40) return qtrue;
 	//if the bot can use the plasmagun
@@ -2518,11 +2529,18 @@ int BotWantsToCamp(bot_state_t *bs) {
 	//if the bot isn't healthy enough
 	if (BotAggression(bs) < 50) return qfalse;
 	//the bot should have at least have the rocket launcher, the railgun or the bfg10k with some ammo
-	if ((bs->inventory[INVENTORY_ROCKETLAUNCHER] <= 0 || bs->inventory[INVENTORY_ROCKETS] < 10) &&
+#ifdef MISSIONPACK
+	if ((bs->inventory[INVENTORY_ROCKETLAUNCHER] <= 0 || bs->inventory[INVENTORY_ROCKETS] < 10) /*&&
 		(bs->inventory[INVENTORY_RAILGUN] <= 0 || bs->inventory[INVENTORY_SLUGS] < 10) &&
-		(bs->inventory[INVENTORY_BFG10K] <= 0 || bs->inventory[INVENTORY_BFGAMMO] < 10)) {
+		(bs->inventory[INVENTORY_BFG10K] <= 0 || bs->inventory[INVENTORY_BFGAMMO] < 10)*/) {
 		return qfalse;
 	}
+#else
+	if ((bs->inventory[INVENTORY_ROCKETLAUNCHER] <= 0 || bs->inventory[INVENTORY_ROCKETS] < 10) /*&&
+		(bs->inventory[INVENTORY_BFG10K] <= 0 || bs->inventory[INVENTORY_BFGAMMO] < 10)*/) {
+		return qfalse;
+	}
+#endif
 	//find the closest camp spot
 	besttraveltime = 99999;
 	for (cs = trap_BotGetNextCampSpotGoal(0, &goal); cs; cs = trap_BotGetNextCampSpotGoal(cs, &goal)) {
@@ -2700,10 +2718,10 @@ bot_moveresult_t BotAttackMove(bot_state_t *bs, int tfl) {
 			bs->attackjump_time = FloatTime() + 1;
 		}
 	}
-	if (bs->cur_ps.weapon == WP_GAUNTLET) {
+	/*if (bs->cur_ps.weapon == WP_GAUNTLET) {
 		attack_dist = 0;
 		attack_range = 0;
-	}
+	}*/
 	else {
 		attack_dist = IDEAL_ATTACKDIST;
 		attack_range = 40;
@@ -2998,6 +3016,11 @@ int BotFindEnemy(bot_state_t *bs, int curenemy) {
 		if (EntityIsInvisible(&entinfo) && !EntityIsShooting(&entinfo)) {
 			continue;
 		}
+//Neil Torontos unlagged
+//unlagged - misc
+		// this has nothing to do with lag compensation, but it's great for testing
+		if ( g_entities[i].flags & FL_NOTARGET ) continue;
+//unlagged - misc
 		//if not an easy fragger don't shoot at chatting players
 		if (easyfragger < 0.5 && EntityIsChatting(&entinfo)) continue;
 		//
@@ -3315,10 +3338,7 @@ void BotAimAtEnemy(bot_state_t *bs) {
 	//get the weapon information
 	trap_BotGetWeaponInfo(bs->ws, bs->weaponnum, &wi);
 	//get the weapon specific aim accuracy and or aim skill
-	if (wi.number == WP_MACHINEGUN) {
-		aim_accuracy = trap_Characteristic_BFloat(bs->character, CHARACTERISTIC_AIM_ACCURACY_MACHINEGUN, 0, 1);
-	}
-	else if (wi.number == WP_SHOTGUN) {
+	if (wi.number == WP_SHOTGUN) {
 		aim_accuracy = trap_Characteristic_BFloat(bs->character, CHARACTERISTIC_AIM_ACCURACY_SHOTGUN, 0, 1);
 	}
 	else if (wi.number == WP_GRENADE_LAUNCHER) {
@@ -3332,16 +3352,14 @@ void BotAimAtEnemy(bot_state_t *bs) {
 	else if (wi.number == WP_LIGHTNING) {
 		aim_accuracy = trap_Characteristic_BFloat(bs->character, CHARACTERISTIC_AIM_ACCURACY_LIGHTNING, 0, 1);
 	}
+#ifdef MISSIONPACK
 	else if (wi.number == WP_RAILGUN) {
 		aim_accuracy = trap_Characteristic_BFloat(bs->character, CHARACTERISTIC_AIM_ACCURACY_RAILGUN, 0, 1);
 	}
+#endif
 	else if (wi.number == WP_PLASMAGUN) {
 		aim_accuracy = trap_Characteristic_BFloat(bs->character, CHARACTERISTIC_AIM_ACCURACY_PLASMAGUN, 0, 1);
 		aim_skill = trap_Characteristic_BFloat(bs->character, CHARACTERISTIC_AIM_SKILL_PLASMAGUN, 0, 1);
-	}
-	else if (wi.number == WP_BFG) {
-		aim_accuracy = trap_Characteristic_BFloat(bs->character, CHARACTERISTIC_AIM_ACCURACY_BFG10K, 0, 1);
-		aim_skill = trap_Characteristic_BFloat(bs->character, CHARACTERISTIC_AIM_SKILL_BFG10K, 0, 1);
 	}
 	//
 	if (aim_accuracy <= 0) aim_accuracy = 0.0001f;
@@ -3487,8 +3505,7 @@ void BotAimAtEnemy(bot_state_t *bs) {
 		//if the bot is skilled enough
 		if (aim_skill > 0.5) {
 			//do prediction shots around corners
-			if (wi.number == WP_BFG ||
-				wi.number == WP_ROCKET_LAUNCHER ||
+			if (wi.number == WP_ROCKET_LAUNCHER ||
 				wi.number == WP_GRENADE_LAUNCHER) {
 				//create the chase goal
 				goal.entitynum = bs->client;
@@ -3519,8 +3536,8 @@ void BotAimAtEnemy(bot_state_t *bs) {
 	//get aim direction
 	VectorSubtract(bestorigin, bs->eye, dir);
 	//
-	if (wi.number == WP_MACHINEGUN ||
-		wi.number == WP_SHOTGUN ||
+#ifdef MISSIONPACK
+	if (wi.number == WP_SHOTGUN ||
 		wi.number == WP_LIGHTNING ||
 		wi.number == WP_RAILGUN) {
 		//distance towards the enemy
@@ -3529,6 +3546,16 @@ void BotAimAtEnemy(bot_state_t *bs) {
 		f = 0.6 + dist / 150 * 0.4;
 		aim_accuracy *= f;
 	}
+#else
+	if (wi.number == WP_SHOTGUN ||
+		wi.number == WP_LIGHTNING) {
+		//distance towards the enemy
+		dist = VectorLength(dir);
+		if (dist > 150) dist = 150;
+		f = 0.6 + dist / 150 * 0.4;
+		aim_accuracy *= f;
+	}
+#endif
 	//add some random stuff to the aim direction depending on the aim accuracy
 	if (aim_accuracy < 0.8) {
 		VectorNormalize(dir);
@@ -3609,11 +3636,11 @@ void BotCheckAttack(bot_state_t *bs) {
 	//
 	VectorSubtract(bs->aimtarget, bs->eye, dir);
 	//
-	if (bs->weaponnum == WP_GAUNTLET) {
+	/*if (bs->weaponnum == WP_GAUNTLET) {
 		if (VectorLengthSquared(dir) > Square(60)) {
 			return;
 		}
-	}
+	}*/
 	if (VectorLengthSquared(dir) < Square(100))
 		fov = 120;
 	else
@@ -4737,8 +4764,7 @@ void BotCheckForProxMines(bot_state_t *bs, entityState_t *state) {
 		return;
 	// if the bot doesn't have a weapon to deactivate the mine
 	if (!(bs->inventory[INVENTORY_PLASMAGUN] > 0 && bs->inventory[INVENTORY_CELLS] > 0) &&
-		!(bs->inventory[INVENTORY_ROCKETLAUNCHER] > 0 && bs->inventory[INVENTORY_ROCKETS] > 0) &&
-		!(bs->inventory[INVENTORY_BFG10K] > 0 && bs->inventory[INVENTORY_BFGAMMO] > 0) ) {
+		!(bs->inventory[INVENTORY_ROCKETLAUNCHER] > 0 && bs->inventory[INVENTORY_ROCKETS] > 0) ) {
 		return;
 	}
 	// try to avoid the prox mine
@@ -4984,6 +5010,10 @@ void BotCheckEvents(bot_state_t *bs, entityState_t *state) {
 		case EV_JUMP_PAD:
 		case EV_JUMP:
 		case EV_TAUNT:
+/*		case EV_TAUNT1:
+		case EV_TAUNT2:
+		case EV_TAUNT3:
+		case EV_TAUNT4:*/
 		case EV_WATER_TOUCH:
 		case EV_WATER_LEAVE:
 		case EV_WATER_UNDER:
@@ -5408,9 +5438,9 @@ void BotSetupDeathmatchAI(void) {
 	trap_Cvar_Register(&bot_rocketjump, "bot_rocketjump", "1", 0);
 	trap_Cvar_Register(&bot_grapple, "bot_grapple", "0", 0);
 	trap_Cvar_Register(&bot_fastchat, "bot_fastchat", "0", 0);
-	trap_Cvar_Register(&bot_nochat, "bot_nochat", "0", 0);
+	trap_Cvar_Register(&bot_nochat, "bot_nochat", "1", 0);
 	trap_Cvar_Register(&bot_testrchat, "bot_testrchat", "0", 0);
-	trap_Cvar_Register(&bot_challenge, "bot_challenge", "0", 0);
+	trap_Cvar_Register(&bot_challenge, "bot_challenge", "1", 0);
 	trap_Cvar_Register(&bot_predictobstacles, "bot_predictobstacles", "1", 0);
 	trap_Cvar_Register(&g_spSkill, "g_spSkill", "2", 0);
 	//

@@ -66,12 +66,14 @@ void MField_Draw( mfield_t *edit, int x, int y, int style, vec4_t color ) {
 	str[ drawLen ] = 0;
 
 	UI_DrawString( x, y, str, style, color );
+	/*UI_DrawProportionalString( x + SMALLCHAR_WIDTH, y + OPTION_YPOS_ALIGN, str, style, color );*/
 
 	// draw the cursor
 	if (!(style & UI_PULSE)) {
 		return;
 	}
 
+	// mmp - FIXME: create correct cursor for UI
 	if ( trap_Key_GetOverstrikeMode() ) {
 		cursorChar = 11;
 	} else {
@@ -253,7 +255,7 @@ void MField_CharEvent( mfield_t *edit, int ch ) {
 		return;
 	}
 
-	if ( trap_Key_GetOverstrikeMode() ) {
+	if ( trap_Key_GetOverstrikeMode() ) {	
 		if ((edit->cursor == MAX_EDIT_LINE - 1) || (edit->maxchars && edit->cursor >= edit->maxchars))
 			return;
 	} else {
@@ -375,7 +377,9 @@ void MenuField_Draw( menufield_s *f )
 	}
 
 	if ( f->generic.name ) {
-		UI_DrawString( x - w, y, f->generic.name, style|UI_RIGHT, color );
+		/*UI_DrawString( x - w, y, f->generic.name, style|UI_RIGHT, color );*/
+		UI_DrawProportionalString( x - ( w + SMALLCHAR_WIDTH), y + OPTION_YPOS_ALIGN,
+								f->generic.name, style|UI_RIGHT, color );
 	}
 
 	MField_Draw( &f->field, x + w, y, style, color );

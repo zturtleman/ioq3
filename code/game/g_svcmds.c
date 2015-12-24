@@ -375,6 +375,7 @@ void	Svcmd_EntityList_f (void) {
 	}
 }
 
+/*
 gclient_t	*ClientForString( const char *s ) {
 	gclient_t	*cl;
 	int			i;
@@ -411,6 +412,7 @@ gclient_t	*ClientForString( const char *s ) {
 
 	return NULL;
 }
+*/
 
 /*
 ===================
@@ -440,6 +442,373 @@ void	Svcmd_ForceTeam_f( void ) {
 	SetTeam( &g_entities[cl - level.clients], str );
 }
 
+/*
+===================
+Svcmd_RPickup_f
+
+attn: sago from openarena, you may want to observer the code below for a fully decent random team shuffler.
+      the one in openarena is not truly random.  in matter of fact, not even random.
+
+      p.s., yes, i'm also known as m68k, the one who spotted the issue with casted votes being lost from a respawn.
+===================
+*/
+void	Svcmd_RPickup_f( void ) {
+	int			i;
+	gclient_t	*cl;
+	int			clientNum;
+	int			playerCount = 0;
+
+	if ( g_gametype.integer < GT_TEAM ) {
+		G_Printf("Cannot call random pickup in non-team gametypes\n");
+		return;
+	}
+
+	if ( !level.warmupTime ) {
+		G_Printf("Cannot call random pickup during a match\n");
+		return;
+	}
+
+	// set everyone to red first
+	for( i = 0 ; i < level.numConnectedClients; i++ ) {
+
+		// if the player is a bot, skip it, doesn't like to be changed for some reason
+		if ( g_entities[ &level.clients[level.sortedClients[i]] - level.clients].r.svFlags & SVF_BOT ) {
+			continue;
+		}
+
+		// check if client slot has an active player
+		if( level.clients[level.sortedClients[i]].pers.connected == CON_CONNECTED &&
+				level.clients[level.sortedClients[i]].sess.sessionTeam != TEAM_SPECTATOR ) {
+
+			level.clients[level.sortedClients[i]].pers.teamState.state = TEAM_BEGIN;
+			level.clients[level.sortedClients[i]].pers.ready = qfalse;
+			level.clients[level.sortedClients[i]].sess.sessionTeam = TEAM_RED;
+			level.clients[level.sortedClients[i]].sess.teamLeader = qfalse;
+
+			playerCount++;
+		}
+	}
+
+	// if there are no players, don't even bother
+	if ( playerCount == 0 ) {
+		trap_SendServerCommand( -1, va("notify %i\\\"There are no players for random pickup.\n\"", NF_ERROR) );
+		return;
+	}
+
+	// only need one player for blue in AA1
+	// TODO: code this better
+	if ( g_gametype.integer == GT_AA1 ) {
+		playerCount = 1;
+
+		while ( playerCount ) {
+			i = random() * level.numConnectedClients;
+
+			if ( g_entities[ &level.clients[level.sortedClients[i]] - level.clients].r.svFlags & SVF_BOT ) {
+				continue;
+			}
+
+			// check if client slot has an active player
+			if( level.clients[level.sortedClients[i]].pers.connected == CON_CONNECTED &&
+					level.clients[level.sortedClients[i]].sess.sessionTeam == TEAM_RED ) {
+
+				// set this player to blue
+				level.clients[level.sortedClients[i]].sess.sessionTeam = TEAM_BLUE;
+
+				// ok, we got our player
+				playerCount = 0;
+
+				CheckTeamLeader( TEAM_RED );
+				CheckTeamLeader( TEAM_BLUE );
+
+				SendReadymask( -1, 1 );
+				trap_SendServerCommand( -1,
+						va("notify %i\\\"" S_COLOR_AMBER "Random pickup has been enforced.  Please observe your team.\n\"", NF_GAMEINFO) );
+
+				return;
+			}
+
+		}
+	}
+
+	// if uneven teams, decide which side will have one extra player
+	if ( playerCount & 1 ) {
+		playerCount = playerCount >> 1;
+		if ( random() * 2 < 1 ) {
+			playerCount ++;
+		}
+	} else {
+		playerCount = playerCount >> 1;
+	}
+
+	// randomly set some players to blue
+	while ( playerCount ) {
+		i = random() * level.numConnectedClients;
+
+		if ( g_entities[ &level.clients[level.sortedClients[i]] - level.clients].r.svFlags & SVF_BOT ) {
+			continue;
+		}
+
+		// check if client slot has an active player
+		if( level.clients[level.sortedClients[i]].pers.connected == CON_CONNECTED &&
+				level.clients[level.sortedClients[i]].sess.sessionTeam == TEAM_RED ) {
+
+			// set this player to blue
+			level.clients[level.sortedClients[i]].sess.sessionTeam = TEAM_BLUE;
+
+			// ok, we're one more closer to being somewhat even
+			playerCount--;
+		}
+
+	}
+
+	// let's update the needed user info
+	for( i = 0 ; i < level.numConnectedClients; i++ ) {
+
+		// if the player is a bot, skip it, doesn't like to be changed for some reason
+		if ( g_entities[ &level.clients[level.sortedClients[i]] - level.clients].r.svFlags & SVF_BOT ) {
+			continue;
+		}
+
+		// check if client slot has an active player
+		if( level.clients[level.sortedClients[i]].pers.connected == CON_CONNECTED &&
+				level.clients[level.sortedClients[i]].sess.sessionTeam != TEAM_SPECTATOR ) {
+
+			ClientUserinfoChanged( level.sortedClients[i] );
+			ClientBegin( level.sortedClients[i] );
+
+		}
+	}
+
+	CheckTeamLeader( TEAM_RED );
+	CheckTeamLeader( TEAM_BLUE );
+
+	SendReadymask( -1, 1 );
+	trap_SendServerCommand( -1,
+			va("notify %i\\\"" S_COLOR_AMBER "Random pickup has been enforced.  Please observe your team.\n\"", NF_GAMEINFO) );
+
+}
+
+/*
+===================
+Svcmd_Mute_f
+
+mute <player>
+===================
+*/
+void	Svcmd_Mute_f( void ) {
+	gclient_t	*cl;
+
+	char		str[MAX_TOKEN_CHARS];
+
+	if ( trap_Argc() < 2 ) {
+		G_Printf("Usage: mute <player>\n");
+		return;
+	}
+
+	// find the player
+	trap_Argv( 1, str, sizeof( str ) );
+	cl = ClientForString( str );
+	if ( !cl ) {
+		return;
+	}
+
+	if ( cl->sess.mute != qtrue ) {
+
+		trap_SendServerCommand( -1,
+			va("notify %i\\\"%s" S_COLOR_RED " has been muted.\n\"",
+			NF_GAMEINFO, cl->pers.netname) );
+
+		// set mute
+		cl->sess.mute = qtrue;
+	}
+
+	// update number of voting clients
+	CalculateRanks();
+
+}
+
+/*
+===================
+Svcmd_Unmute_f
+
+unmute <player>
+===================
+*/
+void	Svcmd_Unmute_f( void ) {
+	gclient_t	*cl;
+
+	char		str[MAX_TOKEN_CHARS];
+
+	if ( trap_Argc() < 2 ) {
+		G_Printf("Usage: unmute <player>\n");
+		return;
+	}
+
+	// find the player
+	trap_Argv( 1, str, sizeof( str ) );
+	cl = ClientForString( str );
+	if ( !cl ) {
+		return;
+	}
+
+	if ( cl->sess.mute != qfalse ) {
+
+		trap_SendServerCommand( -1,
+			va("notify %i\\\"%s" S_COLOR_GREEN " is no longer muted.\n\"",
+			NF_GAMEINFO, cl->pers.netname) );
+
+		// unset mute
+		cl->sess.mute = qfalse;
+	}
+
+	// update number of voting clients
+	CalculateRanks();
+
+}
+
+/*
+===================
+Svcmd_Unsuspend_f
+
+unsuspend <player>
+===================
+*/
+void	Svcmd_Unsuspend_f( void ) {
+	gclient_t	*cl;
+
+	char		str[MAX_TOKEN_CHARS];
+
+	if ( trap_Argc() < 2 ) {
+		G_Printf("Usage: unsuspend <player>\n");
+		return;
+	}
+
+	// find the player
+	trap_Argv( 1, str, sizeof( str ) );
+	cl = ClientForString( str );
+	if ( !cl ) {
+		return;
+	}
+
+	if ( cl->sess.suspended != qfalse ) {
+
+		trap_SendServerCommand( -1,
+			va("notify %i\\\"%s" S_COLOR_WHITE " is no longer suspended from the game.\n\"",
+			NF_GAMEINFO, cl->pers.netname) );
+
+		// unset suspended
+		cl->sess.suspended = qfalse;
+	}
+
+}
+
+/*
+===================
+Svcmd_GiveAdmin_f
+
+giveadmin <player>
+===================
+*/
+void	Svcmd_GiveAdmin_f( void ) {
+
+	gclient_t	*cl;
+
+	char		str[MAX_TOKEN_CHARS];
+
+	if ( trap_Argc() < 2 ) {
+		G_Printf("Usage: giveadmin <player>\n");
+		return;
+	}
+
+	// find the player
+	trap_Argv( 1, str, sizeof( str ) );
+	cl = ClientForString( str );
+	if ( !cl ) {
+		return;
+	}
+
+	if ( cl->sess.admin != qtrue ) {
+
+		trap_SendServerCommand( -1,
+			va("notify %i\\\"%s" S_COLOR_GREEN " has been given administrator rights.\n\"",
+			NF_GAMEINFO, cl->pers.netname) );
+
+		// set admin
+		cl->sess.admin = qtrue;
+	}
+
+}
+
+
+/*
+===================
+Svcmd_RemoveAdmin_f
+
+removeadmin <player>
+===================
+*/
+void	Svcmd_RemoveAdmin_f( void ) {
+
+	gclient_t	*cl;
+
+	char		str[MAX_TOKEN_CHARS];
+
+	if ( trap_Argc() < 2 ) {
+		G_Printf("Usage: removeadmin <player>\n");
+		return;
+	}
+
+	// find the player
+	trap_Argv( 1, str, sizeof( str ) );
+	cl = ClientForString( str );
+	if ( !cl ) {
+		return;
+	}
+
+	if ( cl->sess.admin != qfalse ) {
+
+		trap_SendServerCommand( -1,
+			va("notify %i\\\"%s" S_COLOR_RED " got administrator rights removed.\n\"",
+			NF_GAMEINFO, cl->pers.netname) );
+
+		// set admin
+		cl->sess.admin = qfalse;
+	}
+
+}
+
+/*
+===================
+Svcmd_EndWarmup_f
+===================
+*/
+void	Svcmd_EndWarmup_f( void ) {
+
+	if ( level.warmupTime ) {
+		level.endWarmup = qtrue;
+		trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_AMBER "Warm-up has been forced to end.\n\"", NF_GAMEINFO) );
+	}
+
+}
+
+/*
+===================
+Svcmd_Test_f
+===================
+*/
+/*
+void	Svcmd_Test_f( void ) {
+
+	G_Printf("Test: %i\n", Q_stricmpf( "ABC", "ABC", 1024 ));
+	G_Printf("Test: %i\n", Q_stricmpf( "BBC", "ABC", 1024 ));
+	G_Printf("Test: %i\n", Q_stricmpf( "TE-ST", "TEST", 1024 ));
+	G_Printf("Test: %i\n", Q_stricmpf( "TEST_", "TEST", 1024 ));
+
+
+}
+*/
+
+
 char	*ConcatArgs( int start );
 
 /*
@@ -453,6 +822,13 @@ qboolean	ConsoleCommand( void ) {
 
 	trap_Argv( 0, cmd, sizeof( cmd ) );
 
+	/*
+	if ( Q_stricmp (cmd, "test") == 0 ) {
+		Svcmd_Test_f();
+		return qtrue;
+	}
+	*/
+
 	if ( Q_stricmp (cmd, "entitylist") == 0 ) {
 		Svcmd_EntityList_f();
 		return qtrue;
@@ -460,6 +836,11 @@ qboolean	ConsoleCommand( void ) {
 
 	if ( Q_stricmp (cmd, "forceteam") == 0 ) {
 		Svcmd_ForceTeam_f();
+		return qtrue;
+	}
+
+	if ( Q_stricmp (cmd, "rpickup") == 0 ) {
+		Svcmd_RPickup_f();
 		return qtrue;
 	}
 
@@ -498,16 +879,77 @@ qboolean	ConsoleCommand( void ) {
 		return qtrue;
 	}
 
+	if (Q_stricmp (cmd, "mute") == 0) {
+		Svcmd_Mute_f();
+		return qtrue;
+	}
+
+	if (Q_stricmp (cmd, "unmute") == 0) {
+		Svcmd_Unmute_f();
+		return qtrue;
+	}
+
+	if (Q_stricmp (cmd, "unsuspend") == 0) {
+		Svcmd_Unsuspend_f();
+		return qtrue;
+	}
+
+	if (Q_stricmp (cmd, "giveadmin") == 0) {
+		Svcmd_GiveAdmin_f();
+		return qtrue;
+	}
+
+	if (Q_stricmp (cmd, "removeadmin") == 0) {
+		Svcmd_RemoveAdmin_f();
+		return qtrue;
+	}
+
+	if (Q_stricmp (cmd, "endwarmup") == 0) {
+		Svcmd_EndWarmup_f();
+		return qtrue;
+	}
+
 	if (g_dedicated.integer) {
+		if (Q_stricmp (cmd, "spam") == 0) {
+			trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_LTGRAY "Server Announcement: %s\n\"", NF_SPAM, ConcatArgs(1)) );
+			return qtrue;
+		}
+
+		// this should not be used for regular spam announcments
+		/*if (Q_stricmp (cmd, "say") == 0) {
+			trap_SendServerCommand( -1, va("print \"Server: %s\n\"", ConcatArgs(1) ) );
+			return qtrue;
+		}*/
+	}
+
+	// why the fuck would any admin want this?!  come on!
+	/*if (g_dedicated.integer) {
 		if (Q_stricmp (cmd, "say") == 0) {
 			trap_SendServerCommand( -1, va("print \"server: %s\n\"", ConcatArgs(1) ) );
 			return qtrue;
 		}
-		// everything else will also be printed as a say command
+		// everything else will also be printed as a say command (mmp - wtf?!!!)
 		trap_SendServerCommand( -1, va("print \"server: %s\n\"", ConcatArgs(0) ) );
 		return qtrue;
-	}
+	}*/
 
 	return qfalse;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

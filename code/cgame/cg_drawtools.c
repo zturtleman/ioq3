@@ -31,17 +31,28 @@ Adjusted for resolution and screen aspect ratio
 ================
 */
 void CG_AdjustFrom640( float *x, float *y, float *w, float *h ) {
-#if 0
+	float		ocX, ocY;
+
+/*
 	// adjust for wide screens
 	if ( cgs.glconfig.vidWidth * 480 > cgs.glconfig.vidHeight * 640 ) {
 		*x += 0.5 * ( cgs.glconfig.vidWidth - ( cgs.glconfig.vidHeight * 640 / 480 ) );
 	}
-#endif
+*/
+
 	// scale for screen sizes
-	*x *= cgs.screenXScale;
-	*y *= cgs.screenYScale;
-	*w *= cgs.screenXScale;
-	*h *= cgs.screenYScale;
+	if ( cgs.overscanAdj ) {
+		// adjustments for overscan tvs
+		*x = *x * cgs.screenXScale + cgs.screenXOffset;
+		*y = *y * cgs.screenYScale + cgs.screenYOffset;
+		*w = *w * cgs.screenXScale;
+		*h = *h * cgs.screenYScale;
+	} else {
+		*x *= cgs.screenXScale;
+		*y *= cgs.screenYScale;
+		*w *= cgs.screenXScale;
+		*h *= cgs.screenYScale;
+	}
 }
 
 /*
@@ -145,8 +156,8 @@ void CG_DrawChar( int x, int y, int width, int height, int ch ) {
 	size = 0.0625;
 
 	trap_R_DrawStretchPic( ax, ay, aw, ah,
-					   fcol, frow, 
-					   fcol + size, frow + size, 
+					   fcol, frow,
+					   fcol + size, frow + size,
 					   cgs.media.charsetShader );
 }
 
@@ -161,7 +172,7 @@ to a fixed color.
 Coordinates are at 640 by 480 virtual resolution
 ==================
 */
-void CG_DrawStringExt( int x, int y, const char *string, const float *setColor, 
+void CG_DrawStringExt( int x, int y, const char *string, const float *setColor,
 		qboolean forceColor, qboolean shadow, int charWidth, int charHeight, int maxChars ) {
 	vec4_t		color;
 	const char	*s;
@@ -295,7 +306,7 @@ void CG_TileClear( void ) {
 	w = cgs.glconfig.vidWidth;
 	h = cgs.glconfig.vidHeight;
 
-	if ( cg.refdef.x == 0 && cg.refdef.y == 0 && 
+	if ( cg.refdef.x == 0 && cg.refdef.y == 0 &&
 		cg.refdef.width == w && cg.refdef.height == h ) {
 		return;		// full screen rendering
 	}
@@ -426,7 +437,7 @@ CG_ColorForHealth
 */
 void CG_ColorForHealth( vec4_t hcolor ) {
 
-	CG_GetColorForHealth( cg.snap->ps.stats[STAT_HEALTH], 
+	CG_GetColorForHealth( cg.snap->ps.stats[STAT_HEALTH],
 		cg.snap->ps.stats[STAT_ARMOR], hcolor );
 }
 
@@ -436,151 +447,372 @@ void CG_ColorForHealth( vec4_t hcolor ) {
 UI_DrawProportionalString2
 =================
 */
-static int	propMap[128][3] = {
+static int	propMap[256][3] = {
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 0, 16},
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 0, 16},
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 0, 16},
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 0, 16},
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 0, 16},
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 0, 16},
+{0, 0, -1}, {0, 0, -1},
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 0, 12}, // musical note
+{0, 0, -1}, {0, 0, -1},
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 0, 16}, // 0x0F
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 1, 16}, // heart
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 1, 16},
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 1, 16},
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 1, 16},
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 1, 16},
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 1, 16},
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 1, 16},
+
+// cock
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 1, 16},
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 1, 16},
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * 1, 16},
+
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 1, 16},	// health icon
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 1, 16},	// armor icon
+
+{0, 0, PROP_SPACE_WIDTH},			// SPACE
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 2, 8},	// !
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 2, 16},	// "
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 2, 16},	// #
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 2, 16},	// $
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 2, 16},	// %
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 2, 16},	// &
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 2, 8},	// '
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 2, 8},	// (
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 2, 8},	// )
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 2, 16},	// *
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 2, 16},	// +
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 2, 8},	// ,
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * 2, 16},	// -
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 2, 8},	// .
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 2, 16},	// /
+
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 3, 16},	// 0
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 3, 12},	// 1
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 3, 16},	// 2
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 3, 16},	// 3
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 3, 16},	// 4
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 3, 16},	// 5
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 3, 16},	// 6
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 3, 16},	// 7
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 3, 16},	// 8
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 3, 16},	// 9
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 3, 8},	// :
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 3, 8},	// ;
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 3, 16},	// <
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * 3, 16},	// =
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 3, 16},	// >
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 3, 16},	// ?
+
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 4, 16},	// @
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 4, 16},	// A
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 4, 16},	// B
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 4, 16},	// C
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 4, 16},	// D
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 4, 16},	// E
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 4, 16},	// F
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 4, 16},	// G
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 4, 16},	// H
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 4, 10},	// I
+{PROP_GRID_SIZE * 10 +1, PROP_GRID_SIZE * 4, 15},// J
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 4, 16},	// K
+{PROP_GRID_SIZE * 12 +1, PROP_GRID_SIZE * 4, 15},// L
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 0, 18},	// M
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 4, 16},	// N
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 4, 16},	// O
+
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 5, 16},	// P
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 5, 16},	// Q
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 5, 16},	// R
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 5, 16},	// S
+{PROP_GRID_SIZE * 4 +1, PROP_GRID_SIZE * 5, 15},// T
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 5, 16},	// U
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 5, 16},	// V
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 0, 20},	// W
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 5, 16},	// X
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 5, 16},	// Y
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 5, 16},	// Z
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 5, 8},	// [
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 5, 16},	// '\'
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * 5, 8},	// ]
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 5, 16},	// ^
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 5, 16},	// _
+
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 6, 8},	// ` <-- not ' but `, big differents
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 6, 16},	// a
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 6, 16},	// b
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 6, 16},	// c
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 6, 16},	// d
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 6, 16},	// e
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 6, 16},	// f
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 6, 16},	// g
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 6, 16},	// h
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 6, 10},	// i
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 6, 16},	// j
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 6, 16},	// k
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 6, 10},	// l
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * 6, 16},	// m
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 6, 16},	// n
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 6, 16},	// o
+
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 7, 16},	// p
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 7, 16},	// q
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 7, 16},	// r
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 7, 16},	// s
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 7, 16},	// t
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 7, 16},	// u
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 7, 16},	// v
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 7, 16},	// w
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 7, 16},	// x
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 7, 16},	// y
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 7, 16},	// z
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 7, 8},	// {
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 7, 8},	// |
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * 7, 8},	// }
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 7, 16},	// ~
+//{0, 0, -1},					// DEL
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 0, 30},	// DEL (used for infinite symbol)
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+
+/*{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},*/
+
+{0, 0, PROP_SPACE_WIDTH},			// 0xA0
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 10, 8},	// 0xA1
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 10, 16},	// 0xA2
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 10, 16},	// 0xA3
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 10, 14},	// 0xA4
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 10, 16},	// 0xA5
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 10, 8},	// 0xA6
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 10, 16},	// 0xA7
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 10, 10},	// 0xA8
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 10, 14},	// 0xA9
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 10, 10},	// 0xAA
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 10, 16},	// 0xAB
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 10, 16},	// 0xAC
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * 10, 16},	// 0xAD
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 10, 14},	// 0xAE
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 10, 16},	// 0xAF
+
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 11, 8},	// 0xB0
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 11, 16},	// 0xB1
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 11, 10},	// 0xB2
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 11, 10},	// 0xB3
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 11, 8},	// 0xB4
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 11, 16},	// 0xB5
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 11, 16},	// 0xB6
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 11, 16},	// 0xB7
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 11, 16},	// 0xB8
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 11, 10},	// 0xB9
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 11, 10},	// 0xBA
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 11, 16},	// 0xBB
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * 11, 16},	// 0xBC
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * 11, 16},	// 0xBD
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 11, 16},	// 0xBE
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 11, 16},	// 0xBF
+
 {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
 {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
 
 {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
 {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
 
-{0, 0, PROP_SPACE_WIDTH},		// SPACE
-{11, 122, 7},	// !
-{154, 181, 14},	// "
-{55, 122, 17},	// #
-{79, 122, 18},	// $
-{101, 122, 23},	// %
-{153, 122, 18},	// &
-{9, 93, 7},		// '
-{207, 122, 8},	// (
-{230, 122, 9},	// )
-{177, 122, 18},	// *
-{30, 152, 18},	// +
-{85, 181, 7},	// ,
-{34, 93, 11},	// -
-{110, 181, 6},	// .
-{130, 152, 14},	// /
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
 
-{22, 64, 17},	// 0
-{41, 64, 12},	// 1
-{58, 64, 17},	// 2
-{78, 64, 18},	// 3
-{98, 64, 19},	// 4
-{120, 64, 18},	// 5
-{141, 64, 18},	// 6
-{204, 64, 16},	// 7
-{162, 64, 17},	// 8
-{182, 64, 18},	// 9
-{59, 181, 7},	// :
-{35,181, 7},	// ;
-{203, 152, 14},	// <
-{56, 93, 14},	// =
-{228, 152, 14},	// >
-{177, 181, 18},	// ?
-
-{28, 122, 22},	// @
-{5, 4, 18},		// A
-{27, 4, 18},	// B
-{48, 4, 18},	// C
-{69, 4, 17},	// D
-{90, 4, 13},	// E
-{106, 4, 13},	// F
-{121, 4, 18},	// G
-{143, 4, 17},	// H
-{164, 4, 8},	// I
-{175, 4, 16},	// J
-{195, 4, 18},	// K
-{216, 4, 12},	// L
-{230, 4, 23},	// M
-{6, 34, 18},	// N
-{27, 34, 18},	// O
-
-{48, 34, 18},	// P
-{68, 34, 18},	// Q
-{90, 34, 17},	// R
-{110, 34, 18},	// S
-{130, 34, 14},	// T
-{146, 34, 18},	// U
-{166, 34, 19},	// V
-{185, 34, 29},	// W
-{215, 34, 18},	// X
-{234, 34, 18},	// Y
-{5, 64, 14},	// Z
-{60, 152, 7},	// [
-{106, 151, 13},	// '\'
-{83, 152, 7},	// ]
-{128, 122, 17},	// ^
-{4, 152, 21},	// _
-
-{134, 181, 5},	// '
-{5, 4, 18},		// A
-{27, 4, 18},	// B
-{48, 4, 18},	// C
-{69, 4, 17},	// D
-{90, 4, 13},	// E
-{106, 4, 13},	// F
-{121, 4, 18},	// G
-{143, 4, 17},	// H
-{164, 4, 8},	// I
-{175, 4, 16},	// J
-{195, 4, 18},	// K
-{216, 4, 12},	// L
-{230, 4, 23},	// M
-{6, 34, 18},	// N
-{27, 34, 18},	// O
-
-{48, 34, 18},	// P
-{68, 34, 18},	// Q
-{90, 34, 17},	// R
-{110, 34, 18},	// S
-{130, 34, 14},	// T
-{146, 34, 18},	// U
-{166, 34, 19},	// V
-{185, 34, 29},	// W
-{215, 34, 18},	// X
-{234, 34, 18},	// Y
-{5, 64, 14},	// Z
-{153, 152, 13},	// {
-{11, 181, 5},	// |
-{180, 152, 13},	// }
-{79, 93, 17},	// ~
-{0, 0, -1}		// DEL
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}
 };
 
-static int propMapB[26][3] = {
-{11, 12, 33},
-{49, 12, 31},
-{85, 12, 31},
-{120, 12, 30},
-{156, 12, 21},
-{183, 12, 21},
-{207, 12, 32},
+/*
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * , 16},	// 0x0
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * , 12},	// 0x1
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * , 16},	// 0x2
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * , 16},	// 0x3
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * , 16},	// 0x4
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * , 16},	// 0x5
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * , 16},	// 0x6
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * , 16},	// 0x7
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * , 16},	// 0x8
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * , 16},	// 0x9
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * , 8},	// 0xA
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * , 8},	// 0xB
+{PROP_GRID_SIZE * 12, PROP_GRID_SIZE * , 16},	// 0xC
+{PROP_GRID_SIZE * 13, PROP_GRID_SIZE * , 16},	// 0xD
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * , 16},	// 0xE
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * , 16},	// 0xF
+*/
 
-{13, 55, 30},
-{49, 55, 13},
-{66, 55, 29},
-{101, 55, 31},
-{135, 55, 21},
-{158, 55, 40},
-{204, 55, 32},
+#define DIGIT_GAP_WIDTH		14
+static int	digitMap[256][3] = {
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
 
-{12, 97, 31},
-{48, 97, 31},
-{82, 97, 30},
-{118, 97, 30},
-{153, 97, 30},
-{185, 97, 25},
-{213, 97, 30},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
 
-{11, 139, 32},
-{42, 139, 51},
-{93, 139, 32},
-{126, 139, 31},
-{158, 139, 25},
+{0, 0, DIGIT_GAP_WIDTH},			// SPACE
+{0, 0, -1},	// !
+{0, 0, -1},	// "
+{0, 0, -1},	// #
+{0, 0, -1},	// $
+{0, 0, -1},	// %
+{0, 0, -1},	// &
+{0, 0, -1},	// '
+{0, 0, -1},	// (
+{0, 0, -1},	// )
+{0, 0, -1},	// *
+{0, 0, -1},	// +
+{0, 0, -1},	// ,
+{PROP_GRID_SIZE * 13 + 1, PROP_GRID_SIZE * 2, 14},	// -
+{PROP_GRID_SIZE * 14 + 1, PROP_GRID_SIZE * 2, 5},	// .
+{0, 0, -1},	// /
+
+{PROP_GRID_SIZE * 0 + 1, PROP_GRID_SIZE * 3, 14},	// 0
+{PROP_GRID_SIZE * 1 + 1, PROP_GRID_SIZE * 3, 14},	// 1
+{PROP_GRID_SIZE * 2 + 1, PROP_GRID_SIZE * 3, 14},	// 2
+{PROP_GRID_SIZE * 3 + 1, PROP_GRID_SIZE * 3, 14},	// 3
+{PROP_GRID_SIZE * 4 + 1, PROP_GRID_SIZE * 3, 14},	// 4
+{PROP_GRID_SIZE * 5 + 1, PROP_GRID_SIZE * 3, 14},	// 5
+{PROP_GRID_SIZE * 6 + 1, PROP_GRID_SIZE * 3, 14},	// 6
+{PROP_GRID_SIZE * 7 + 1, PROP_GRID_SIZE * 3, 14},	// 7
+{PROP_GRID_SIZE * 8 + 1, PROP_GRID_SIZE * 3, 14},	// 8
+{PROP_GRID_SIZE * 9 + 1, PROP_GRID_SIZE * 3, 14},	// 9
+{PROP_GRID_SIZE * 10 + 1, PROP_GRID_SIZE * 3, 5},	// :
+{0, 0, -1},	// ;
+{0, 0, -1},	// <
+{0, 0, -1},	// =
+{0, 0, -1},	// >
+{0, 0, -1},	// ?
+
+{0, 0, -1},	// @
+{PROP_GRID_SIZE * 1 + 1, PROP_GRID_SIZE * 4, 14},	// A
+{PROP_GRID_SIZE * 2 + 1, PROP_GRID_SIZE * 4, 14},	// B
+{PROP_GRID_SIZE * 3 + 1, PROP_GRID_SIZE * 4, 14},	// C
+{PROP_GRID_SIZE * 4 + 1, PROP_GRID_SIZE * 4, 14},	// D
+{PROP_GRID_SIZE * 5 + 1, PROP_GRID_SIZE * 4, 14},	// E
+{PROP_GRID_SIZE * 6 + 1, PROP_GRID_SIZE * 4, 14},	// F
+{0, 0, -1},	// G
+{0, 0, -1},	// H
+{0, 0, -1},	// I
+{0, 0, -1},	// J
+{0, 0, -1},	// K
+{0, 0, -1},	// L
+{0, 0, -1},	// M
+{0, 0, -1},	// N
+{0, 0, -1},	// O
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+//{0, 0, 5},			// _
+
+{0, 0, -1},	// '
+{PROP_GRID_SIZE * 1 + 1, PROP_GRID_SIZE * 4, 14},	// a
+{PROP_GRID_SIZE * 2 + 1, PROP_GRID_SIZE * 4, 14},	// b
+{PROP_GRID_SIZE * 3 + 1, PROP_GRID_SIZE * 4, 14},	// c
+{PROP_GRID_SIZE * 4 + 1, PROP_GRID_SIZE * 4, 14},	// d
+{PROP_GRID_SIZE * 5 + 1, PROP_GRID_SIZE * 4, 14},	// e
+{PROP_GRID_SIZE * 6 + 1, PROP_GRID_SIZE * 4, 14},	// f
+{0, 0, -1},	// g
+{0, 0, -1},	// h
+{0, 0, -1},	// i
+{0, 0, -1},	// j
+{0, 0, -1},	// k
+{0, 0, -1},	// l
+{0, 0, -1},	// m
+{0, 0, -1},	// n
+{0, 0, -1},	// o
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1},					// DEL
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1},
+{0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}, {0, 0, -1}
 };
 
-#define PROPB_GAP_WIDTH		4
-#define PROPB_SPACE_WIDTH	12
-#define PROPB_HEIGHT		36
+static int propMapB[/*26*/37][3] = {
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 4, 16},	// A
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 4, 16},	// B
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 4, 16},	// C
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 4, 16},	// D
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 4, 16},	// E
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 4, 16},	// F
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 4, 16},	// G
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 4, 16},	// H
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 4, 10},	// I
+{PROP_GRID_SIZE * 10 +1, PROP_GRID_SIZE * 4, 15},// J
+{PROP_GRID_SIZE * 11, PROP_GRID_SIZE * 4, 16},	// K
+{PROP_GRID_SIZE * 12 +1, PROP_GRID_SIZE * 4, 15},// L
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 0, 18},	// M
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 4, 16},	// N
+{PROP_GRID_SIZE * 15, PROP_GRID_SIZE * 4, 16},	// O
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 5, 16},	// P
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 5, 16},	// Q
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 5, 16},	// R
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 5, 16},	// S
+{PROP_GRID_SIZE * 4 +1, PROP_GRID_SIZE * 5, 15},// T
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 5, 16},	// U
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 5, 16},	// V
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 0, 20},	// W
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 5, 16},	// X
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 5, 16},	// Y
+{PROP_GRID_SIZE * 10, PROP_GRID_SIZE * 5, 16},	// Z
+
+{PROP_GRID_SIZE * 0, PROP_GRID_SIZE * 3, 16},	// 0
+{PROP_GRID_SIZE * 1, PROP_GRID_SIZE * 3, 12},	// 1
+{PROP_GRID_SIZE * 2, PROP_GRID_SIZE * 3, 16},	// 2
+{PROP_GRID_SIZE * 3, PROP_GRID_SIZE * 3, 16},	// 3
+{PROP_GRID_SIZE * 4, PROP_GRID_SIZE * 3, 16},	// 4
+{PROP_GRID_SIZE * 5, PROP_GRID_SIZE * 3, 16},	// 5
+{PROP_GRID_SIZE * 6, PROP_GRID_SIZE * 3, 16},	// 6
+{PROP_GRID_SIZE * 7, PROP_GRID_SIZE * 3, 16},	// 7
+{PROP_GRID_SIZE * 8, PROP_GRID_SIZE * 3, 16},	// 8
+{PROP_GRID_SIZE * 9, PROP_GRID_SIZE * 3, 16},	// 9
+
+{PROP_GRID_SIZE * 14, PROP_GRID_SIZE * 2, 8}	// .
+};
+
+#define PROPB_GAP_WIDTH		0
+#define PROPB_SPACE_WIDTH	8
+#define PROPB_HEIGHT		16
 
 /*
 =================
@@ -602,14 +834,14 @@ static void UI_DrawBannerString2( int x, int y, const char* str, vec4_t color )
 
 	// draw the colored text
 	trap_R_SetColor( color );
-	
-	ax = x * cgs.screenXScale + cgs.screenXBias;
-	ay = y * cgs.screenYScale;
+
+	ax = x * cgs.screenXScale + cgs.screenXBias + cgs.screenXOffset;
+	ay = y * cgs.screenYScale + cgs.screenYOffset;
 
 	s = str;
 	while ( *s )
 	{
-		ch = *s & 127;
+		ch = *s; //& 127;
 		if ( ch == ' ' ) {
 			ax += ((float)PROPB_SPACE_WIDTH + (float)PROPB_GAP_WIDTH)* cgs.screenXScale;
 		}
@@ -684,16 +916,434 @@ int UI_ProportionalStringWidth( const char* str ) {
 	s = str;
 	width = 0;
 	while ( *s ) {
-		ch = *s & 127;
+		ch = *s; // & 127;
 		charWidth = propMap[ch][2];
 		if ( charWidth != -1 ) {
 			width += charWidth;
-			width += PROP_GAP_WIDTH;
+//			width += PROP_GAP_WIDTH;
 		}
 		s++;
 	}
 
-	width -= PROP_GAP_WIDTH;
+//	width -= PROP_GAP_WIDTH;
+	return width;
+}
+
+// test - remove this
+int UI_ProportionalCharWidth( int c ) {
+	int				width;
+
+	width = propMap[c][2];
+
+	return width;
+}
+
+// mmp
+
+/*
+=================
+UI_DrawStringFont
+=================
+*/
+void UI_DrawStringFont( int x, int y, const char* str, vec4_t startColor,
+						float scaleX, float scaleY, qhandle_t charset, int dshadow, qboolean dcolor,
+						qboolean digitChar )
+{
+	vec4_t		color;
+	vec4_t		scolor;
+	const char* s;
+	unsigned char	ch;
+	float	ax;
+	float	ay;
+	float	aw;
+	float	ah;
+	float	frow;
+	float	fcol;
+	float	fwidth;
+	float	fheight;
+
+	float	fade;
+
+	// FIXME - this can be done better
+	color[0] = startColor[0];
+	color[1] = startColor[1];
+	color[2] = startColor[2];
+	color[3] = startColor[3];
+
+	// shadow color
+	scolor[0] = scolor[1] = scolor[2] = 0.0;
+	scolor[3] = startColor[3]; // if color's transparent, shadow should be transparent as well
+
+	// draw the colored text
+	trap_R_SetColor( color );
+
+	ax = x * cgs.screenXScale + cgs.screenXBias + cgs.screenXOffset;
+	ay = y * cgs.screenYScale + cgs.screenYOffset;
+
+	s = str;
+
+	if (digitChar) {
+		while ( *s )
+		{
+			ch = *s & 127;
+			if ( ch == ' ' ) {
+				aw = (float)DIGIT_GAP_WIDTH * cgs.screenXScale * scaleX;
+			} else if ( Q_IsColorString( s ) ) {
+				memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
+				trap_R_SetColor( color );
+				s += 2;
+				continue;
+			} else if ( digitMap[ch][2] != -1 ) {
+				fcol = (float)digitMap[ch][0] / 256.0f;
+				frow = (float)digitMap[ch][1] / 256.0f;
+				fwidth = (float)digitMap[ch][2] / 256.0f;
+				fheight = (float)PROP_HEIGHT / 256.0f;
+				aw = (float)digitMap[ch][2] * cgs.screenXScale * scaleX;
+				ah = (float)PROP_HEIGHT * cgs.screenYScale * scaleY;
+				if ( dshadow ) {
+					trap_R_SetColor( scolor );
+					trap_R_DrawStretchPic( ax+1, ay+1, aw, ah, fcol, frow, fcol+fwidth, frow+fheight, charset );
+					trap_R_SetColor( color );
+				}
+				trap_R_DrawStretchPic( ax, ay, aw, ah, fcol, frow, fcol+fwidth, frow+fheight, charset );
+			} else {
+				aw = 0;
+			}
+
+			ax += (aw + (float)PROP_GAP_WIDTH * cgs.screenXScale * scaleX);
+			s++;
+		}
+	} else {
+		while ( *s )
+		{
+			ch = *s;// & 127;
+			if ( ch == ' ' || ch == 0xA0 ) {
+				aw = (float)PROP_SPACE_WIDTH * cgs.screenXScale * scaleX;
+			} else if ( Q_IsColorString( s ) ) {
+				if ( !dcolor ) { // shall we filter out colors
+					// grab text color from color table
+					memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
+					//color[3] = fade;
+					trap_R_SetColor( color );
+				}
+				s += 2;
+				continue;
+			} else if ( propMap[ch][2] != -1 ) {
+				fcol = (float)propMap[ch][0] / 256.0f;
+				frow = (float)propMap[ch][1] / 256.0f;
+				fwidth = (float)propMap[ch][2] / 256.0f;
+				fheight = (float)PROP_HEIGHT / 256.0f;
+				aw = (float)propMap[ch][2] * cgs.screenXScale * scaleX;
+				ah = (float)PROP_HEIGHT * cgs.screenYScale * scaleY;
+				if ( dshadow ) {
+					trap_R_SetColor( scolor );
+					trap_R_DrawStretchPic( ax+1, ay+1, aw, ah, fcol, frow, fcol+fwidth, frow+fheight, charset );
+					trap_R_SetColor( color );
+				}
+				trap_R_DrawStretchPic( ax, ay, aw, ah, fcol, frow, fcol+fwidth, frow+fheight, charset );
+			} else {
+				aw = 0;
+			}
+
+			ax += (aw + (float)PROP_GAP_WIDTH * cgs.screenXScale * scaleX);
+			s++;
+		}
+	}
+
+	trap_R_SetColor( NULL );
+}
+
+
+/*
+=================
+UI_ReturnStringWidth
+
+Returns the width of a string, based on the proportional size of each character
+=================
+*/
+
+int UI_ReturnStringWidth( const char* str, qboolean digitChar ) {
+	const char 			*s;
+	int				ch;
+	int				charWidth;
+	int				width;
+
+	s = str;
+	width = 0;
+	if (digitChar) {
+		while ( *s ) {
+			if ( Q_IsColorString( s ) ) {
+				// ignore color strings
+				s+=2;
+				continue;
+			}
+			ch = *s & 255; // & 127;
+			charWidth = digitMap[ch][2];
+			if ( charWidth != -1 ) {
+				width += charWidth;
+			}
+			s++;
+		}
+	} else {
+		while ( *s ) {
+			if ( Q_IsColorString( s ) ) {
+				// ignore color strings
+				s+=2;
+				continue;
+			}
+			ch = *s & 255; // & 127;
+			charWidth = propMap[ch][2];
+			if ( charWidth != -1 ) {
+				width += charWidth;
+			}
+			s++;
+		}
+	}
+
+	return width;
+}
+
+/*
+=================
+UI_ReturnStringLimit
+
+Returns the amount of chars that can be printed, before 'widthLimit' is reached
+=================
+*/
+
+int UI_ReturnStringLimit( const char* str, qboolean digitChar, int widthLimit, float scale, qboolean incCStr ) {
+	const char 			*s;
+	int				ch;
+	int				charWidth;
+	int				charLimit;
+
+	s = str;
+	charLimit = 0;
+	//Com_Printf( "width: %i\n", widthLimit ); // debug
+	//Com_Printf( "test str: <%s>\n", str); // debug
+	/*if (digitChar) {
+		while ( *s ) {
+			if ( Q_IsColorString( s ) ) {
+				if ( incCStr == qtrue ) {
+					charLimit += 2;
+				}
+				// skip color strings check
+				s+=2;
+				continue;
+			}
+			ch = *s & 255; // & 127;
+			charWidth = digitMap[ch][2];
+			if ( charWidth != -1 ) {
+				widthLimit -= (charWidth * scale);
+			}
+			// if the limit was reached, then return char size
+			if ( widthLimit < 0 ) {
+				return charLimit;
+			}
+			charLimit++;
+			s++;
+		}
+	} else {*/
+		while ( *s ) {
+			if ( Q_IsColorString( s ) ) {
+				if ( incCStr == qtrue ) {
+					charLimit += 2;
+				}
+				// skip color strings check
+				s+=2;
+				continue;
+			}
+			ch = *s & 255; // & 127;
+			charWidth = propMap[ch][2];
+			if ( charWidth != -1 ) {
+				widthLimit -= (charWidth * scale);
+			}
+			// if the limit was reached, then return char size
+			if ( widthLimit < 0 ) {
+				//Com_Printf( "charLimit: %i  widthLimit: %i  charWidth: %i  s: %i\n", charLimit, widthLimit, charWidth, *s & 255 ); // debug
+				return charLimit;
+			}
+			charLimit++;
+			//Com_Printf( "charLimit: %i  widthLimit: %i  charWidth: %i  s: %i\n", charLimit, widthLimit, charWidth, *s & 255 ); // debug
+			s++;
+	/*	}*/
+	}
+
+	return charLimit;
+}
+
+/*
+=================
+UI_DrawString
+=================
+*/
+void UI_DrawString( int x, int y, const char* str, int style, float scaleX, float scaleY, vec4_t color, qboolean dcolor ) {
+	vec4_t		drawcolor;
+	int		width;
+	float		scaleTest;
+
+	scaleTest = ( cgs.screenXScale * scaleX + cgs.screenYScale * scaleY ) / 2;
+
+	switch( style & UI_FORMATMASK ) {
+		case UI_CENTER:
+			if ( style & UI_DIGIT )
+				x -= (UI_ReturnStringWidth( str, qtrue ) * scaleX) / 2;
+			else
+				x -= (UI_ReturnStringWidth( str, qfalse ) * scaleX) / 2;
+			break;
+
+		case UI_RIGHT:
+			if ( style & UI_DIGIT )
+				x -= UI_ReturnStringWidth( str, qtrue ) * scaleX;
+			else
+				x -= UI_ReturnStringWidth( str, qfalse ) * scaleX;
+			break;
+
+		case UI_LEFT:
+		default:
+			break;
+	}
+
+	if ( style & UI_INVERSE ) {
+		drawcolor[0] = color[0] * 0.5;
+		drawcolor[1] = color[1] * 0.5;
+		drawcolor[2] = color[2] * 0.5;
+		drawcolor[3] = color[3];
+
+		if ( style & UI_DIGIT ) {
+			if ( scaleTest >= hud_hqFontThreshold.value ) {
+				UI_DrawStringFont( x, y, str, drawcolor, scaleX, scaleY, cgs.media.charsetDigitHQ,
+												style & UI_DROPSHADOW, dcolor, qtrue );
+			} else {
+				UI_DrawStringFont( x, y, str, drawcolor, scaleX, scaleY, cgs.media.charsetDigit,
+												style & UI_DROPSHADOW, dcolor, qtrue );
+			}
+		} else {
+			if ( scaleTest >= hud_hqFontThreshold.value ) {
+				UI_DrawStringFont( x, y, str, drawcolor, scaleX, scaleY, cgs.media.charsetPropHQ,
+												style & UI_DROPSHADOW, dcolor, qfalse );
+			} else {
+				UI_DrawStringFont( x, y, str, drawcolor, scaleX, scaleY, cgs.media.charsetProp,
+												style & UI_DROPSHADOW, dcolor, qfalse );
+			}
+		}
+		return;
+	}
+
+	if ( style & UI_PULSE ) {
+		drawcolor[0] = color[0] * 0.8;
+		drawcolor[1] = color[1] * 0.8;
+		drawcolor[2] = color[2] * 0.8;
+		drawcolor[3] = color[3];
+		/*if ( style & UI_DIGIT )
+			UI_DrawStringFont( x, y, str, drawcolor, scaleX, scaleY, cgs.media.charsetDigit,
+										style & UI_DROPSHADOW, dcolor, qtrue );
+		else
+			UI_DrawStringFont( x, y, str, drawcolor, scaleX, scaleY, cgs.media.charsetProp,
+										style & UI_DROPSHADOW, dcolor, qfalse );*/
+		if ( style & UI_DIGIT ) {
+			if ( scaleTest >= hud_hqFontThreshold.value ) {
+				UI_DrawStringFont( x, y, str, drawcolor, scaleX, scaleY, cgs.media.charsetDigitHQ,
+												style & UI_DROPSHADOW, dcolor, qtrue );
+			} else {
+				UI_DrawStringFont( x, y, str, drawcolor, scaleX, scaleY, cgs.media.charsetDigit,
+												style & UI_DROPSHADOW, dcolor, qtrue );
+			}
+		} else {
+			if ( scaleTest >= hud_hqFontThreshold.value ) {
+				UI_DrawStringFont( x, y, str, drawcolor, scaleX, scaleY, cgs.media.charsetPropHQ,
+												style & UI_DROPSHADOW, dcolor, qfalse );
+			} else {
+				UI_DrawStringFont( x, y, str, drawcolor, scaleX, scaleY, cgs.media.charsetProp,
+												style & UI_DROPSHADOW, dcolor, qfalse );
+			}
+		}
+
+		drawcolor[0] = color[0];
+		drawcolor[1] = color[1];
+		drawcolor[2] = color[2];
+		drawcolor[3] = 0.5 + 0.5 * sin( cg.time / PULSE_DIVISOR );
+		if ( style & UI_DIGIT )
+			UI_DrawStringFont( x, y, str, drawcolor, scaleX, scaleY, cgs.media.charsetDigit,
+										style & UI_DROPSHADOW, dcolor, qtrue );
+		else
+			UI_DrawStringFont( x, y, str, drawcolor, scaleX, scaleY, cgs.media.charsetPropGlow,
+										style & UI_DROPSHADOW, dcolor, qfalse );
+		return;
+	}
+
+	if ( style & UI_DIGIT ) {
+		if ( scaleTest >= hud_hqFontThreshold.value ) {
+			UI_DrawStringFont( x, y, str, color, scaleX, scaleY, cgs.media.charsetDigitHQ,
+											style & UI_DROPSHADOW, dcolor, qtrue );
+		} else {
+			UI_DrawStringFont( x, y, str, color, scaleX, scaleY, cgs.media.charsetDigit,
+											style & UI_DROPSHADOW, dcolor, qtrue );
+		}
+	} else {
+		if ( scaleTest >= hud_hqFontThreshold.value ) {
+			UI_DrawStringFont( x, y, str, color, scaleX, scaleY, cgs.media.charsetPropHQ,
+											style & UI_DROPSHADOW, dcolor, qfalse );
+		} else {
+			UI_DrawStringFont( x, y, str, color, scaleX, scaleY, cgs.media.charsetProp,
+											style & UI_DROPSHADOW, dcolor, qfalse );
+		}
+	}
+
+}
+
+// mmp - end
+
+int UI_ProportionalColorStringWidth( const char* str ) {
+	const char 			*s;
+	int				ch;
+	int				charWidth;
+	int				width;
+
+	s = str;
+	width = 0;
+	while ( *s ) {
+		if ( Q_IsColorString( s ) ) {
+			s+=2;
+			continue;
+		}
+		// for some fucking reason, i have to put a '& 255', to read chars past 127... wtf?!
+		ch = *s & 255; // & 127;
+		charWidth = propMap[ch][2];
+		if ( charWidth != -1 ) {
+			width += charWidth;
+//			width += PROP_GAP_WIDTH;
+		}
+		s++;
+	}
+
+//	width -= PROP_GAP_WIDTH;
+	return width;
+}
+
+int UI_DigitStringWidth( const char* str ) {
+	const char *	s;
+	int				ch;
+	int				charWidth;
+	int				width;
+
+	s = str;
+	width = 0;
+	while ( *s ) {
+		if ( Q_IsColorString( s ) ) {
+			s+=2;
+			continue;
+		}
+		ch = *s & 127;
+		charWidth = digitMap[ch][2];
+		if ( charWidth != -1 ) {
+			width += charWidth;
+//			width += PROP_GAP_WIDTH;
+		}
+		s++;
+	}
+
+//	width -= PROP_GAP_WIDTH;
 	return width;
 }
 
@@ -712,14 +1362,14 @@ static void UI_DrawProportionalString2( int x, int y, const char* str, vec4_t co
 
 	// draw the colored text
 	trap_R_SetColor( color );
-	
-	ax = x * cgs.screenXScale + cgs.screenXBias;
-	ay = y * cgs.screenYScale;
+
+	ax = x * cgs.screenXScale + cgs.screenXBias + cgs.screenXOffset;
+	ay = y * cgs.screenYScale + cgs.screenYOffset;
 
 	s = str;
 	while ( *s )
 	{
-		ch = *s & 127;
+		ch = *s; // & 127;
 		if ( ch == ' ' ) {
 			aw = (float)PROP_SPACE_WIDTH * cgs.screenXScale * sizeScale;
 		} else if ( propMap[ch][2] != -1 ) {
@@ -729,6 +1379,149 @@ static void UI_DrawProportionalString2( int x, int y, const char* str, vec4_t co
 			fheight = (float)PROP_HEIGHT / 256.0f;
 			aw = (float)propMap[ch][2] * cgs.screenXScale * sizeScale;
 			ah = (float)PROP_HEIGHT * cgs.screenYScale * sizeScale;
+			trap_R_DrawStretchPic( ax, ay, aw, ah, fcol, frow, fcol+fwidth, frow+fheight, charset );
+		} else {
+			aw = 0;
+		}
+
+		ax += (aw + (float)PROP_GAP_WIDTH * cgs.screenXScale * sizeScale);
+		s++;
+	}
+
+	trap_R_SetColor( NULL );
+}
+
+static void UI_DrawProportionalStringColor( int x, int y, const char* str, vec4_t startColor,
+						float sizeScale, qhandle_t charset, int dshadow, qboolean dcolor )
+{
+	vec4_t		color;
+	vec4_t		scolor;
+	const char* s;
+	unsigned char	ch;
+	float	ax;
+	float	ay;
+	float	aw;
+	float	ah;
+	float	frow;
+	float	fcol;
+	float	fwidth;
+	float	fheight;
+
+	float	fade;
+
+	// shadow color
+	scolor[0] = scolor[1] = scolor[2] = 0.0;
+	scolor[3] = 1.0;
+
+	// FIXME - this can be done better
+	color[0] = startColor[0];
+	color[1] = startColor[1];
+	color[2] = startColor[2];
+	color[3] = startColor[3];
+
+	// draw the colored text
+	trap_R_SetColor( color );
+
+	ax = x * cgs.screenXScale + cgs.screenXBias + cgs.screenXOffset;
+	ay = y * cgs.screenYScale + cgs.screenYOffset;
+
+	s = str;  // this isn't even used
+	while ( *s )
+	{
+		ch = *s;// & 127;
+		if ( ch == ' ' || ch == 0xA0 ) {
+			aw = (float)PROP_SPACE_WIDTH * cgs.screenXScale * sizeScale;
+		} else if ( Q_IsColorString( s ) ) {
+			if ( !dcolor ) { // shall we filter out colors
+				// grab text color from color table
+				memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
+				//color[3] = fade;
+				trap_R_SetColor( color );
+			}
+			s += 2;
+			continue;
+		} else if ( propMap[ch][2] != -1 ) {
+			fcol = (float)propMap[ch][0] / 256.0f;
+			frow = (float)propMap[ch][1] / 256.0f;
+			fwidth = (float)propMap[ch][2] / 256.0f;
+			fheight = (float)PROP_HEIGHT / 256.0f;
+			aw = (float)propMap[ch][2] * cgs.screenXScale * sizeScale;
+			ah = (float)PROP_HEIGHT * cgs.screenYScale * sizeScale;
+			if ( dshadow ) {
+				trap_R_SetColor( scolor );
+				trap_R_DrawStretchPic( ax+1, ay+1, aw, ah, fcol, frow, fcol+fwidth, frow+fheight, charset );
+				trap_R_SetColor( color );
+			}
+			trap_R_DrawStretchPic( ax, ay, aw, ah, fcol, frow, fcol+fwidth, frow+fheight, charset );
+		} else {
+			aw = 0;
+		}
+
+		ax += (aw + (float)PROP_GAP_WIDTH * cgs.screenXScale * sizeScale);
+		s++;
+	}
+
+	trap_R_SetColor( NULL );
+}
+
+
+static void UI_DrawDigitString( int x, int y, const char* str, vec4_t startColor, float sizeScale, qhandle_t charset, int dshadow )
+{
+	vec4_t		color;
+	vec4_t		scolor;
+	const char* s;
+	unsigned char	ch;
+	float	ax;
+	float	ay;
+	float	aw;
+	float	ah;
+	float	frow;
+	float	fcol;
+	float	fwidth;
+	float	fheight;
+
+	float	fade;
+
+	// shadow color
+	scolor[0] = scolor[1] = scolor[2] = 0.0;
+	scolor[3] = 1.0;
+
+	// FIXME - this can be done better
+	color[0] = startColor[0];
+	color[1] = startColor[1];
+	color[2] = startColor[2];
+	color[3] = startColor[3];
+
+	// draw the colored text
+	trap_R_SetColor( color );
+
+	ax = x * cgs.screenXScale + cgs.screenXBias + cgs.screenXOffset;
+	ay = y * cgs.screenYScale + cgs.screenYOffset;
+
+	s = str;
+	while ( *s )
+	{
+		ch = *s & 127;
+		if ( ch == ' ' ) {
+			aw = (float)DIGIT_GAP_WIDTH * cgs.screenXScale * sizeScale;
+		} else if ( Q_IsColorString( s ) ) {
+			memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
+//			color[3] = fade;
+			trap_R_SetColor( color );
+			s += 2;
+			continue;
+		} else if ( digitMap[ch][2] != -1 ) {
+			fcol = (float)digitMap[ch][0] / 256.0f;
+			frow = (float)digitMap[ch][1] / 256.0f;
+			fwidth = (float)digitMap[ch][2] / 256.0f;
+			fheight = (float)PROP_HEIGHT / 256.0f;
+			aw = (float)digitMap[ch][2] * cgs.screenXScale * sizeScale;
+			ah = (float)PROP_HEIGHT * cgs.screenYScale * sizeScale;
+			if ( dshadow ) {
+				trap_R_SetColor( scolor );
+				trap_R_DrawStretchPic( ax+1, ay+1, aw, ah, fcol, frow, fcol+fwidth, frow+fheight, charset );
+				trap_R_SetColor( color );
+			}
 			trap_R_DrawStretchPic( ax, ay, aw, ah, fcol, frow, fcol+fwidth, frow+fheight, charset );
 		} else {
 			aw = 0;
@@ -815,3 +1608,233 @@ void UI_DrawProportionalString( int x, int y, const char* str, int style, vec4_t
 
 	UI_DrawProportionalString2( x, y, str, color, sizeScale, cgs.media.charsetProp );
 }
+
+/*
+=================
+UI_DrawCustomProportionalString
+=================
+*/
+void UI_DrawCustomProportionalString( int x, int y, const char* str, int style, float sizeScale, vec4_t color, qboolean dcolor ) {
+	vec4_t		drawcolor;
+	int			width;
+//	int			dshadow;
+	float		scaleTest;
+
+	scaleTest = ( cgs.screenXScale * sizeScale + cgs.screenYScale * sizeScale ) / 2;
+
+//	dshadow = style & UI_DROPSHADOW;
+
+	switch( style & UI_FORMATMASK ) {
+		case UI_CENTER:
+			if ( style & UI_DIGIT )
+				width = UI_DigitStringWidth( str ) * sizeScale;
+			else
+				width = UI_ProportionalColorStringWidth( str ) * sizeScale;
+			x -= width / 2;
+			break;
+
+		case UI_RIGHT:
+			if ( style & UI_DIGIT )
+				width = UI_DigitStringWidth( str ) * sizeScale;
+			else
+				width = UI_ProportionalColorStringWidth( str ) * sizeScale;
+			x -= width;
+			break;
+
+		case UI_LEFT:
+		default:
+			break;
+	}
+
+	if ( style & UI_INVERSE ) {
+		drawcolor[0] = color[0] * 0.5;
+		drawcolor[1] = color[1] * 0.5;
+		drawcolor[2] = color[2] * 0.5;
+		drawcolor[3] = color[3];
+		/*if ( style & UI_DIGIT )
+			UI_DrawDigitString( x, y, str, drawcolor, sizeScale, cgs.media.charsetDigit, style & UI_DROPSHADOW );
+		else
+			UI_DrawProportionalStringColor( x, y, str, drawcolor, sizeScale, cgs.media.charsetProp,
+											style & UI_DROPSHADOW, dcolor );*/
+		if ( style & UI_DIGIT ) {
+			if ( scaleTest >= hud_hqFontThreshold.value ) {
+				UI_DrawDigitString( x, y, str, drawcolor, sizeScale, cgs.media.charsetDigitHQ, style & UI_DROPSHADOW );
+			} else {
+				UI_DrawDigitString( x, y, str, drawcolor, sizeScale, cgs.media.charsetDigit, style & UI_DROPSHADOW );
+			}
+		} else {
+			if ( scaleTest >= hud_hqFontThreshold.value ) {
+				UI_DrawProportionalStringColor( x, y, str, drawcolor, sizeScale, cgs.media.charsetPropHQ,
+													style & UI_DROPSHADOW, dcolor );
+			} else {
+				UI_DrawProportionalStringColor( x, y, str, drawcolor, sizeScale, cgs.media.charsetProp,
+													style & UI_DROPSHADOW, dcolor );
+			}
+		}
+		return;
+	}
+
+	if ( style & UI_PULSE ) {
+		drawcolor[0] = color[0] * 0.8;
+		drawcolor[1] = color[1] * 0.8;
+		drawcolor[2] = color[2] * 0.8;
+		drawcolor[3] = color[3];
+		/*if ( style & UI_DIGIT )
+			UI_DrawDigitString( x, y, str, drawcolor, sizeScale, cgs.media.charsetDigit, style & UI_DROPSHADOW );
+		else
+			UI_DrawProportionalStringColor( x, y, str, drawcolor, sizeScale, cgs.media.charsetProp,
+											style & UI_DROPSHADOW, dcolor );*/
+		if ( style & UI_DIGIT ) {
+			if ( scaleTest >= hud_hqFontThreshold.value ) {
+				UI_DrawDigitString( x, y, str, drawcolor, sizeScale, cgs.media.charsetDigitHQ, style & UI_DROPSHADOW );
+			} else {
+				UI_DrawDigitString( x, y, str, drawcolor, sizeScale, cgs.media.charsetDigit, style & UI_DROPSHADOW );
+			}
+		} else {
+			if ( scaleTest >= hud_hqFontThreshold.value ) {
+				UI_DrawProportionalStringColor( x, y, str, drawcolor, sizeScale, cgs.media.charsetPropHQ,
+													style & UI_DROPSHADOW, dcolor );
+			} else {
+				UI_DrawProportionalStringColor( x, y, str, drawcolor, sizeScale, cgs.media.charsetProp,
+													style & UI_DROPSHADOW, dcolor );
+			}
+		}
+
+		drawcolor[0] = color[0];
+		drawcolor[1] = color[1];
+		drawcolor[2] = color[2];
+		drawcolor[3] = 0.5 + 0.5 * sin( cg.time / PULSE_DIVISOR );
+		if ( style & UI_DIGIT )
+			UI_DrawDigitString( x, y, str, drawcolor, sizeScale, cgs.media.charsetDigit, style & UI_DROPSHADOW );
+		else
+			UI_DrawProportionalStringColor( x, y, str, drawcolor, sizeScale, cgs.media.charsetPropGlow,
+											style & UI_DROPSHADOW, dcolor );
+		return;
+	}
+
+	if ( style & UI_DIGIT ) {
+		if ( scaleTest >= hud_hqFontThreshold.value ) {
+			UI_DrawDigitString( x, y, str, color, sizeScale, cgs.media.charsetDigitHQ, style & UI_DROPSHADOW );
+		} else {
+			UI_DrawDigitString( x, y, str, color, sizeScale, cgs.media.charsetDigit, style & UI_DROPSHADOW );
+		}
+	} else {
+		if ( scaleTest >= hud_hqFontThreshold.value ) {
+			UI_DrawProportionalStringColor( x, y, str, color, sizeScale, cgs.media.charsetPropHQ,
+												style & UI_DROPSHADOW, dcolor );
+		} else {
+			UI_DrawProportionalStringColor( x, y, str, color, sizeScale, cgs.media.charsetProp,
+												style & UI_DROPSHADOW, dcolor );
+		}
+	}
+}
+
+/*
+=================
+UI_DrawNumChar
+=================
+*/
+
+#define NUMCHAR_SIZE		32
+
+int UI_DrawNumChar( int x, int y, int size, int n, int c ) {
+
+	int		row, col;
+	int		o;
+	float	frow, fcol;
+	float	sizeFloat;
+	float	ax, ay, aw, ah;
+
+	ax = x;
+	ay = y;
+	aw = size;
+	ah = size;
+	CG_AdjustFrom640( &ax, &ay, &aw, &ah );
+
+	row = c & 1;
+	col = n & 15;
+
+	frow = row*0.5;
+	fcol = col*0.0625;
+
+	trap_R_DrawStretchPic( ax, ay, aw, ah,
+					   fcol, frow,
+					   fcol + 0.0625, frow + 0.5,
+					   cgs.media.numChar ); // cgs.media.numChar
+
+	o = size * 0.75;
+
+	return o;
+
+}
+
+
+/*
+=================
+UI_DrawNumCharInteger
+=================
+*/
+
+void UI_DrawNumCharInteger( int x, int y, int size, int n, int c, qboolean leftAlign ) {
+
+	int		l, i1, i2, s;
+
+	i1 = n;
+
+	if ( leftAlign == qtrue ) {
+		s = size * 0.75;
+
+		if (i1 < 0) {
+			i1 = -i1;
+			x += s;
+		}
+
+		i2 = i1;
+		while (i2) {
+			i2 = ( i2 - (i2 % 10) ) / 10;
+			x += s;
+		}
+
+	} else {
+		if (i1 < 0) {
+			i1 = -i1;
+		}
+	}
+
+	x -= size * 0.75; // alignment correction
+
+	// draw number
+	while (i1) {
+		i2 = i1 % 10;
+		x -= UI_DrawNumChar(x, y, size, i2, c);
+		i1 = ( i1 - i2 ) / 10;
+	}
+
+	// if negative number, then draw the minus
+	if (n < 0) {
+		UI_DrawNumChar(x, y, size, 11, c);
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

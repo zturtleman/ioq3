@@ -272,7 +272,7 @@ static void UI_SoundOptionsMenu_Init( void ) {
 	soundOptionsInfo.graphics.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	soundOptionsInfo.graphics.generic.id		= ID_GRAPHICS;
 	soundOptionsInfo.graphics.generic.callback	= UI_SoundOptionsMenu_Event;
-	soundOptionsInfo.graphics.generic.x			= 216;
+	soundOptionsInfo.graphics.generic.x			= 136;
 	soundOptionsInfo.graphics.generic.y			= 240 - 2 * PROP_HEIGHT;
 	soundOptionsInfo.graphics.string			= "GRAPHICS";
 	soundOptionsInfo.graphics.style				= UI_RIGHT;
@@ -282,7 +282,7 @@ static void UI_SoundOptionsMenu_Init( void ) {
 	soundOptionsInfo.display.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	soundOptionsInfo.display.generic.id			= ID_DISPLAY;
 	soundOptionsInfo.display.generic.callback	= UI_SoundOptionsMenu_Event;
-	soundOptionsInfo.display.generic.x			= 216;
+	soundOptionsInfo.display.generic.x			= 136;
 	soundOptionsInfo.display.generic.y			= 240 - PROP_HEIGHT;
 	soundOptionsInfo.display.string				= "DISPLAY";
 	soundOptionsInfo.display.style				= UI_RIGHT;
@@ -292,7 +292,7 @@ static void UI_SoundOptionsMenu_Init( void ) {
 	soundOptionsInfo.sound.generic.flags		= QMF_RIGHT_JUSTIFY;
 	soundOptionsInfo.sound.generic.id			= ID_SOUND;
 	soundOptionsInfo.sound.generic.callback		= UI_SoundOptionsMenu_Event;
-	soundOptionsInfo.sound.generic.x			= 216;
+	soundOptionsInfo.sound.generic.x			= 136;
 	soundOptionsInfo.sound.generic.y			= 240;
 	soundOptionsInfo.sound.string				= "SOUND";
 	soundOptionsInfo.sound.style				= UI_RIGHT;
@@ -302,7 +302,7 @@ static void UI_SoundOptionsMenu_Init( void ) {
 	soundOptionsInfo.network.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	soundOptionsInfo.network.generic.id			= ID_NETWORK;
 	soundOptionsInfo.network.generic.callback	= UI_SoundOptionsMenu_Event;
-	soundOptionsInfo.network.generic.x			= 216;
+	soundOptionsInfo.network.generic.x			= 136;
 	soundOptionsInfo.network.generic.y			= 240 + PROP_HEIGHT;
 	soundOptionsInfo.network.string				= "NETWORK";
 	soundOptionsInfo.network.style				= UI_RIGHT;

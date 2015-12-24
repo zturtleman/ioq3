@@ -142,7 +142,6 @@ static void CG_TransitionSnapshot( void ) {
 
 	// if we had a map_restart, set everthing with initial
 	if ( !cg.snap ) {
-		return;
 	}
 
 	// clear the currentValid flag for all entities in the existing snapshot
@@ -285,7 +284,7 @@ static snapshot_t *CG_ReadNextSnapshot( void ) {
 
 		// if it succeeded, return
 		if ( r ) {
-			CG_AddLagometerSnapshotInfo( dest );
+			HUD_AddLagometerSnapshotInfo( dest ); // was CG_AddLagometerSnapshotInfo( dest )
 			return dest;
 		}
 
@@ -295,7 +294,7 @@ static snapshot_t *CG_ReadNextSnapshot( void ) {
 		// buffer in the client system.
 
 		// record as a dropped packet
-		CG_AddLagometerSnapshotInfo( NULL );
+		HUD_AddLagometerSnapshotInfo( NULL ); // was CG_AddLagometerSnapshotInfo( NULL )
 
 		// If there are additional snapshots, continue trying to
 		// read them.

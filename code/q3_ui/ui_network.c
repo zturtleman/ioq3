@@ -170,7 +170,7 @@ static void UI_NetworkOptionsMenu_Init( void ) {
 	networkOptionsInfo.graphics.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	networkOptionsInfo.graphics.generic.id			= ID_GRAPHICS;
 	networkOptionsInfo.graphics.generic.callback	= UI_NetworkOptionsMenu_Event;
-	networkOptionsInfo.graphics.generic.x			= 216;
+	networkOptionsInfo.graphics.generic.x			= 136;
 	networkOptionsInfo.graphics.generic.y			= 240 - 2 * PROP_HEIGHT;
 	networkOptionsInfo.graphics.string				= "GRAPHICS";
 	networkOptionsInfo.graphics.style				= UI_RIGHT;
@@ -180,7 +180,7 @@ static void UI_NetworkOptionsMenu_Init( void ) {
 	networkOptionsInfo.display.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	networkOptionsInfo.display.generic.id			= ID_DISPLAY;
 	networkOptionsInfo.display.generic.callback		= UI_NetworkOptionsMenu_Event;
-	networkOptionsInfo.display.generic.x			= 216;
+	networkOptionsInfo.display.generic.x			= 136;
 	networkOptionsInfo.display.generic.y			= 240 - PROP_HEIGHT;
 	networkOptionsInfo.display.string				= "DISPLAY";
 	networkOptionsInfo.display.style				= UI_RIGHT;
@@ -190,7 +190,7 @@ static void UI_NetworkOptionsMenu_Init( void ) {
 	networkOptionsInfo.sound.generic.flags			= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	networkOptionsInfo.sound.generic.id				= ID_SOUND;
 	networkOptionsInfo.sound.generic.callback		= UI_NetworkOptionsMenu_Event;
-	networkOptionsInfo.sound.generic.x				= 216;
+	networkOptionsInfo.sound.generic.x				= 136;
 	networkOptionsInfo.sound.generic.y				= 240;
 	networkOptionsInfo.sound.string					= "SOUND";
 	networkOptionsInfo.sound.style					= UI_RIGHT;
@@ -200,7 +200,7 @@ static void UI_NetworkOptionsMenu_Init( void ) {
 	networkOptionsInfo.network.generic.flags		= QMF_RIGHT_JUSTIFY;
 	networkOptionsInfo.network.generic.id			= ID_NETWORK;
 	networkOptionsInfo.network.generic.callback		= UI_NetworkOptionsMenu_Event;
-	networkOptionsInfo.network.generic.x			= 216;
+	networkOptionsInfo.network.generic.x			= 136;
 	networkOptionsInfo.network.generic.y			= 240 + PROP_HEIGHT;
 	networkOptionsInfo.network.string				= "NETWORK";
 	networkOptionsInfo.network.style				= UI_RIGHT;

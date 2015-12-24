@@ -41,7 +41,7 @@ MULTIPLAYER MENU (SERVER BROWSER)
 #define MAX_LOCALSERVERS		128
 #define MAX_STATUSLENGTH		64
 #define MAX_LEAGUELENGTH		28
-#define MAX_LISTBOXWIDTH		68
+#define MAX_LISTBOXWIDTH		74 //68
 
 #define ART_BACK0				"menu/art/back_0"
 #define ART_BACK1				"menu/art/back_1"
@@ -59,28 +59,29 @@ MULTIPLAYER MENU (SERVER BROWSER)
 #define ART_UNKNOWNMAP			"menu/art/unknownmap"
 #define ART_REMOVE0				"menu/art/delete_0"
 #define ART_REMOVE1				"menu/art/delete_1"
-#define ART_PUNKBUSTER		"menu/art/pblogo"
+#define ART_PUNKBUSTER			"menu/art/pblogo"
 
-#define ID_MASTER			10
-#define ID_GAMETYPE			11
-#define ID_SORTKEY			12
-#define ID_SHOW_FULL		13
-#define ID_SHOW_EMPTY		14
-#define ID_LIST				15
-#define ID_SCROLL_UP		16
-#define ID_SCROLL_DOWN		17
-#define ID_BACK				18
-#define ID_REFRESH			19
-#define ID_SPECIFY			20
-#define ID_CREATE			21
-#define ID_CONNECT			22
-#define ID_REMOVE			23
-#define ID_PUNKBUSTER 24
+#define ID_MASTER				10
+#define ID_GAMETYPE				11
+#define ID_SORTKEY				12
+#define ID_SHOW_FULL			13
+#define ID_SHOW_EMPTY			14
+#define ID_LIST					15
+#define ID_SCROLL_UP			16
+#define ID_SCROLL_DOWN			17
+#define ID_BACK					18
+#define ID_REFRESH				19
+#define ID_SPECIFY				20
+#define ID_CREATE				21
+#define ID_CONNECT				22
+#define ID_REMOVE				23
+#define ID_PUNKBUSTER			24
+#define	ID_HIDE_OTHERS			25
 
-#define GR_LOGO				30
-#define GR_LETTERS			31
+#define GR_LOGO					30
+#define GR_LETTERS				31
 
-#define UIAS_LOCAL			0
+#define UIAS_LOCAL				0
 #define UIAS_GLOBAL1			1
 #define UIAS_GLOBAL2			2
 #define UIAS_GLOBAL3			3
@@ -90,17 +91,18 @@ MULTIPLAYER MENU (SERVER BROWSER)
 
 #define UI_MAX_MASTER_SERVERS	5
 
-#define SORT_HOST			0
-#define SORT_MAP			1
-#define SORT_CLIENTS		2
-#define SORT_GAME			3
-#define SORT_PING			4
+#define SORT_HOST				0
+#define SORT_MAP				1
+#define SORT_CLIENTS			2
+#define SORT_GAME				3
+#define SORT_PING				4
 
-#define GAMES_ALL			0
-#define GAMES_FFA			1
-#define GAMES_TEAMPLAY		2
-#define GAMES_TOURNEY		3
-#define GAMES_CTF			4
+#define GAMES_ALL				0
+#define GAMES_FFA				1
+#define GAMES_TEAMPLAY			2
+#define GAMES_TOURNEY			3
+#define GAMES_CTF				4
+#define GAMES_AA1				5
 
 static const char *master_items[] = {
 	"Local",
@@ -132,19 +134,19 @@ static const char *sortkey_items[] = {
 };
 
 static char* gamenames[] = {
-	"DM ",	// deathmatch
+	"FFA",	// deathmatch
 	"1v1",	// tournament
 	"SP ",	// single player
-	"Team DM",	// team deathmatch
+	"TDM",	// team deathmatch
 	"CTF",	// capture the flag
-	"One Flag CTF",		// one flag ctf
-	"OverLoad",				// Overload
-	"Harvester",			// Harvester
-	"Rocket Arena 3",	// Rocket Arena 3
-	"Q3F",						// Q3F
-	"Urban Terror",		// Urban Terror
-	"OSP",						// Orange Smoothie Productions
-	"???",			// unknown
+	"AA1",	// all against one
+	"OL ",	// Overload
+	"Har",	// Harvester
+	"...",
+	"...",
+	"...",
+	"...",
+	"???",	// unknown
 	NULL
 };
 
@@ -156,6 +158,7 @@ static char* netnames[] = {
 };
 
 static char quake3worldMessage[] = "Visit www.quake3world.com - News, Community, Events, Files";
+static char mmpGamesMessage[] = "Visit \"mmpgames.wordpress.com/download/mfarena\"";
 
 const char* punkbuster_items[] = {
 	"Disabled",
@@ -172,25 +175,27 @@ const char* punkbuster_msg[] = {
 };
 
 typedef struct {
-	char	adrstr[MAX_ADDRESSLENGTH];
-	int		start;
+	char		adrstr[MAX_ADDRESSLENGTH];
+	int			start;
 } pinglist_t;
 
 typedef struct servernode_s {
-	char	adrstr[MAX_ADDRESSLENGTH];
-	char	hostname[MAX_HOSTNAMELENGTH+3];
-	char	mapname[MAX_MAPNAMELENGTH];
-	int		numclients;
-	int		maxclients;
-	int		pingtime;
-	int		gametype;
-	char	gamename[12];
-	int		nettype;
-	int		minPing;
-	int		maxPing;
-	qboolean bPB;
+	char		adrstr[MAX_ADDRESSLENGTH];
+	char		hostname[MAX_HOSTNAMELENGTH+3];
+	char		mapname[MAX_MAPNAMELENGTH];
+	int			numclients;
+	int			maxclients;
+	int			pingtime;
+	int			gametype;
+	char		gamename[12];
+	int			nettype;
+	int			minPing;
+	int			maxPing;
+	char		svrInfo[128];
+	qboolean	svVerMatch;
+	qboolean	bPB; // TODO: remove punk buster check
 
-} servernode_t; 
+} servernode_t;
 
 typedef struct {
 	char			buff[MAX_LISTBOXWIDTH];
@@ -207,6 +212,7 @@ typedef struct {
 	menulist_s			sortkey;
 	menuradiobutton_s	showfull;
 	menuradiobutton_s	showempty;
+	menuradiobutton_s	hideothers;
 
 	menulist_s			list;
 	menubitmap_s		mappic;
@@ -227,9 +233,11 @@ typedef struct {
 	table_t				table[MAX_LISTBOXITEMS];
 	char*				items[MAX_LISTBOXITEMS];
 	int					numqueriedservers;
+	int					numqueriedMFAservers;
 	int					*numservers;
-	servernode_t		*serverlist;	
+	servernode_t		*serverlist;
 	int					currentping;
+	int					currentMFAping;
 	qboolean			refreshservers;
 	int					nextpingtime;
 	int					maxservers;
@@ -255,6 +263,7 @@ static int				g_gametype;
 static int				g_sortkey;
 static int				g_emptyservers;
 static int				g_fullservers;
+static int				g_hideothers;
 
 
 /*
@@ -389,7 +398,7 @@ static void ArenaServers_UpdatePicture( void ) {
 		servernodeptr = g_arenaservers.table[g_arenaservers.list.curvalue].servernode;
 		Com_sprintf( picname, sizeof(picname), "levelshots/%s.tga", servernodeptr->mapname );
 		g_arenaservers.mappic.generic.name = picname;
-	
+
 	}
 
 	// force shader update during draw
@@ -403,37 +412,43 @@ ArenaServers_UpdateMenu
 =================
 */
 static void ArenaServers_UpdateMenu( void ) {
-	int				i;
-	int				j;
-	int				count;
-	char*			buff;
+	int			i;
+	int			j;
+	int			count;
+	char*		buff;
 	servernode_t*	servernodeptr;
-	table_t*		tableptr;
-	char			*pingColor;
+	table_t*	tableptr;
+	char		*pingColor;
+	qboolean	mfaSvr;
+	int			clientCount;
+	int			svinfo_ver_yr;
+	int			svinfo_ver_sv;
 
 	if( g_arenaservers.numqueriedservers > 0 ) {
 		// servers found
 		if( g_arenaservers.refreshservers && ( g_arenaservers.currentping <= g_arenaservers.numqueriedservers ) ) {
 			// show progress
-			Com_sprintf( g_arenaservers.status.string, MAX_STATUSLENGTH, "%d of %d Arena Servers.", g_arenaservers.currentping, g_arenaservers.numqueriedservers);
+			/*Com_sprintf( g_arenaservers.status.string, MAX_STATUSLENGTH, "%d of %d Arena Servers.", g_arenaservers.currentping, g_arenaservers.numqueriedservers);*/
+			Com_sprintf( g_arenaservers.status.string, MAX_STATUSLENGTH, "...");
 			g_arenaservers.statusbar.string  = "Press SPACE to stop";
 			qsort( g_arenaservers.serverlist, *g_arenaservers.numservers, sizeof( servernode_t ), ArenaServers_Compare);
 		}
 		else {
 			// all servers pinged - enable controls
 			g_arenaservers.master.generic.flags		&= ~QMF_GRAYED;
-			g_arenaservers.gametype.generic.flags	&= ~QMF_GRAYED;
-			g_arenaservers.sortkey.generic.flags	&= ~QMF_GRAYED;
-			g_arenaservers.showempty.generic.flags	&= ~QMF_GRAYED;
-			g_arenaservers.showfull.generic.flags	&= ~QMF_GRAYED;
+			g_arenaservers.gametype.generic.flags		&= ~QMF_GRAYED;
+			g_arenaservers.sortkey.generic.flags		&= ~QMF_GRAYED;
+			g_arenaservers.showempty.generic.flags		&= ~QMF_GRAYED;
+			g_arenaservers.hideothers.generic.flags		&= ~QMF_GRAYED;
+			g_arenaservers.showfull.generic.flags		&= ~QMF_GRAYED;
 			g_arenaservers.list.generic.flags		&= ~QMF_GRAYED;
-			g_arenaservers.refresh.generic.flags	&= ~QMF_GRAYED;
+			g_arenaservers.refresh.generic.flags		&= ~QMF_GRAYED;
 			g_arenaservers.go.generic.flags			&= ~QMF_GRAYED;
-			g_arenaservers.punkbuster.generic.flags &= ~QMF_GRAYED;
+			g_arenaservers.punkbuster.generic.flags 	&= ~QMF_GRAYED;
 
 			// update status bar
 			if( g_servertype >= UIAS_GLOBAL1 && g_servertype <= UIAS_GLOBAL5 ) {
-				g_arenaservers.statusbar.string = quake3worldMessage;
+				g_arenaservers.statusbar.string = mmpGamesMessage /*quake3worldMessage*/;
 			}
 			else {
 				g_arenaservers.statusbar.string = "";
@@ -452,6 +467,7 @@ static void ArenaServers_UpdateMenu( void ) {
 			g_arenaservers.gametype.generic.flags	|= QMF_GRAYED;
 			g_arenaservers.sortkey.generic.flags	|= QMF_GRAYED;
 			g_arenaservers.showempty.generic.flags	|= QMF_GRAYED;
+			g_arenaservers.hideothers.generic.flags	|= QMF_GRAYED;
 			g_arenaservers.showfull.generic.flags	|= QMF_GRAYED;
 			g_arenaservers.list.generic.flags		|= QMF_GRAYED;
 			g_arenaservers.refresh.generic.flags	|= QMF_GRAYED;
@@ -468,7 +484,7 @@ static void ArenaServers_UpdateMenu( void ) {
 
 			// update status bar
 			if( g_servertype >= UIAS_GLOBAL1 && g_servertype <= UIAS_GLOBAL5 ) {
-				g_arenaservers.statusbar.string = quake3worldMessage;
+				g_arenaservers.statusbar.string = mmpGamesMessage /*quake3worldMessage*/;
 			}
 			else {
 				g_arenaservers.statusbar.string = "";
@@ -479,6 +495,7 @@ static void ArenaServers_UpdateMenu( void ) {
 			g_arenaservers.gametype.generic.flags	&= ~QMF_GRAYED;
 			g_arenaservers.sortkey.generic.flags	&= ~QMF_GRAYED;
 			g_arenaservers.showempty.generic.flags	&= ~QMF_GRAYED;
+			g_arenaservers.hideothers.generic.flags	&= ~QMF_GRAYED;
 			g_arenaservers.showfull.generic.flags	&= ~QMF_GRAYED;
 			g_arenaservers.list.generic.flags		|= QMF_GRAYED;
 			g_arenaservers.refresh.generic.flags	&= ~QMF_GRAYED;
@@ -513,6 +530,11 @@ static void ArenaServers_UpdateMenu( void ) {
 			continue;
 		}
 
+		// hide other (non MFA) servers
+/*		if( g_hideothers && !strlen(servernodeptr->svrInfo) ) {
+			continue;
+		}*/
+
 		switch( g_gametype ) {
 		case GAMES_ALL:
 			break;
@@ -540,28 +562,66 @@ static void ArenaServers_UpdateMenu( void ) {
 				continue;
 			}
 			break;
+
+		case GAMES_AA1:
+			if( servernodeptr->gametype != GT_AA1 ) {
+				continue;
+			}
+			break;
 		}
 
 		if( servernodeptr->pingtime < servernodeptr->minPing ) {
-			pingColor = S_COLOR_BLUE;
+			pingColor = S_COLOR_GRAY;
 		}
 		else if( servernodeptr->maxPing && servernodeptr->pingtime > servernodeptr->maxPing ) {
-			pingColor = S_COLOR_BLUE;
+			pingColor = S_COLOR_GRAY;
 		}
-		else if( servernodeptr->pingtime < 200 ) {
+		else if( servernodeptr->pingtime < SERVER_PING_GREEN ) {
 			pingColor = S_COLOR_GREEN;
 		}
-		else if( servernodeptr->pingtime < 400 ) {
+		else if( servernodeptr->pingtime < SERVER_PING_YELLOW ) {
 			pingColor = S_COLOR_YELLOW;
+		}
+		else if( servernodeptr->pingtime < SERVER_PING_AMBER ) {
+			pingColor = S_COLOR_AMBER;
 		}
 		else {
 			pingColor = S_COLOR_RED;
 		}
 
-		Com_sprintf( buff, MAX_LISTBOXWIDTH, "%-20.20s %-12.12s %2d/%2d %-8.8s %4s%s%3d " S_COLOR_YELLOW "%s", 
+		/*Com_sprintf( buff, MAX_LISTBOXWIDTH, "%-20.20s %-12.12s %2d/%2d %-8.8s %4s%s%3d " S_COLOR_YELLOW "%s",
 			servernodeptr->hostname, servernodeptr->mapname, servernodeptr->numclients,
  			servernodeptr->maxclients, servernodeptr->gamename,
-			netnames[servernodeptr->nettype], pingColor, servernodeptr->pingtime, servernodeptr->bPB ? "Yes" : "No" );
+			netnames[servernodeptr->nettype], pingColor, servernodeptr->pingtime, servernodeptr->bPB ? "Yes" : "No" );*/
+
+		// TODO: code this better
+		if ( servernodeptr->svrInfo[0] ) {
+			mfaSvr = qtrue;
+			/*Com_Printf("^8DEBUG svrInfo: \"%s\" - %s\n", servernodeptr->hostname, servernodeptr->svrInfo );*/
+			clientCount = Com_HexToByte( servernodeptr->svrInfo, INFO_POS_CLIENTCOUNT );
+
+			// TODO: allow older subversions to show up in server browser
+			svinfo_ver_yr = Com_HexToByte( servernodeptr->svrInfo, INFO_POS_VERSION_Y );
+			svinfo_ver_sv = Com_HexToByte( servernodeptr->svrInfo, INFO_POS_VERSION_S );
+			//Com_Printf("^8DEBUG svrInfo: %i.%i (to match: %i.%i)\n", svinfo_ver_yr, svinfo_ver_sv, SVINFO_VERSION_YR, SVINFO_VERSION_SV );
+			/*if (svinfo_ver_yr == INFO_POS_VERSION_Y && svinfo_ver_sv == INFO_POS_VERSION_S ) {
+				servernodeptr->mfaCurVer = qtrue;
+			} else {
+				servernodeptr->mfaCurVer = qfalse;
+				continue;
+			}*/
+			if (svinfo_ver_yr != SVINFO_VERSION_YR || svinfo_ver_sv != SVINFO_VERSION_SV ) {
+				continue;
+			}
+		} else {
+			mfaSvr = qfalse;
+			//servernodeptr->svVerMatch = qfalse;
+			clientCount = 0;
+		}
+		Com_sprintf( buff, MAX_LISTBOXWIDTH, "%-20.20s %-12.12s %2d/%2d %-8.8s %4s%s%3d %s",
+			servernodeptr->hostname, servernodeptr->mapname, clientCount,
+ 			servernodeptr->maxclients, servernodeptr->gamename,
+			netnames[servernodeptr->nettype], pingColor, servernodeptr->pingtime, mfaSvr ? S_COLOR_WHITE "MFA" : S_COLOR_RED "..." );
 		j++;
 	}
 
@@ -610,7 +670,7 @@ static void ArenaServers_Remove( void )
 			memset( &g_arenaservers.favoriteaddresses[g_arenaservers.numfavoriteaddresses], 0, MAX_ADDRESSLENGTH );
 			break;
 		}
-	}	
+	}
 
 	// find address in server list
 	for (i=0; i<g_numfavoriteservers; i++)
@@ -628,7 +688,7 @@ static void ArenaServers_Remove( void )
 			memset( &g_favoriteserverlist[ g_numfavoriteservers ], 0, sizeof(servernode_t));
 			break;
 		}
-	}	
+	}
 
 	g_arenaservers.numqueriedservers = g_arenaservers.numfavoriteaddresses;
 	g_arenaservers.currentping       = g_arenaservers.numfavoriteaddresses;
@@ -666,18 +726,19 @@ static void ArenaServers_Insert( char* adrstr, char* info, int pingtime )
 
 	Q_strncpyz( servernodeptr->hostname, Info_ValueForKey( info, "hostname"), MAX_HOSTNAMELENGTH );
 	Q_CleanStr( servernodeptr->hostname );
-	Q_strupr( servernodeptr->hostname );
+	/*Q_strupr( servernodeptr->hostname );*/
 
 	Q_strncpyz( servernodeptr->mapname, Info_ValueForKey( info, "mapname"), MAX_MAPNAMELENGTH );
 	Q_CleanStr( servernodeptr->mapname );
-	Q_strupr( servernodeptr->mapname );
+	/*Q_strupr( servernodeptr->mapname );*/
 
 	servernodeptr->numclients = atoi( Info_ValueForKey( info, "clients") );
 	servernodeptr->maxclients = atoi( Info_ValueForKey( info, "sv_maxclients") );
 	servernodeptr->pingtime   = pingtime;
 	servernodeptr->minPing    = atoi( Info_ValueForKey( info, "minPing") );
 	servernodeptr->maxPing    = atoi( Info_ValueForKey( info, "maxPing") );
-	servernodeptr->bPB = atoi( Info_ValueForKey( info, "punkbuster") );
+	Q_strncpyz( servernodeptr->svrInfo, Info_ValueForKey( info, "info"), 32 );
+	//servernodeptr->bPB = atoi( Info_ValueForKey( info, "punkbuster") );
 
 	/*
 	s = Info_ValueForKey( info, "nettype" );
@@ -784,6 +845,11 @@ void ArenaServers_LoadFavorites( void )
 		if (!adrstr[0])
 			continue;
 
+		// quick sanity check to avoid slow domain name resolving
+		// first character must be numeric
+		/*if (adrstr[0] < '0' || adrstr[0] > '9')
+			continue;*/
+
 		// favorite server addresses must be maintained outside refresh list
 		// this mimics local and global netadr's stored in client
 		// these can be fetched to fill ping list
@@ -844,9 +910,9 @@ static void ArenaServers_StopRefresh( void )
 	if (g_arenaservers.numqueriedservers >= 0)
 	{
 		g_arenaservers.currentping       = *g_arenaservers.numservers;
-		g_arenaservers.numqueriedservers = *g_arenaservers.numservers; 
+		g_arenaservers.numqueriedservers = *g_arenaservers.numservers;
 	}
-	
+
 	// sort
 	qsort( g_arenaservers.serverlist, *g_arenaservers.numservers, sizeof( servernode_t ), ArenaServers_Compare);
 
@@ -976,7 +1042,7 @@ static void ArenaServers_DoRefresh( void )
 		// get an address to ping
 
 		if (g_servertype == UIAS_FAVORITES) {
-		  strcpy( adrstr, g_arenaservers.favoriteaddresses[g_arenaservers.currentping] ); 		
+		  strcpy( adrstr, g_arenaservers.favoriteaddresses[g_arenaservers.currentping] );
 		} else {
 		  trap_LAN_GetServerAddressString(ArenaServers_SourceForLAN(), g_arenaservers.currentping, adrstr, MAX_ADDRESSLENGTH );
 		}
@@ -985,7 +1051,7 @@ static void ArenaServers_DoRefresh( void )
 		g_arenaservers.pinglist[j].start = uis.realtime;
 
 		trap_Cmd_ExecuteText( EXEC_NOW, va( "ping %s\n", adrstr )  );
-		
+
 		// advance to next server
 		g_arenaservers.currentping++;
 	}
@@ -1059,6 +1125,10 @@ static void ArenaServers_StartRefresh( void )
 		case GAMES_CTF:
 			strcpy( myargs, " ctf" );
 			break;
+
+		case GAMES_AA1:
+			strcpy( myargs, " aa1" );
+			break;
 		}
 
 
@@ -1124,14 +1194,14 @@ int ArenaServers_SetType( int type )
 	if(type >= UIAS_GLOBAL1 && type <= UIAS_GLOBAL5)
 	{
 		char masterstr[2], cvarname[sizeof("sv_master1")];
-		
+
 		while(type <= UIAS_GLOBAL5)
 		{
 			Com_sprintf(cvarname, sizeof(cvarname), "sv_master%d", type);
 			trap_Cvar_VariableStringBuffer(cvarname, masterstr, sizeof(masterstr));
 			if(*masterstr)
 				break;
-			
+
 			type++;
 		}
 	}
@@ -1173,11 +1243,11 @@ int ArenaServers_SetType( int type )
 	else {
 		// avoid slow operation, use existing results
 		g_arenaservers.currentping       = *g_arenaservers.numservers;
-		g_arenaservers.numqueriedservers = *g_arenaservers.numservers; 
+		g_arenaservers.numqueriedservers = *g_arenaservers.numservers;
 		ArenaServers_UpdateMenu();
 		strcpy(g_arenaservers.status.string,"hit refresh to update");
 	}
-	
+
 	return type;
 }
 
@@ -1188,7 +1258,7 @@ PunkBuster_Confirm
 */
 static void Punkbuster_ConfirmEnable( qboolean result ) {
 	if (result)
-	{		
+	{
 		trap_SetPbClStatus(1);
 	}
 	g_arenaservers.punkbuster.curvalue = Com_Clamp( 0, 1, trap_Cvar_VariableValue( "cl_punkbuster" ) );
@@ -1247,6 +1317,11 @@ static void ArenaServers_Event( void* ptr, int event ) {
 		ArenaServers_UpdateMenu();
 		break;
 
+	case ID_HIDE_OTHERS:
+		g_hideothers = g_arenaservers.hideothers.curvalue;
+		ArenaServers_UpdateMenu();
+		break;
+
 	case ID_LIST:
 		if( event == QM_GOTFOCUS ) {
 			ArenaServers_UpdatePicture();
@@ -1287,9 +1362,9 @@ static void ArenaServers_Event( void* ptr, int event ) {
 		ArenaServers_Remove();
 		ArenaServers_UpdateMenu();
 		break;
-	
+
 	case ID_PUNKBUSTER:
-		if (g_arenaservers.punkbuster.curvalue)			
+		if (g_arenaservers.punkbuster.curvalue)
 		{
 			UI_ConfirmMenu_Style( "Enable Punkbuster?",  UI_CENTER|UI_INVERSE|UI_SMALLFONT, 0, Punkbuster_ConfirmEnable );
 		}
@@ -1323,7 +1398,7 @@ ArenaServers_MenuKey
 */
 static sfxHandle_t ArenaServers_MenuKey( int key ) {
 	if( key == K_SPACE  && g_arenaservers.refreshservers ) {
-		ArenaServers_StopRefresh();	
+		ArenaServers_StopRefresh();
 		return menu_move_sound;
 	}
 
@@ -1420,12 +1495,22 @@ static void ArenaServers_MenuInit( void ) {
 	g_arenaservers.showempty.generic.x			= 320;
 	g_arenaservers.showempty.generic.y			= y;
 
-	y += 3 * SMALLCHAR_HEIGHT;
+	y += SMALLCHAR_HEIGHT * 2;
+	g_arenaservers.hideothers.generic.type		= MTYPE_RADIOBUTTON;
+	g_arenaservers.hideothers.generic.name		= "Hide Other Games:";
+	/*g_arenaservers.hideothers.generic.name		= "Hide Non-MFArena Games:";*/
+	g_arenaservers.hideothers.generic.flags		= QMF_PULSEIFFOCUS|QMF_SMALLFONT;
+	g_arenaservers.hideothers.generic.callback	= ArenaServers_Event;
+	g_arenaservers.hideothers.generic.id		= ID_HIDE_OTHERS;
+	g_arenaservers.hideothers.generic.x			= 320;
+	g_arenaservers.hideothers.generic.y			= y;
+
+	y += SMALLCHAR_HEIGHT;
 	g_arenaservers.list.generic.type			= MTYPE_SCROLLLIST;
 	g_arenaservers.list.generic.flags			= QMF_HIGHLIGHT_IF_FOCUS;
 	g_arenaservers.list.generic.id				= ID_LIST;
 	g_arenaservers.list.generic.callback		= ArenaServers_Event;
-	g_arenaservers.list.generic.x				= 72;
+	g_arenaservers.list.generic.x				= 8; //72;
 	g_arenaservers.list.generic.y				= y;
 	g_arenaservers.list.width					= MAX_LISTBOXWIDTH;
 	g_arenaservers.list.height					= 11;
@@ -1436,7 +1521,7 @@ static void ArenaServers_MenuInit( void ) {
 
 	g_arenaservers.mappic.generic.type			= MTYPE_BITMAP;
 	g_arenaservers.mappic.generic.flags			= QMF_LEFT_JUSTIFY|QMF_INACTIVE;
-	g_arenaservers.mappic.generic.x				= 72;
+	g_arenaservers.mappic.generic.x				= 8; //72;
 	g_arenaservers.mappic.generic.y				= 80;
 	g_arenaservers.mappic.width					= 128;
 	g_arenaservers.mappic.height				= 96;
@@ -1553,7 +1638,7 @@ static void ArenaServers_MenuInit( void ) {
 	g_arenaservers.go.height				= 64;
 	g_arenaservers.go.focuspic				= ART_CONNECT1;
 
-	g_arenaservers.punkbuster.generic.type			= MTYPE_SPINCONTROL;
+	/*g_arenaservers.punkbuster.generic.type			= MTYPE_SPINCONTROL;
 	g_arenaservers.punkbuster.generic.name			= "Punkbuster:";
 	g_arenaservers.punkbuster.generic.flags			= QMF_PULSEIFFOCUS|QMF_SMALLFONT;
 	g_arenaservers.punkbuster.generic.callback		= ArenaServers_Event;
@@ -1561,7 +1646,7 @@ static void ArenaServers_MenuInit( void ) {
 	g_arenaservers.punkbuster.generic.x				= 480+32;
 	g_arenaservers.punkbuster.generic.y				= 144;
 	g_arenaservers.punkbuster.itemnames				= punkbuster_items;
-	
+
 	g_arenaservers.pblogo.generic.type			= MTYPE_BITMAP;
 	g_arenaservers.pblogo.generic.name			= ART_PUNKBUSTER;
 	g_arenaservers.pblogo.generic.flags			= QMF_LEFT_JUSTIFY|QMF_INACTIVE;
@@ -1569,8 +1654,8 @@ static void ArenaServers_MenuInit( void ) {
 	g_arenaservers.pblogo.generic.y				= 176;
 	g_arenaservers.pblogo.width					= 32;
 	g_arenaservers.pblogo.height				= 16;
-	g_arenaservers.pblogo.errorpic				= ART_UNKNOWNMAP;
-	
+	g_arenaservers.pblogo.errorpic				= ART_UNKNOWNMAP;*/
+
 	Menu_AddItem( &g_arenaservers.menu, (void*) &g_arenaservers.banner );
 
 	Menu_AddItem( &g_arenaservers.menu, (void*) &g_arenaservers.master );
@@ -1578,6 +1663,7 @@ static void ArenaServers_MenuInit( void ) {
 	Menu_AddItem( &g_arenaservers.menu, (void*) &g_arenaservers.sortkey );
 	Menu_AddItem( &g_arenaservers.menu, (void*) &g_arenaservers.showfull);
 	Menu_AddItem( &g_arenaservers.menu, (void*) &g_arenaservers.showempty );
+	/*Menu_AddItem( &g_arenaservers.menu, (void*) &g_arenaservers.hideothers );*/
 
 	Menu_AddItem( &g_arenaservers.menu, (void*) &g_arenaservers.mappic );
 	Menu_AddItem( &g_arenaservers.menu, (void*) &g_arenaservers.status );
@@ -1594,9 +1680,9 @@ static void ArenaServers_MenuInit( void ) {
 	Menu_AddItem( &g_arenaservers.menu, (void*) &g_arenaservers.create );
 	Menu_AddItem( &g_arenaservers.menu, (void*) &g_arenaservers.go );
 
-	Menu_AddItem( &g_arenaservers.menu, (void*) &g_arenaservers.punkbuster );
-	Menu_AddItem( &g_arenaservers.menu, (void*) &g_arenaservers.pblogo );
-	
+	/*Menu_AddItem( &g_arenaservers.menu, (void*) &g_arenaservers.punkbuster );
+	Menu_AddItem( &g_arenaservers.menu, (void*) &g_arenaservers.pblogo );*/
+
 	ArenaServers_LoadFavorites();
 
 	g_arenaservers.master.curvalue = g_servertype = Com_Clamp( 0, 6, ui_browserMaster.integer );
@@ -1612,7 +1698,10 @@ static void ArenaServers_MenuInit( void ) {
 
 	g_emptyservers = Com_Clamp( 0, 1, ui_browserShowEmpty.integer );
 	g_arenaservers.showempty.curvalue = g_emptyservers;
-	
+
+	g_hideothers = 1;
+	g_arenaservers.hideothers.curvalue = g_hideothers;
+
 	g_arenaservers.punkbuster.curvalue = Com_Clamp( 0, 1, trap_Cvar_VariableValue( "cl_punkbuster" ) );
 
 	// force to initial state and refresh
@@ -1654,4 +1743,4 @@ UI_ArenaServersMenu
 void UI_ArenaServersMenu( void ) {
 	ArenaServers_MenuInit();
 	UI_PushMenu( &g_arenaservers.menu );
-}						  
+}
