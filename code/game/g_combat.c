@@ -1110,7 +1110,7 @@ int G_InvulnerabilityEffect( gentity_t *targ, vec3_t dir, vec3_t point, vec3_t i
 #endif
 /*
 ============
-T_Damage
+G_Damage
 
 targ		entity that is being damaged
 inflictor	entity that is causing the damage
@@ -1337,7 +1337,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 			&& targ->s.eType != ET_MISSILE
 			&& targ->s.eType != ET_GENERAL) {
 		if ( OnSameTeam( targ, attacker ) ) {
-			attacker->client->ps.persistant[PERS_HITS]--;
+			attacker->client->ps.persistant[PERS_HITS] -= damage;
 		} else {
 //			attacker->client->ps.persistant[PERS_HITS]++;
 			attacker->client->ps.persistant[PERS_HITS] += damage;
@@ -1440,10 +1440,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	asave = CheckArmor (targ, take, dflags);
 	take -= asave;
 
-	if ( g_debugDamage.integer ) {
-		G_Printf( "%i: client:%i health:%i damage:%i armor:%i\n", level.time, targ->s.number,
-			targ->health, take, asave );
-	}
+	//if ( g_debugDamage.integer ) {
+		G_Printf( "%i: client:%i health:%i damage:%i armor:%i ... inflictor:%i attacker:%i\n", level.time, targ->s.number,
+			targ->health, take, asave, inflictor->s.number, attacker->s.number );
+	//}
 
 	// add to the damage inflicted on a player this frame
 	// the total will be turned into screen blends and view angle kicks

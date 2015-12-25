@@ -197,45 +197,49 @@ static void CG_Obituary( entityState_t *ent ) {
 	filter = hud_notifyBoxFilter.integer & NF_FRAG;
 
 	// check for single client messages
-	switch( mod ) {
-	case MOD_NOTHING:
-		return; // don't display anything
-	case MOD_SUICIDE:
-		message = "suicides";
-		break;
-	case MOD_FALLING:
-		message = "cratered";
-		break;
-	case MOD_CRUSH:
-		message = "was squished";
-		break;
-	case MOD_WATER:
-		message = "sank like a turd";
-		break;
-	case MOD_SLIME:
-		message = "gulped a load of slime";
-		break;
-	case MOD_LAVA:
-		message = "visits the Volcano God";
-		deathIcon = cgs.media.iconSkullFlame;
-		break;
-	case MOD_TARGET_LASER:
-		message = "saw the light";
-		break;
-	case MOD_TRIGGER_HURT:
-		message = "was in the wrong place";
-		break;
-	case MOD_DRAGON_FRIED:
-		message = "was fried by a Dragon";
-		deathIcon = cgs.media.iconSkullFlame;
-		break;
-	case MOD_SHUB_NIGGURATH:
-		message = "became one with Shub-Niggurath";
-		deathIcon = cgs.media.iconSkullTele;
-		break;
-	default:
+	if(attacker != ENTITYNUM_WORLD)
 		message = NULL;
-		break;
+	else {
+		switch( mod ) {
+		case MOD_NOTHING:
+			return; // don't display anything
+		case MOD_SUICIDE:
+			message = "suicides";
+			break;
+		case MOD_FALLING:
+			message = "cratered";
+			break;
+		case MOD_CRUSH:
+			message = "was squished";
+			break;
+		case MOD_WATER:
+			message = "sank like a turd";
+			break;
+		case MOD_SLIME:
+			message = "gulped a load of slime";
+			break;
+		case MOD_LAVA:
+			message = "visits the Volcano God";
+			deathIcon = cgs.media.iconSkullFlame;
+			break;
+		case MOD_TARGET_LASER:
+			message = "saw the light";
+			break;
+		case MOD_TRIGGER_HURT:
+			message = "was in the wrong place";
+			break;
+		case MOD_DRAGON_FRIED:
+			message = "was fried by a Dragon";
+			deathIcon = cgs.media.iconSkullFlame;
+			break;
+		case MOD_SHUB_NIGGURATH:
+			message = "became one with Shub-Niggurath";
+			deathIcon = cgs.media.iconSkullTele;
+			break;
+		/*default:
+			message = NULL;
+			break;*/
+		}
 	}
 
 	if (attacker == target) {
@@ -442,7 +446,7 @@ static void CG_Obituary( entityState_t *ent ) {
 			break;
 		case MOD_CRUSH:
 			message = "was crushed by";
-			deathIcon = cgs.media.iconSkullTele;
+			/*deathIcon = cgs.media.iconSkullTele;*/
 			break;
 		default:
 			message = "was killed by";
