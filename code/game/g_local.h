@@ -709,6 +709,10 @@ typedef struct {
 	// mmp - server maintenance
 	int				lastActiveTime;
 
+	// mmp - in team games, there must be at least 2 players on each team
+	int				teamSizesOK; // 0 == ok
+	qboolean		teamSizeNagQueue; // qtrue == announce when all ppl ready up
+
 	// was cf_mode and cf_nextthink
 
 //unlagged - backward reconciliation #4
@@ -717,6 +721,17 @@ typedef struct {
 //unlagged - backward reconciliation #4
 
 } level_locals_t;
+
+
+// team sizes ok messages
+typedef enum {
+	TSOK_OK,
+	TSOK_MORE_RED_PLAYERS,
+	TSOK_MORE_BLUE_PLAYERS,
+	TSOK_MORE_PLAYERS,
+	TSOK_NEED_ANOTHER_PLAYER,
+	TSOK_MAX
+} teamSizeOK_t;
 
 
 // stats from clients
@@ -1102,7 +1117,8 @@ extern	vmCvar_t	g_friendlyFire;
 extern	vmCvar_t	g_teamLocOverlay;
 extern	vmCvar_t	g_hitSound;
 extern	vmCvar_t	g_scoreBalance;
-extern	vmCvar_t	g_teamSize;
+extern	vmCvar_t	g_teamSize;				// max team size
+extern	vmCvar_t	g_teamSizeQuota;		// required team size
 extern	vmCvar_t	g_playersLocOverlay;
 
 extern	vmCvar_t	g_password;

@@ -269,6 +269,9 @@ static void CG_Obituary( entityState_t *ent ) {
 			message = "discharged the lightning gun";
 			deathIcon = cg_weapons[WP_LIGHTNING].weaponIcon;
 			break;
+		case MOD_CRUSH:
+			message = "was crushed";
+			break;
 		default:
 			message = "becomes bored with life";
 			break;

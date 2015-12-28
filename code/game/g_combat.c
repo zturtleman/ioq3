@@ -1124,7 +1124,7 @@ knockback	force to be applied against targ as a result of the damage
 
 inflictor, attacker, dir, and point can be NULL for environmental effects
 
-dflags		these flags are used to control how T_Damage works
+dflags		these flags are used to control how G_Damage works
 	DAMAGE_RADIUS			damage was indirect (from a nearby explosion)
 	DAMAGE_NO_ARMOR			armor does not protect from this damage
 	DAMAGE_NO_KNOCKBACK		do not affect velocity, just view angles
@@ -1440,10 +1440,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	asave = CheckArmor (targ, take, dflags);
 	take -= asave;
 
-	//if ( g_debugDamage.integer ) {
+	if ( g_debugDamage.integer ) {
 		G_Printf( "%i: client:%i health:%i damage:%i armor:%i ... inflictor:%i attacker:%i\n", level.time, targ->s.number,
 			targ->health, take, asave, inflictor->s.number, attacker->s.number );
-	//}
+	}
 
 	// add to the damage inflicted on a player this frame
 	// the total will be turned into screen blends and view angle kicks

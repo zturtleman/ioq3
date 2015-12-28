@@ -57,6 +57,7 @@ vmCvar_t	g_teamLocOverlay;
 vmCvar_t	g_hitSound;
 vmCvar_t	g_scoreBalance;
 vmCvar_t	g_teamSize;
+vmCvar_t	g_teamSizeQuota;
 vmCvar_t	g_playersLocOverlay;
 
 vmCvar_t	g_password;
@@ -206,6 +207,7 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_hitSound, "g_hitSound", "1", CVAR_RULESET | CVAR_ARCHIVE, 0, qfalse  },
 	{ &g_scoreBalance, "g_scoreBalance", "1", CVAR_RULESET | CVAR_ARCHIVE, 0, qfalse  },
 	{ &g_teamSize, "g_teamSize", "0", CVAR_RULESET | CVAR_ARCHIVE, 0, qfalse  },
+	{ &g_teamSizeQuota, "g_teamSizeQuota", "2", CVAR_RULESET | CVAR_ARCHIVE, 0, qfalse  },
 	{ &g_playersLocOverlay, "g_playersLocOverlay", "0", CVAR_RULESET /*| CVAR_CHEAT*/, 0, qfalse  }, // just a cheat
 
 	{ &g_speed, "g_speed", "400", CVAR_RULESET | CVAR_CHEAT, 0, qtrue  }, // mmp - is 320 in vq3
@@ -3845,21 +3847,6 @@ void CheckExitRules( void ) {
 
 	}
 
-	// check for sudden death
-	/*if ( ScoreIsTied() ) {
-		// always wait for sudden death
-		return;
-	}
-
-	if ( timelimit && !level.warmupTime ) {
-		if ( level.time - level.startTime >= timelimit*60000 ) {
-			//trap_SendServerCommand( -1, "print \"Timelimit hit.\n\"");
-			trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_YELLOW "Timelimit hit.\n\"", NF_GAMEINFO) );
-			LogExit( "Timelimit hit." );
-			return;
-		}
-	}*/
-
 	// tdm scorelimit
 	if ( g_gametype.integer == GT_TEAM ) {
 
@@ -4019,6 +4006,39 @@ void CheckExitRules( void ) {
 }
 
 
+/*
+=============
+announceInvalidTeam
+
+Announce to clients why team match has not started
+=============
+*/
+void announceInvalidTeam( int reason ) {
+
+	if ( g_gametype.integer < GT_TEAM ) {
+		return;
+	}
+
+	// TODO: code this better
+	switch (reason) {
+		case TSOK_MORE_RED_PLAYERS:
+			trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_RED "RED" S_COLOR_YELLOW " team needs more players.\n\"", NF_ERROR) );
+			break;
+		case TSOK_MORE_BLUE_PLAYERS:
+			trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_BLUE "BLUE" S_COLOR_YELLOW " team needs more players.\n\"", NF_ERROR) );
+			break;
+		case TSOK_MORE_PLAYERS:
+			trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_YELLOW "Teams need more players.\n\"", NF_ERROR) );
+			break;
+		case TSOK_NEED_ANOTHER_PLAYER:
+			trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_YELLOW "Match needs another player.\n\"", NF_ERROR) );
+			break;
+	}
+
+	level.teamSizeNagQueue = qfalse;
+
+}
+
 
 /*
 ========================================================================
@@ -4102,17 +4122,36 @@ void CheckTournament( void ) {
 		}
 
 	} else if ( g_gametype.integer != GT_SINGLE_PLAYER && level.warmupTime != 0 ) {
-		int		counts[TEAM_NUM_TEAMS];
+		int			counts[TEAM_NUM_TEAMS];
 		qboolean	notEnough = qfalse;
 		int 		i;
-		int		clientsReady = 0;
+		int			clientsReady = 0;
+		int			teamQuota;
+		qboolean	teamsAllReady = qfalse; // display a message if team size quota is not meet
 
 		if ( g_gametype.integer >= GT_TEAM ) {
 			counts[TEAM_BLUE] = TeamCount( -1, TEAM_BLUE );
 			counts[TEAM_RED] = TeamCount( -1, TEAM_RED );
+			level.teamSizesOK = TSOK_OK;
 
-			if (counts[TEAM_RED] < 1 || counts[TEAM_BLUE] < 1) {
+			// set the minimum player required to start a match
+			teamQuota = g_teamSizeQuota.integer;
+			if ( teamQuota < 1 ) {
+				if ( g_teamSize.integer > 0 ) {
+					teamQuota = g_teamSize.integer;
+				} else {
+					teamQuota = 2;
+				}
+			}
+
+			if (counts[TEAM_RED] < teamQuota || counts[TEAM_BLUE] < teamQuota) {
 				notEnough = qtrue;
+				if ( counts[TEAM_RED] < teamQuota ) {
+					level.teamSizesOK |= TSOK_MORE_RED_PLAYERS; // |= 1
+				}
+				if ( counts[TEAM_BLUE] < teamQuota ) {
+					level.teamSizesOK |= TSOK_MORE_BLUE_PLAYERS; // |= 2
+				}
 			}
 
 		} else if ( level.numPlayingClients < 2 ) {
@@ -4120,7 +4159,7 @@ void CheckTournament( void ) {
 		}
 
 		// check to see if all players are ready to exit warmup
-		if( level.rs_warmup /*g_doWarmup.integer*/ ){
+		if( level.rs_warmup ){
 
 			// are we not forcing warmup to end?
 			if ( level.endWarmup == qfalse ) {
@@ -4132,6 +4171,9 @@ void CheckTournament( void ) {
 
 				if (clientsReady < level.numPlayingClients) {
 					notEnough = qtrue;
+					level.teamSizeNagQueue = qtrue;
+				} else {
+					teamsAllReady = qtrue;
 				}
 
 			}
@@ -4144,13 +4186,16 @@ void CheckTournament( void ) {
 				level.warmupTime = -1;
 				trap_SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
 				G_LogPrintf( "Warmup:\n" );
+
+				level.teamSizeNagQueue = qtrue;
 			}
+
+			if ( level.rs_warmup && teamsAllReady == qtrue && level.teamSizeNagQueue == qtrue ) {
+				announceInvalidTeam( level.teamSizesOK );
+			}
+
 			return; // still waiting for team members
 		}
-
-		/*trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_YELLOW "TEST.\n\"", NF_ERROR) );
-		G_UnreadyPlayers(); // unready players
-		*/
 
 		if ( level.warmupTime == 0 ) {
 			return;
