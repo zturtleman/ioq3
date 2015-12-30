@@ -1088,6 +1088,22 @@ Only in One Flag CTF games
 /* sounds */ ""
 	},
 
+/*QUAKED obj_bomb (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
+*/
+	{
+		"obj_bomb",
+		"sound/items/flaggrab.wav",
+		{ "models/objective/obj_bomb.md3",
+		NULL, NULL, NULL},
+/* icon */		"icons/iconi_bomb",
+/* pickup */	"Bomb",
+		0,
+		IT_TEAM,
+		PW_BOMB,
+/* precache */ "",
+/* sounds */ ""
+	},
+
 // --------------------------
 
 	// end of list marker
@@ -1703,6 +1719,9 @@ char *eventnames[] = {
 	"EV_TAUNT_PATROL",
 
 	"EV_LAVA"					// swimming in lava
+
+	"EV_BOMB_PLACE",
+	"EV_BOMB_EXPLODE",
 
 };
 

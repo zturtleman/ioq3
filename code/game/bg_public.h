@@ -62,6 +62,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	HEALTH_DECAY_TIME	5
 
+#define	BOMB_DETONATE_TIME	15000
+#define	BOMB_DEFUSE_TIME	5000
+
 //
 // config strings are a general means of communicating variable length strings
 // from the server to all connected clients.
@@ -366,6 +369,8 @@ typedef enum {
 	PW_AMMOREGEN, // to be removed
 	PW_INVULNERABILITY, // to be removed
 
+	PW_BOMB,
+
 	PW_NUM_POWERUPS
 
 } powerup_t;
@@ -614,7 +619,12 @@ typedef enum {
 	EV_TAUNT_FOLLOWME,
 	EV_TAUNT_GETFLAG,
 	EV_TAUNT_GUARDBASE,
-	EV_TAUNT_PATROL
+	EV_TAUNT_PATROL,
+
+	EV_LAVA,
+
+	EV_BOMB_PLACE,			// mmp
+	EV_BOMB_EXPLODE			// mmp
 
 } entity_event_t;
 
@@ -633,6 +643,7 @@ typedef enum {
 	GTS_REDTEAM_TOOK_LEAD,
 	GTS_BLUETEAM_TOOK_LEAD,
 	GTS_TEAMS_ARE_TIED,
+	GTS_BOMB_PLACED,
 	GTS_KAMIKAZE
 } global_team_sound_t;
 
@@ -776,6 +787,7 @@ typedef enum {
 	MOD_DRAGON_FRIED,
 	MOD_SHUB_NIGGURATH,
 	MOD_INSTAGIBBED,
+	MOD_BOMBED,
 	MOD_NOTHING // will not display a frag message
 } meansOfDeath_t;
 
@@ -789,7 +801,7 @@ typedef enum {
 	IT_AMMO,				// EFX: rotate
 	IT_ARMOR,				// EFX: rotate + minlight
 	IT_HEALTH,				// EFX: static external sphere + rotating internal
-	IT_POWERUP,				// instant on, timer based
+	IT_POWERUP,				// instant on, timer based, objective
 							// EFX: rotate + external ring that rotates
 	IT_HOLDABLE,			// single use, holdable item
 							// EFX: rotate + bob

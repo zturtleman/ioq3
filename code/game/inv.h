@@ -91,6 +91,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define INVENTORY_SUPER_SHOTGUN			62
 #define INVENTORY_SPREADSHOT			63
 #define INVENTORY_ROCKETS_SMALL			64
+#define INVENTORY_BOMB					65
 //enemy stuff
 #define ENEMY_HORIZONTAL_DIST			200
 #define ENEMY_HEIGHT					201
@@ -194,6 +195,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define MODELINDEX_SUPER_SHOTGUN		65
 #define MODELINDEX_SPREADSHOT			66
+
+#define MODELINDEX_BOMB					67
 
 
 //
