@@ -1472,6 +1472,11 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 			}
 		}
 #endif
+		// bomb pick up
+		if ( item->giTag == PW_BOMB ) {
+			return qtrue;
+		}
+
 		if( gametype == GT_CTF ) {
 			// ent->modelindex2 is non-zero on items if they are dropped
 			// we need to know this because we can pick up our dropped flag (and return it)

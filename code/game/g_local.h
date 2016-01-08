@@ -317,12 +317,6 @@ typedef struct {
 	qboolean		ready;				// player is ready to exit warmup, and start the match
 	int				vote;				// vote
 
-	/*
-	qboolean		mute;				// player is muted from chatting and voting
-	qboolean		suspended;			// player is suspended from the game, and forced to spectate
-	int				demerits;			// if a player gets too many, they will be suspended from the game
-	*/
-
 	// mmp - player stats
 	int				kills;
 	int				teamKills;
@@ -330,13 +324,6 @@ typedef struct {
 	int				suicides;
 	int				captures;
 	int				killStreak;
-
-	// mmp - aimbot detection
-	/*int			ab_prevAngle;
-	int				ab_prevAngleRate;
-	int				ab_meter;
-	int				ab_buttonMeter;
-	int				ab_warning;*/
 
 	// mmp - spam detection
 	int 			spamCount;
@@ -493,6 +480,11 @@ struct gclient_s {
 	char			*areabits;
 
 //	char			*lastDrop;
+
+	// mmp - player status items
+	int				burnStatusTime; // burn status until set time
+	int				medkitRegenTime; // medkit usage until set time
+
 };
 
 

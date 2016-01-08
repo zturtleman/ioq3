@@ -867,10 +867,6 @@ void Touch_DoorTrigger( gentity_t *ent, gentity_t *other, trace_t *trace ) {
 			Touch_DoorTriggerSpectator( ent, other, trace );
 		}
 	}
-	// mmp
-	/*else if ( ent->parent->keycard ) {
-		Use_BinaryMover( ent->parent, ent, other );
-	}*/
 	else if ( ent->parent->moverState != MOVER_1TO2 ) {
 		Use_BinaryMover( ent->parent, ent, other );
 	}

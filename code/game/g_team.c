@@ -814,11 +814,24 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	return 0; // Do not respawn this automatically
 }
 
+// bomb touch
+int Team_TouchBomb( gentity_t *ent, gentity_t *other, int team ) {
+	gclient_t *cl = other->client;
+
+	PrintMsg (NULL, "%s%s" S_COLOR_WHITE " got the bomb!\n",
+		ShortTeamName(other->client->sess.sessionTeam), other->client->pers.netname, TeamName(team));
+
+	cl->ps.powerups[PW_BOMB] = INT_MAX;
+
+	return -1;
+
+}
+
 int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 	gclient_t *cl = other->client;
 
 	// no scoring after the match has ended
-	if ( /*level.matchEnded == qtrue*/ level.intermissionQueued ) {
+	if ( level.intermissionQueued ) {
 		return -1;
 	}
 
@@ -877,6 +890,11 @@ int Pickup_Team( gentity_t *ent, gentity_t *other ) {
 		return 0;
 	}
 #endif
+	// bomb pick up
+	if( strcmp(ent->classname, "obj_bomb") == 0 ) {
+		return Team_TouchBomb( ent, other, cl->sess.sessionTeam );
+	}
+
 	// figure out what team this flag is
 	if( strcmp(ent->classname, "team_CTF_redflag") == 0 ) {
 		team = TEAM_RED;

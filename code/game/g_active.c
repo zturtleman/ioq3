@@ -429,7 +429,7 @@ void ClientHealthDecayTimer( gentity_t *ent, int msec ) {
 	gclient_t	*client;
 	int			msecRate;
 
-	// if weapon mdoe set to "all weapons and max ammo", then don't decay health
+	// if weapon mode set to "all weapons and max ammo", then don't decay health
 	if ( level.rs_matchMode == MM_ALLWEAPONS_MAXAMMO ) {
 		return;
 	}
@@ -488,6 +488,19 @@ void ClientHealthRegenTimer( gentity_t *ent, int msec ) {
 				ent->health++;
 			}
 		}
+
+}
+
+/*
+==================
+ClientStatusActions
+
+
+==================
+*/
+
+void ClientStatusActions( gentity_t *ent, int msec ) {
+
 
 }
 
