@@ -2295,8 +2295,16 @@ void CG_SuperShotgunPattern( vec3_t origin, vec3_t origin2, int seed, int otherE
 
 	// generate the "random" spread pattern
 	for ( i = 0 ; i < DEFAULT_SHOTGUN_COUNT ; i++ ) {
-		r = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;
-		u = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;
+		if (i) {
+			r = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;
+			u = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;
+		} else {
+			// one pelet will always shoot straight
+			r = 0;
+			u = 0;
+		}
+		/*r = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;
+		u = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;*/
 		VectorMA( origin, 8192 * 16, forward, end);
 		VectorMA (end, r, right, end);
 		VectorMA (end, u, up, end);

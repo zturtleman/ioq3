@@ -352,30 +352,7 @@ qboolean ShotgunPellet( vec3_t start, vec3_t end, gentity_t *ent, int damage, qb
 
 		if ( traceEnt->takedamage) {
 			//damage = DEFAULT_SHOTGUN_DAMAGE * s_quadFactor * GetDamageLevel( ent );
-/*
-#ifdef MISSIONPACK
-			if ( traceEnt->client && traceEnt->client->invulnerabilityTime > level.time ) {
-				if (G_InvulnerabilityEffect( traceEnt, forward, tr.endpos, impactpoint, bouncedir )) {
-					G_BounceProjectile( tr_start, impactpoint, bouncedir, tr_end );
-					VectorCopy( impactpoint, tr_start );
-					// the player can hit him/herself with the bounced rail
-					passent = ENTITYNUM_NONE;
-				}
-				else {
-					VectorCopy( tr.endpos, tr_start );
-					passent = traceEnt->s.number;
-				}
-				continue;
-			}
-			else {
-				G_Damage( traceEnt, ent, ent, forward, tr.endpos,
-					damage, 0, MOD_SHOTGUN);
-				if( LogAccuracyHit( traceEnt, ent ) ) {
-					return qtrue;
-				}
-			}
-#else
-*/
+
 			if ( superSG == qtrue ) {
 				G_Damage( traceEnt, ent, ent, forward, tr.endpos,	damage, 0, MOD_SUPER_SHOTGUN);
 					if( LogAccuracyHit( traceEnt, ent ) ) {
@@ -386,9 +363,7 @@ qboolean ShotgunPellet( vec3_t start, vec3_t end, gentity_t *ent, int damage, qb
 				if( LogAccuracyHit( traceEnt, ent ) ) {
 					return qtrue;
 				}
-/*
-#endif
-*/
+
 		}
 		return qfalse;
 	}
@@ -479,8 +454,14 @@ void SuperShotgunPattern( vec3_t origin, vec3_t origin2, int seed, gentity_t *en
 	// generate the "random" spread pattern
 	damage = DEFAULT_SHOTGUN_DAMAGE_HI * s_quadFactor * GetDamageLevel( ent );
 	for ( i = 0 ; i < DEFAULT_SHOTGUN_COUNT ; i++ ) {
-		r = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;
-		u = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;
+		if (i) {
+			r = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;
+			u = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;
+		} else {
+			// one pelet will always shoot straight
+			r = 0;
+			u = 0;
+		}
 		VectorMA( origin, 8192 * 16, forward, end);
 		VectorMA (end, r, right, end);
 		VectorMA (end, u, up, end);
