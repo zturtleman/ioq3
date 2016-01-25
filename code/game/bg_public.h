@@ -47,7 +47,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // mmp - was 300/700
 
 #define	ITEM_RADIUS			15		// item sizes are needed for client side pickup detection
-#define ITEM_HEIGHT			30		// 30 == MFA, 24 == VQW-like, 0 == VQ3
+//#define ITEM_HEIGHT			30		// 30 == MFA, 24 == VQW-like, 0 == VQ3
+#define ITEM_RANGE_HEIGHT	66
+#define ITEM_RANGE_RADIUS	48
 
 #define	LIGHTNING_RANGE		768
 

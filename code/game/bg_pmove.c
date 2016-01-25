@@ -1932,7 +1932,7 @@ static void PM_Weapon( void ) {
 		addTime = 600 / GAME_SPEED_MULTIPLIER; // is 1000 in vq3
 		break;
 	case WP_SUPER_SHOTGUN:
-		addTime = 1000 / GAME_SPEED_MULTIPLIER;
+		addTime = 1250 / GAME_SPEED_MULTIPLIER; // was 1000
 		break;
 	case WP_GRENADE_LAUNCHER:
 		addTime = 800 / GAME_SPEED_MULTIPLIER;
