@@ -66,7 +66,7 @@ void Weapon_Blaster_Fire (gentity_t *ent) {
 	m = fire_blaster (ent, muzzle, forward);
 	m->damage *= s_quadFactor * GetDamageLevel( ent );
 	// determine if blaster is charged
-	if ( level.time > ( ent->client->lastBlasterShot + BLASTER_CHARGE_UP ) ) {
+	if ( level.time > ( ent->client->lastBlasterShot + BLASTER_CHARGE_UP ) && !level.rs_quadMode ) {
 		extDmg = 1.0 + ((level.time - ( ent->client->lastBlasterShot + BLASTER_CHARGE_UP )) * BLASTER_CHARGE_RATE);
 		if ( extDmg > 2.5 )
 			extDmg = 2.5;
