@@ -885,7 +885,7 @@ void G_TimeCompulsionUpdate (void) {
 				}
 
 				// don't delay respawns in tournament
-				if ( g_gametype.integer == GT_TOURNAMENT ) {
+				if ( g_gametype.integer != GT_TOURNAMENT ) {
 					if ( level.c_spawnDelay < 3300 ) {
 						level.c_spawnDelay += 150;
 					}
