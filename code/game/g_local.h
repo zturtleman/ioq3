@@ -700,6 +700,7 @@ typedef struct {
 
 	// mmp - server maintenance
 	int				lastActiveTime;
+	qboolean		forcedTimeLimit; // value set if match/warmup dragged on for too long (which could be that no one is on the server)
 
 	// mmp - in team games, there must be at least 2 players on each team
 	int				teamSizesOK; // 0 == ok

@@ -2938,7 +2938,7 @@ void ExitLevel (void) {
 	if ( serviceRun == qfalse ) {
 
 		// the tournament gametype just restarts the map
-		if ( g_gametype.integer == GT_TOURNAMENT ) {
+		if ( g_gametype.integer == GT_TOURNAMENT && level.forcedTimeLimit == qfalse ) {
 			if ( !level.restarted ) {
 				//RemoveTournamentLoser();
 				trap_SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
@@ -3746,6 +3746,7 @@ void CheckExitRules( void ) {
 		trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_RED "Forced timelimit reached.  Match went on for too long!\n\"", NF_GAMEINFO) );
 		trap_SendServerCommand( -1, va("sndCall \"%i\"", SC_TIMELIMIT ) );
 		LogExit( "Forced timelimit." );
+		level.forcedTimeLimit = qtrue;
 		return;
 	}
 
