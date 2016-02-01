@@ -61,8 +61,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define PRODUCT_VERSION		"151108.h" //"1.36"
 #endif
 
-#define SVINFO_VERSION_YR	15
-#define SVINFO_VERSION_SV	2
+#define SVINFO_VERSION_YR	16
+#define SVINFO_VERSION_SV	0
 
 #define Q3_VERSION PRODUCT_NAME " " PRODUCT_VERSION
 
