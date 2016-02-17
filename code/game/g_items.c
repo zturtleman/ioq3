@@ -1130,7 +1130,13 @@ void FinishSpawningItem( gentity_t *ent ) {
 		ent->s.eFlags |= EF_NODRAW;
 		ent->r.contents = 0;
 //		ent->nextthink = level.time + respawn * 1000;
-		ent->nextthink = level.time + 30 * 1000;
+		if ( ent->item->giTag == PW_QUAD ) {
+			ent->nextthink = level.time + RESPAWN_QUAD * 1000;
+		} else if ( ent->item->giTag == PW_PENT ) {
+			ent->nextthink = level.time + RESPAWN_PENT * 1000;
+		} else {
+			ent->nextthink = level.time + 30 * 1000; // spawn item in 30 seconds
+		}
 		ent->think = RespawnItem;
 		return;
 	}
