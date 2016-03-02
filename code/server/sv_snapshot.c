@@ -428,6 +428,23 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 
 /*
 =============
+SV_Intermission
+=============
+*/
+qboolean SV_Intermission( void ) {
+	char value[10];
+
+	SV_GetConfigstring( CS_INTERMISSION, value, sizeof ( value ) );
+
+	if ( value[0] == '1' ) {
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
+/*
+=============
 SV_BuildClientSnapshot
 
 Decides which entities are going to be visible to the client, and
@@ -471,6 +488,46 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 
 	// grab the current playerState_t
 	ps = SV_GameClientNum( client - svs.clients );
+
+	// connected during intermission and view cam hasn't changed positions yet
+	// FIXME?: there is a delay before intermission starts so this gets run for connected players too
+	if ( client->state == CS_ACTIVE && ps->pm_type != PM_INTERMISSION && SV_Intermission() ) {
+		playerState_t *viewcam;
+
+		// find a player that was already connected that is at viewcam position
+		// update the game PS instead of just the frame PS in case player at view cam pos quits and reconnects
+		for ( i = 0; i < sv_maxclients->integer; i++ ) {
+			if ( svs.clients[i].state != CS_ACTIVE ) {
+				continue;
+			}
+
+			viewcam = SV_GameClientNum( i );
+
+			if ( viewcam->pm_type != PM_INTERMISSION ) {
+				continue;
+			}
+
+			// Base on baseq3 game's MoveClientToIntermission
+			VectorCopy( viewcam->origin, clent->s.origin );
+			VectorCopy( viewcam->origin, ps->origin );
+			VectorCopy( viewcam->viewangles, ps->viewangles );
+			ps->pm_type = PM_INTERMISSION;
+
+			ps->eFlags = 0;
+			clent->s.eFlags = 0;
+			clent->s.eType = ET_GENERAL;
+			clent->s.modelindex = 0;
+			clent->s.loopSound = 0;
+			clent->s.event = 0;
+			clent->r.contents = 0;
+
+			// clients that are already in game have clientNum set but not if join during intermission
+			// (ClientSpawn not called if join during intermission?)
+			ps->clientNum = (int)(client - svs.clients);
+			break;
+		}
+	}
+
 	frame->ps = *ps;
 
 	// never send client's own entity, because it can
