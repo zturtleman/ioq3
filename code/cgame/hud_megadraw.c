@@ -642,12 +642,16 @@ void HUD_MegaDrawUPS( int xpos, int xoff, int ypos, int posLock, int align, int 
 		return;
 	}
 
+	// only show UPS during warmup, this is not warsow
+	if ( !cg.warmup ) {
+		return;
+	}
+
 	cent = &cg_entities[cg.snap->ps.clientNum];
 	ps = &cg.snap->ps;
 
-	// only show UPS during warmup, this is not warsow
 	// also, showing the UPS with the default physics is pointless
-	if ( !cg.warmup || ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS ) {
+	if ( ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS ) {
 		return;
 	}
 

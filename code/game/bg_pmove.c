@@ -49,7 +49,6 @@ float	pm_spectatorfriction = 5.0f * GAME_SPEED_MULTIPLIER;
 float	pm_ladderfriction = 3000; // friction is high enough so you don't slip down
 
 int		c_pmove = 0;
-int		physicsMode = 1; // <-- remove
 
 float	pm_alt_swimScale = 0.75f;
 
@@ -214,7 +213,7 @@ static void PM_Friction( void ) {
 			if ( ! (pm->ps->pm_flags & PMF_TIME_KNOCKBACK) ) {
 				control = speed < pm_stopspeed ? pm_stopspeed : speed;
 				if ( (pm->ps->persistant[PERS_MISC] & PMSC_PHYSICS_SELECTION) ||
-						(pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) /*physicsMode*/ )
+						(pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) )
 					drop += control*pm_friction*pml.frametime;
 				else
 					drop += control*pm_alt_friction*pml.frametime;
@@ -261,20 +260,6 @@ Handles user intended acceleration
 ==============
 */
 static void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel ) {
-
-	// qw style
-/*	float addspeed, accelspeed, currentspeed;
-
-	currentspeed = DotProduct (pm->ps->velocity, wishdir);
-	addspeed = wishspeed - currentspeed;
-	if (addspeed <= 0)
-		return;
-	accelspeed = accel * pml.frametime * wishspeed;
-	if (accelspeed > addspeed)
-		accelspeed = addspeed;
-
-	VectorMA(pm->ps->velocity, accelspeed, wishdir, pm->ps->velocity);
-*/
 
 	// vq3 - q2 style
 	int			i;
@@ -331,11 +316,13 @@ static void PM_RestrictedAccelerate( vec3_t wishdir, float wishspeed, float acce
 
 	// FIXME - this is a hackish fix, until better code is made
 	//
-	//         holding any direction AND jump will slow the player down
+	// FIXME - holding any direction AND jump will slow the player down
 	//         which becomes slower than normal runnning speed
 	//
-	//         holding any direction while in the air faster than 400ups
+	// FIXME - holding any direction while in the air faster than 400ups
 	//         will slow you down, bad for accel pads  :(
+
+	// UPDATE - may not even need this acceleration routine - MMP
 
 	// without this, jumps would be shortened
 	// note, that movement in the air, still feels wrong
@@ -418,6 +405,39 @@ static float PM_CmdScale( usercmd_t *cmd ) {
 	return scale;
 }
 
+/*
+============
+PM_CmdScaleAlt
+
+Returns the scale factor to apply to cmd movements
+This allows the clients to use axial -127 to 127 values for all directions
+without getting a sqrt(2) distortion in speed.
+
+This removes the decreased accelation when jump is held
+============
+*/
+static float PM_CmdScaleAlt( usercmd_t *cmd ) {
+	int		max;
+	float	total;
+	float	scale;
+
+	max = abs( cmd->forwardmove );
+	if ( abs( cmd->rightmove ) > max ) {
+		max = abs( cmd->rightmove );
+	}
+	if ( !max ) {
+		return 0;
+	}
+	//Com_Printf("^6max = %i\n", max); // debug
+
+	total = sqrt( cmd->forwardmove * cmd->forwardmove
+		+ cmd->rightmove * cmd->rightmove );
+	//Com_Printf("^6total = %1.1f\n", total); // debug
+	scale = (float)pm->ps->speed * max / ( 127.0 * total );
+
+	return scale;
+}
+
 
 /*
 ================
@@ -493,7 +513,7 @@ static qboolean PM_CheckJump( void ) {
 
 	// jump physics
 	if ( (pm->ps->persistant[PERS_MISC] & PMSC_PHYSICS_SELECTION) ||
-			(pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) /*physicsMode*/) {
+			(pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) ) {
 		// vq3 style jumping
 		pm->ps->velocity[2] = JUMP_VELOCITY;
 	} else {
@@ -781,8 +801,15 @@ static void PM_AirMove( void ) {
 	fmove = pm->cmd.forwardmove;
 	smove = pm->cmd.rightmove;
 
+	// reduce effectiveness of the accelation exploit (?) (to be confirmed)
 	cmd = pm->cmd;
-	scale = PM_CmdScale( &cmd );
+
+	if ( (pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) ) {
+		scale = PM_CmdScaleAlt( &cmd );
+	} else {
+		scale = PM_CmdScale( &cmd );
+	}
+	//Com_Printf("^6scale = %1.1f\n", scale); // debug
 
 	// set the movementDir so clients can rotate the legs for strafing
 	PM_SetMovementDir();
@@ -800,7 +827,6 @@ static void PM_AirMove( void ) {
 
 	VectorCopy (wishvel, wishdir);
 	wishspeed = VectorNormalize(wishdir);
-	wishspeed *= scale;
 
 	// dir ref:
 	// 107
@@ -809,11 +835,21 @@ static void PM_AirMove( void ) {
 
 	if ( (pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) ) {
 
+		/*if ( scale > 1 ) {
+			scale = (scale * 0.25) + 0.75; // test - mmp
+		}
+		wishspeed *= scale;*/
+
+		wishspeed *= ( ( scale * scale ) / 6 );
+
 		// not on ground, so little effect on velocity (with restriction)
-		PM_RestrictedAccelerate (wishdir, wishspeed, pm_airaccelerate);
+		//PM_RestrictedAccelerate (wishdir, wishspeed, pm_airaccelerate);
+		PM_Accelerate (wishdir, wishspeed, pm_airaccelerate);
 
 	} else {
-		if ( (pm->ps->persistant[PERS_MISC] & PMSC_PHYSICS_SELECTION) /*physicsMode == 1*/) {
+		wishspeed *= scale;
+
+		if ( (pm->ps->persistant[PERS_MISC] & PMSC_PHYSICS_SELECTION) ) {
 
 			// not on ground, so little effect on velocity
 			PM_Accelerate (wishdir, wishspeed, pm_airaccelerate);
@@ -1337,6 +1373,7 @@ PM_GroundTrace
 static void PM_GroundTrace( void ) {
 	vec3_t		point;
 	trace_t		trace;
+	int			i;
 
 	point[0] = pm->ps->origin[0];
 	point[1] = pm->ps->origin[1];
@@ -1409,6 +1446,11 @@ static void PM_GroundTrace( void ) {
 		}
 
 		PM_CrashLand();
+		if ( (pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) ) {
+			for (i=0 ; i<3 ; i++) {
+				pm->ps->velocity[i] *= 0.75; // discourage strafe jumping attempts
+			}
+		}
 
 		// don't do landing time if we were just going down a slope
 		if ( pml.previous_velocity[2] < -200 ) {
