@@ -1370,15 +1370,9 @@ void ClientBegin( int clientNum ) {
 						level.rs_timelimit, level.rs_overtime, level.rs_scorelimit,
 						level.rs_teamLocOverlay, level.rs_hitSound ) );*/
 
-	// FIXME: mmp - i don't believe this is needed anymore
-	// send overtime report, for new client
-	if ( level.overtime > 0 ) {
-		trap_SetConfigstring( CS_OVERTIME, va("%i", level.overtime ) );
-	}
-	// send round report, for new client
-	if ( level.currentRound > 0 ) {
-		trap_SetConfigstring( CS_ROUND, va("%i", level.currentRound ) );
-	}
+	// send overtime and round report, for new or transitioning client
+	trap_SetConfigstring( CS_OVERTIME, va("%i", level.overtime ) );
+	trap_SetConfigstring( CS_ROUND, va("%i", level.currentRound ) );
 
 	// count current clients and rank for scoreboard
 	CalculateRanks();

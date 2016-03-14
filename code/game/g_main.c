@@ -3810,7 +3810,7 @@ void CheckExitRules( void ) {
 					if ( ScoreIsTooFarApart() ) {
 						trap_SendServerCommand( -1, va("sndCall \"%i\"", SC_TIMELIMIT ) );
 						/*trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_YELLOW "Timelimit hit, runner-up was not close enough to the leader.\n\"", NF_GAMEINFO) );*/
-						trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_YELLOW "Timelimit hit, too much of a gap in scores.\n\"", NF_GAMEINFO) );
+						trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_YELLOW "Timelimit hit, too much of a gap in scores to advance.\n\"", NF_GAMEINFO) );
 						LogExit( "Timelimit hit." );
 						return;
 					} else {
