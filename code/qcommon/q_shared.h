@@ -405,6 +405,7 @@ typedef enum {
 
 // g_info extended bit flags
 #define	INFO_BIT_SHORTGAME				0x0001
+#define	INFO_BIT_ROUND_BASED_MATCHES	0x0002
 
 
 // disconnection info

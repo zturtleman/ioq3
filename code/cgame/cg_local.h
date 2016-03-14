@@ -1248,6 +1248,7 @@ typedef struct {
 	int				ruleSet;
 
 	float			timelimit;
+	float			fullTimelimit;
 	int				overtime;
 	int				scorelimit;
 	int				mercylimit;
@@ -1275,6 +1276,7 @@ typedef struct {
 	int				popCTF;
 
 	int				shortGame;
+	int				roundBasedMatches;
 
 	int				teamSize;
 
@@ -1282,6 +1284,7 @@ typedef struct {
 
 	//
 	int				overtimeSets;
+	int				currentRound; // 0 = 1st round, 1 = 2nd round
 
 	char			mapname[MAX_QPATH];
 	char			mapdispname[MAX_QPATH];
@@ -1593,6 +1596,17 @@ extern	vmCvar_t		hud_briefScore_colorEnemy;
 extern	vmCvar_t		hud_briefScore_colorRed;
 extern	vmCvar_t		hud_briefScore_colorBlue;
 extern	vmCvar_t		hud_briefScore_colorNum;
+
+extern	vmCvar_t		hud_matchInfo_show;
+extern	vmCvar_t		hud_matchInfo_align;
+extern	vmCvar_t		hud_matchInfo_style;
+extern	vmCvar_t		hud_matchInfo_posLock;
+extern	vmCvar_t		hud_matchInfo_xPos;
+extern	vmCvar_t		hud_matchInfo_xAlign;
+extern	vmCvar_t		hud_matchInfo_yPos;
+extern	vmCvar_t		hud_matchInfo_xScale;
+extern	vmCvar_t		hud_matchInfo_yScale;
+extern	vmCvar_t		hud_matchInfo_color;
 
 extern	vmCvar_t		hud_gameMap_show;
 extern	vmCvar_t		hud_gameMap_align;

@@ -2855,6 +2855,12 @@ vvvvvvvvvvvvvvvvvvvvv
 						hud_briefScore_xScale.value, hud_briefScore_yScale.value,
 						hud_briefScore_colorNum.string );
 
+				HUD_MegaDrawMatchInfo( hud_matchInfo_xPos.integer, alignTable[hud_matchInfo_xAlign.integer & 3],
+							hud_matchInfo_yPos.integer, hud_matchInfo_posLock.integer,
+							hud_matchInfo_align.integer, hud_matchInfo_style.integer,
+							hud_matchInfo_xScale.value, hud_matchInfo_yScale.value,
+							hud_matchInfo_color.string );
+
 				HUD_MegaDrawUPS( hud_ups_xPos.integer, alignTable[hud_ups_xAlign.integer & 3],
 							hud_ups_yPos.integer, hud_ups_posLock.integer,
 							hud_ups_align.integer, hud_ups_style.integer,

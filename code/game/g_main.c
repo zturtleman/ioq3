@@ -132,6 +132,7 @@ vmCvar_t	g_powerUps;
 vmCvar_t	g_armor;
 vmCvar_t	g_allowGhost;
 vmCvar_t	g_shortGame;
+vmCvar_t	g_roundBasedMatches;
 
 vmCvar_t	g_iUnderstandBotsAreBroken; // mmp
 
@@ -310,6 +311,7 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_armor, "g_armor", "1", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // enable/disable armor spawns
 	{ &g_allowGhost, "g_allowGhost", "0", 0, 0, qtrue }, // incomplete, please don't abuse, or it'll become cheat protected
 	{ &g_shortGame, "g_shortGame", "0", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // halves timelimit by half
+	{ &g_roundBasedMatches, "g_roundBasedMatches", "1", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // enables 3 round matches, 1r = normal, 2r = losing player must have half of leader, 3r = overtime
 
 	{ &g_iUnderstandBotsAreBroken, "iUnderstandBotsAreBroken", "0", CVAR_ARCHIVE, 0, qtrue }, // server admin understands bots are broken, and really wants them in a server
 
@@ -1038,6 +1040,8 @@ void G_InfoUpdate ( void ) {
 	value = 0;
 	if ( g_shortGame.integer )
 		value |= INFO_BIT_SHORTGAME;
+	if ( level.rs_roundBasedMatches )
+		value |= INFO_BIT_ROUND_BASED_MATCHES;
 
 	Q_strcat ( afterString, sizeof(afterString), Com_ByteToHex( value ) ); // only the lowest 8 bits are read in Com_ByteToHex()
 	Q_strcat ( afterString, sizeof(afterString), Com_ByteToHex( value >> 8 ) );
@@ -1300,14 +1304,24 @@ void G_RuleSetUpdate ( void ) {
 	level.updateRuleset = qfalse; // we are now updating the ruleset
 	level.forcefullyUpdateRuleset = qfalse; // likewise
 
+	if ( g_ruleset.integer > 0 && g_ruleset.integer < 5 ) {
+		level.rulesetEnforced = qtrue;
+
+		level.rs_armor = 1;
+
+		if ( g_gametype.integer == GT_FFA || g_gametype.integer == GT_AA1 ) {
+			level.rs_roundBasedMatches = 0;
+		} else {
+			level.rs_roundBasedMatches = 1;
+		}
+	}
+
 	switch ( g_ruleset.integer ) {
 		case 1:
 			/*level.rs_speed = 400;
 			level.rs_gravity = 1000;
 			level.rs_knockback = 1250;
 			level.rs_quadFactor = 4;*/
-
-			level.rulesetEnforced = qtrue;
 
 			level.rs_teamLocOverlay = 1;
 			level.rs_hitSound = 0;
@@ -1326,7 +1340,6 @@ void G_RuleSetUpdate ( void ) {
 			level.rs_enemyAttackLevel = 0.5;
 
 			level.rs_matchMode = MM_PICKUP_ONCE;
-			level.rs_armor = 1;
 
 			if ( g_gametype.integer == GT_TOURNAMENT ) {
 				level.rs_timelimit = 10;
@@ -1388,12 +1401,6 @@ void G_RuleSetUpdate ( void ) {
 			break;
 
 		case 2:
-			/*level.rs_speed = 400;
-			level.rs_gravity = 1000;
-			level.rs_knockback = 1250;
-			level.rs_quadFactor = 4;*/
-
-			level.rulesetEnforced = qtrue;
 
 			level.rs_teamLocOverlay = 0;
 			level.rs_hitSound = 0;
@@ -1412,7 +1419,6 @@ void G_RuleSetUpdate ( void ) {
 			level.rs_enemyAttackLevel = 0.5;
 
 			level.rs_matchMode = MM_PICKUP_ALWAYS;
-			level.rs_armor = 1;
 
 			if ( g_gametype.integer == GT_TOURNAMENT ) {
 				level.rs_timelimit = 10;
@@ -1474,12 +1480,6 @@ void G_RuleSetUpdate ( void ) {
 			break;
 
 		case 3:
-			/*level.rs_speed = 400;
-			level.rs_gravity = 1000;
-			level.rs_knockback = 1250;
-			level.rs_quadFactor = 4;*/
-
-			level.rulesetEnforced = qtrue;
 
 			level.rs_teamLocOverlay = 0;
 			level.rs_hitSound = 0;
@@ -1498,7 +1498,6 @@ void G_RuleSetUpdate ( void ) {
 			level.rs_enemyAttackLevel = 1.0;
 
 			level.rs_matchMode = MM_PICKUP_ALWAYS;
-			level.rs_armor = 1;
 
 			if ( g_gametype.integer == GT_TOURNAMENT ) {
 				level.rs_timelimit = 10;
@@ -1560,7 +1559,6 @@ void G_RuleSetUpdate ( void ) {
 			break;
 
 		case 4:
-			level.rulesetEnforced = qtrue;
 
 			level.rs_teamLocOverlay = 1;
 			level.rs_hitSound = 0;
@@ -1579,7 +1577,6 @@ void G_RuleSetUpdate ( void ) {
 			level.rs_enemyAttackLevel = 0.5;
 
 			level.rs_matchMode = MM_ALLWEAPONS;
-			level.rs_armor = 1;
 
 			if ( g_gametype.integer == GT_TOURNAMENT ) {
 				level.rs_timelimit = 10;
@@ -1670,6 +1667,12 @@ void G_RuleSetUpdate ( void ) {
 			level.rs_enemyAttackLevel = g_enemyAttackLevel.value;
 			level.rs_powerUps = g_powerUps.integer;
 			level.rs_armor = g_armor.integer;
+
+			if ( g_gametype.integer == GT_FFA || g_gametype.integer == GT_AA1 ) {
+				level.rs_roundBasedMatches = 0;
+			} else {
+				level.rs_roundBasedMatches = g_roundBasedMatches.integer;
+			}
 
 			level.rs_warmup = g_warmup.integer;
 			if ( level.rs_warmup == 1 ) {
@@ -3674,6 +3677,40 @@ qboolean ScoreIsTied( void ) {
 }
 
 /*
+=============
+ScoreIsTooFarApart
+=============
+*/
+qboolean ScoreIsTooFarApart( void ) {
+	int		a, b, c;
+
+	if ( level.numPlayingClients < 2 ) {
+		return qtrue;
+	}
+
+	if ( g_gametype.integer >= GT_TEAM ) {
+		a = level.teamScores[TEAM_RED];
+		b = level.teamScores[TEAM_BLUE];
+	} else {
+		a = level.clients[level.sortedClients[0]].ps.persistant[PERS_SCORE];
+		b = level.clients[level.sortedClients[1]].ps.persistant[PERS_SCORE];
+	}
+
+	// advance the round if player/team is only 4 points behind
+	c = a - b;
+	if ( c < 5 && c > -5 )
+		return qfalse;
+
+	// if trailing player/team does not have at least half of the leader's score, end the round
+	if ( a > ( b * 2 ) )
+		return qtrue;
+	if ( b > ( a * 2 ) )
+		return qtrue;
+
+	return qfalse;
+}
+
+/*
 =================
 CheckExitRules
 
@@ -3759,6 +3796,37 @@ void CheckExitRules( void ) {
 		trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_YELLOW "Match disqualified, due to ruleset modification.\n\"", NF_GAMEINFO) );
 		trap_SendServerCommand( -1, va("sndCall \"%i\"", SC_TIMELIMIT ) );
 		LogExit( "Match disqualified." );
+	}
+
+	// round based matches
+	if ( timelimit ) {
+
+		if ( level.rs_roundBasedMatches ) {
+
+			if ( level.currentRound == 0 ) {
+
+				if ( level.time - level.startTime >= timelimit*30000 ) {
+
+					if ( ScoreIsTooFarApart() ) {
+						trap_SendServerCommand( -1, va("sndCall \"%i\"", SC_TIMELIMIT ) );
+						/*trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_YELLOW "Timelimit hit, runner-up was not close enough to the leader.\n\"", NF_GAMEINFO) );*/
+						trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_YELLOW "Timelimit hit, too much of a gap in scores.\n\"", NF_GAMEINFO) );
+						LogExit( "Timelimit hit." );
+						return;
+					} else {
+						trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_YELLOW "Advancing to the second round.\n\"", NF_GAMEINFO) );
+						level.currentRound = 1; // second round
+						trap_SendServerCommand( -1, va("sndCall \"%i\"", SC_OVERTIME ) );
+						trap_SetConfigstring( CS_ROUND, va("%i", level.currentRound ) );
+						G_LogPrintf( "Round advance.\n" );
+						return;
+					}
+
+				}
+
+			}
+
+		}
 	}
 
 	if ( overtime > 0 ) {

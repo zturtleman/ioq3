@@ -497,12 +497,21 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 	*/
 
 	if ( !cg.warmup ) {
+		float	curTimelimit;
+
+		// adjust timelimit info based on round number and overtime
+		if ( cgs.roundBasedMatches ) {
+			curTimelimit = ( cgs.timelimit * ( cgs.currentRound + 1 ) ) + ( cgs.overtimeSets * cgs.overtime );
+		} else {
+			curTimelimit = cgs.fullTimelimit + ( cgs.overtimeSets * cgs.overtime );
+		}
+
 		if ( cgs.timelimit > 1 ) {
 			int		msec;
 
 			msec = cg.time - cgs.levelStartTime;
 			// one minute notice
-			if ( !cg.timelimitWarnings && msec > (cgs.timelimit - 1) * 60000 ) {
+			if ( !cg.timelimitWarnings && msec > (curTimelimit - 1) * 60000 && msec < (curTimelimit * 60000) - 30000 ) {
 				CG_Printf( "One minute remaining.\n");
 				filter = hud_notifyBoxFilter.integer & NF_GAMEINFO;
 				CG_AddToHUDInfo ( hud_notifyBoxRoute.integer, "One minute remaining.", 0, 0 );
@@ -516,7 +525,7 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 			int		sec, limit, tickpos;
 
 			sec = (cg.time - cgs.levelStartTime) / 1000;
-			limit = (cgs.timelimit + cgs.overtimeSets * cgs.overtime) * 60;
+			limit = curTimelimit * 60;
 			// play sfx within 1 through 10 seconds left, every second
 			if ( sec > (limit - 11) && sec < limit ) {
 				tickpos = limit - sec;

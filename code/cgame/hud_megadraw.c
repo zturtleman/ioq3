@@ -570,7 +570,11 @@ void HUD_MegaDrawDigitTimer( int xpos, int xoff, int ypos, int posLock, int alig
 	style = HUD_FuncStyleSet ( align, style );
 
 	msec = cg.time - cgs.levelStartTime;
-	timeLimit = (cgs.timelimit + (cgs.overtimeSets * cgs.overtime)) * 60000;
+	if ( cgs.roundBasedMatches ) {
+		timeLimit = ((cgs.timelimit * ( cgs.currentRound + 1 )) + (cgs.overtimeSets * cgs.overtime)) * 60000;
+	} else {
+		timeLimit = (cgs.timelimit + (cgs.overtimeSets * cgs.overtime)) * 60000;
+	}
 
 	if (timeLimit && !cg.warmup) {
 		// count down
@@ -753,6 +757,48 @@ void HUD_MegaDrawBriefScoreGrad( int xpos, int xoff, int ypos, int posLock, int 
 				0.0625, 0.0, 0.9375, 1.0, cgs.media.hudGradRCurve );
 
 }
+
+
+/*
+=================
+HUD_MegaDrawMatchInfo
+=================
+*/
+void HUD_MegaDrawMatchInfo( int xpos, int xoff, int ypos, int posLock, int align, int style,
+						float scaleX, float scaleY, const char* colorStr ) {
+
+	char        *s;
+	vec_t       *vel;
+	centity_t	*cent;
+	playerState_t	*ps;
+
+	vec4_t		color;
+
+	if ( !hud_matchInfo_show.integer ) {
+		return;
+	}
+
+	HUD_FuncColorGet ( colorStr, color );
+
+	style = HUD_FuncStyleSet ( align, style );
+
+	if ( cg.warmup ) {
+		s = va( "WARMUP" );
+	} else if ( cgs.overtimeSets ) {
+		s = va( "OVERTIME" );
+	} else {
+		if ( cgs.roundBasedMatches ) {
+			s = va( "ROUND %i", cgs.currentRound + 1 );
+		} else {
+			s = va( "SINGLE ROUND" );
+		}
+	}
+
+	//UI_DrawCustomProportionalString( xpos, ypos, s, style, scale, color, qfalse );
+	HUD_FuncPosLock( s, posLock, xpos, xoff, ypos, 16, style, scaleX, scaleY, color, qfalse );
+
+}
+
 
 /*
 =================
@@ -3976,7 +4022,7 @@ static void HUD_MegaRuleSet( int xpos, int ypos, float scale ) {
 	if (cgs.timelimit) {
 		s = "TIME LIMIT:";
 		UI_DrawCustomProportionalString( xst, y, s, UI_DROPSHADOW, 0.5 * scale, colorLAmber, qfalse );
-		HUD_MegaRuleSet_ValueStats( xend, y, scale, cgs.timelimit, "minute", color);
+		HUD_MegaRuleSet_ValueStats( xend, y, scale, cgs.fullTimelimit, "minute", color); // TODO: add seconds from timelimit
 		y += 8 * scale;
 		if (cgs.overtime) {
 			s = "OVERTIME:";

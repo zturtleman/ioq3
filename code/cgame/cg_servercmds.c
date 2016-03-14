@@ -234,13 +234,24 @@ void CG_ParseServerinfo( void ) {
 	cgs.armor = CG_BitOutput( bitFlags, INFO_BIT_ARMOR );
 	cgs.popCTF = CG_BitOutput( bitFlags, INFO_BIT_POPCTF );
 
+	// ext'd bit flags
 	bitFlags = ( Com_HexToByte( svrInfo, INFO_POS_BITFLAGSEXT_HI ) << 8 ) | Com_HexToByte( svrInfo, INFO_POS_BITFLAGSEXT_LO ) ;
 	cgs.shortGame = CG_BitOutput( bitFlags, INFO_BIT_SHORTGAME );
+	cgs.roundBasedMatches = CG_BitOutput( bitFlags, INFO_BIT_ROUND_BASED_MATCHES );
 
 	cgs.teamSize = Com_HexToByte( svrInfo, INFO_POS_TEAMSIZE );
 
+	// shorten the timelimit by half
 	if (cgs.shortGame)
 		cgs.timelimit = cgs.timelimit / 2;
+
+	cgs.fullTimelimit = cgs.timelimit; // copy timelimit, so when a match is divided in rounds, the total time for a match can be displayed
+
+	// split the timelimit for 2 rounds
+	if (cgs.roundBasedMatches && cgs.gametype != GT_FFA && cgs.gametype != GT_AA1)
+		cgs.timelimit = cgs.timelimit / 2;
+
+	//Com_Printf( S_COLOR_ORANGE "DEBUG: %i\n", cgs.roundBasedMatches);
 
 /*	cgs.scorelimit = ( Com_HexToByte( svrInfo, INFO_POS_SCORELIMIT_HI ) << 8 ) | Com_HexToByte( svrInfo, INFO_POS_SCORELIMIT_LO ) ;*/
 
@@ -466,6 +477,10 @@ static void CG_ConfigStringModified( void ) {
 		// update overtime
 		cgs.overtimeSets = atoi( str );
 	}
+	else if ( num == CS_ROUND ) {
+		// update overtime
+		cgs.currentRound = atoi( str );
+	}
 
 }
 
@@ -491,6 +506,9 @@ void CG_ParseSndCall( int sndCode ) {
 			break;
 		case SC_OVERTIME:
 			trap_S_StartLocalSound( cgs.media.overtime, CHAN_ANNOUNCER );
+			// reset timelimit based alerts
+			cg.timelimitWarnings = 0;
+			cg.timelimitTicks = 0;
 			break;
 		case SC_EXPLOSION:
 			trap_S_StartLocalSound( cgs.media.sfx_rockexp, CHAN_ANNOUNCER );
@@ -1785,7 +1803,7 @@ static void CG_EndStats ( void ) {
 			Com_Printf( "  MATCH MODE: WTF???\n" );
 	}
 
-	CG_PrintValueStats("TIME LIMIT", cgs.timelimit, " minute");
+	CG_PrintValueStats("TIME LIMIT", cgs.fullTimelimit, " minute");
 	if ( cgs.timelimit > 0 ) {
 		if ( cgs.overtime > 1 ) {
 			Com_Printf( "  OVERTIME: Extension of %i minutes\n", cgs.overtime );

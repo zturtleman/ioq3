@@ -1375,6 +1375,10 @@ void ClientBegin( int clientNum ) {
 	if ( level.overtime > 0 ) {
 		trap_SetConfigstring( CS_OVERTIME, va("%i", level.overtime ) );
 	}
+	// send round report, for new client
+	if ( level.currentRound > 0 ) {
+		trap_SetConfigstring( CS_ROUND, va("%i", level.currentRound ) );
+	}
 
 	// count current clients and rank for scoreboard
 	CalculateRanks();

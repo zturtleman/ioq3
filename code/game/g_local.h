@@ -576,6 +576,9 @@ typedef struct {
 	qboolean		pastTimelimit;
 	int				overtime;
 
+	// round based variables
+	int				currentRound;
+
 	// allowed vote options
 	/*int			allowedVotes;*/
 
@@ -650,6 +653,7 @@ typedef struct {
 	int				rs_powerUps;
 	int				rs_armor;
 	int				rs_popCTF;
+	int				rs_roundBasedMatches; // enables 3 round matches, 1r = normal, 2r = losing player must have half of leader, 3r = overtime
 
 	// not really rulesets, but correctly applies the right value for each cvar
 	int				rs_warmup;
@@ -1176,6 +1180,7 @@ extern	vmCvar_t	g_powerUps;
 extern	vmCvar_t	g_armor;
 extern	vmCvar_t	g_allowGhost;
 extern	vmCvar_t	g_shortGame;
+extern	vmCvar_t	g_roundBasedMatches;
 
 extern	vmCvar_t	g_iUnderstandBotsAreBroken; // mmp
 

@@ -278,6 +278,17 @@ vmCvar_t	hud_briefScore_colorRed;
 vmCvar_t	hud_briefScore_colorBlue;
 vmCvar_t	hud_briefScore_colorNum;
 
+vmCvar_t	hud_matchInfo_show;
+vmCvar_t	hud_matchInfo_align;
+vmCvar_t	hud_matchInfo_style;
+vmCvar_t	hud_matchInfo_posLock;
+vmCvar_t	hud_matchInfo_xPos;
+vmCvar_t	hud_matchInfo_xAlign;
+vmCvar_t	hud_matchInfo_yPos;
+vmCvar_t	hud_matchInfo_xScale;
+vmCvar_t	hud_matchInfo_yScale;
+vmCvar_t	hud_matchInfo_color;
+
 vmCvar_t	hud_gameMap_show;
 vmCvar_t	hud_gameMap_align;
 vmCvar_t	hud_gameMap_style;
@@ -828,6 +839,17 @@ static cvarTable_t cvarTable[] = {
 	{ &hud_briefScore_colorRed, "hud_briefScore_colorRed", "FF0000FF", CVAR_ARCHIVE},
 	{ &hud_briefScore_colorBlue, "hud_briefScore_colorBlue", "0000FFFF", CVAR_ARCHIVE},
 	{ &hud_briefScore_colorNum, "hud_briefScore_colorNum", "FFFFFFFF", CVAR_ARCHIVE},
+
+	{ &hud_matchInfo_show, "hud_matchInfo_show", "1", CVAR_ARCHIVE},
+	{ &hud_matchInfo_align, "hud_matchInfo_align", "0", CVAR_ARCHIVE},
+	{ &hud_matchInfo_style, "hud_matchInfo_style", "1", CVAR_ARCHIVE},
+	{ &hud_matchInfo_posLock, "hud_matchInfo_posLock", "3", CVAR_ARCHIVE},
+	{ &hud_matchInfo_xPos, "hud_matchInfo_xPos", "0", CVAR_ARCHIVE},
+	{ &hud_matchInfo_xAlign, "hud_matchInfo_xAlign", "0", CVAR_ARCHIVE},
+	{ &hud_matchInfo_yPos, "hud_matchInfo_yPos", "0", CVAR_ARCHIVE},
+	{ &hud_matchInfo_xScale, "hud_matchInfo_xScale", "0.5", CVAR_ARCHIVE},
+	{ &hud_matchInfo_yScale, "hud_matchInfo_yScale", "0.5", CVAR_ARCHIVE},
+	{ &hud_matchInfo_color, "hud_matchInfo_color", "FFFFFFFF", CVAR_ARCHIVE},
 
 	{ &hud_gameMap_show, "hud_gameMap_show", "1", CVAR_ARCHIVE},
 	{ &hud_gameMap_align, "hud_gameMap_align", "0", CVAR_ARCHIVE},
