@@ -132,7 +132,7 @@ vmCvar_t	g_powerUps;
 vmCvar_t	g_armor;
 vmCvar_t	g_allowGhost;
 vmCvar_t	g_shortGame;
-vmCvar_t	g_roundBasedMatches;
+vmCvar_t	g_roundFormat;
 
 vmCvar_t	g_iUnderstandBotsAreBroken; // mmp
 
@@ -311,7 +311,7 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_armor, "g_armor", "1", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // enable/disable armor spawns
 	{ &g_allowGhost, "g_allowGhost", "0", 0, 0, qtrue }, // incomplete, please don't abuse, or it'll become cheat protected
 	{ &g_shortGame, "g_shortGame", "0", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // halves timelimit by half
-	{ &g_roundBasedMatches, "g_roundBasedMatches", "1", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // enables 3 round matches, 1r = normal, 2r = losing player must have half of leader, 3r = overtime
+	{ &g_roundFormat, "g_roundFormat", "1", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // enables 3 round matches, 1r = normal, 2r = losing player must have half of leader, 3r = overtime
 
 	{ &g_iUnderstandBotsAreBroken, "iUnderstandBotsAreBroken", "0", CVAR_ARCHIVE, 0, qtrue }, // server admin understands bots are broken, and really wants them in a server
 
@@ -1040,7 +1040,7 @@ void G_InfoUpdate ( void ) {
 	value = 0;
 	if ( g_shortGame.integer )
 		value |= INFO_BIT_SHORTGAME;
-	if ( level.rs_roundBasedMatches )
+	if ( level.rs_roundFormat )
 		value |= INFO_BIT_ROUND_BASED_MATCHES;
 
 	Q_strcat ( afterString, sizeof(afterString), Com_ByteToHex( value ) ); // only the lowest 8 bits are read in Com_ByteToHex()
@@ -1304,15 +1304,22 @@ void G_RuleSetUpdate ( void ) {
 	level.updateRuleset = qfalse; // we are now updating the ruleset
 	level.forcefullyUpdateRuleset = qfalse; // likewise
 
-	if ( g_ruleset.integer > 0 && g_ruleset.integer < 5 ) {
+	if ( g_ruleset.integer > RSET_CUSTOM && g_ruleset.integer < RSET_MAX_RULESET ) {
 		level.rulesetEnforced = qtrue;
 
 		level.rs_armor = 1;
 
-		if ( g_gametype.integer == GT_FFA || g_gametype.integer == GT_AA1 ) {
-			level.rs_roundBasedMatches = 0;
-		} else {
-			level.rs_roundBasedMatches = 1;
+		switch ( g_gametype.integer ) {
+
+			case GT_TOURNAMENT:
+			case GT_TEAM:
+			case GT_CTF:
+				level.rs_roundFormat = 1;
+				break;
+
+			default:
+				level.rs_roundFormat = 0;
+
 		}
 	}
 
@@ -1343,7 +1350,7 @@ void G_RuleSetUpdate ( void ) {
 
 			if ( g_gametype.integer == GT_TOURNAMENT ) {
 				level.rs_timelimit = 10;
-				level.rs_mercylimit = 20;
+				level.rs_mercylimit = 0; //20;
 				level.rs_overtime = 2;
 				level.rs_scorelimit = 0;
 				level.rs_friendlyFire = 1;
@@ -1366,7 +1373,7 @@ void G_RuleSetUpdate ( void ) {
 			} else if ( g_gametype.integer == GT_TEAM ) {
 				G_TeamSizeRuleSet();
 
-				level.rs_mercylimit = 50;
+				level.rs_mercylimit = 0; //50;
 				level.rs_overtime = 2;
 				level.rs_scorelimit = 0;
 				level.rs_friendlyFire = 1;
@@ -1379,7 +1386,7 @@ void G_RuleSetUpdate ( void ) {
 
 				level.rs_mercylimit = 0;
 				level.rs_overtime = 2;
-				level.rs_scorelimit = 1000;
+				level.rs_scorelimit = 0; //1000;
 				level.rs_friendlyFire = 1;
 				level.rs_weaponRespawn = 0;
 				level.rs_forceRespawn = 10;
@@ -1422,7 +1429,7 @@ void G_RuleSetUpdate ( void ) {
 
 			if ( g_gametype.integer == GT_TOURNAMENT ) {
 				level.rs_timelimit = 10;
-				level.rs_mercylimit = 20;
+				level.rs_mercylimit = 0; //20;
 				level.rs_overtime = 2;
 				level.rs_scorelimit = 0;
 				level.rs_friendlyFire = 1;
@@ -1445,7 +1452,7 @@ void G_RuleSetUpdate ( void ) {
 			} else if ( g_gametype.integer == GT_TEAM ) {
 				G_TeamSizeRuleSet();
 
-				level.rs_mercylimit = 50;
+				level.rs_mercylimit = 0; //50;
 				level.rs_overtime = 2;
 				level.rs_scorelimit = 0;
 				level.rs_friendlyFire = 1;
@@ -1456,7 +1463,7 @@ void G_RuleSetUpdate ( void ) {
 			} else if ( g_gametype.integer == GT_CTF ) {
 				G_TeamSizeRuleSet();
 
-				level.rs_mercylimit = 1000;
+				level.rs_mercylimit = 0; //1000;
 				level.rs_overtime = 2;
 				level.rs_scorelimit = 0;
 				level.rs_friendlyFire = 1;
@@ -1501,7 +1508,7 @@ void G_RuleSetUpdate ( void ) {
 
 			if ( g_gametype.integer == GT_TOURNAMENT ) {
 				level.rs_timelimit = 10;
-				level.rs_mercylimit = 20;
+				level.rs_mercylimit = 0; //20;
 				level.rs_overtime = 2;
 				level.rs_scorelimit = 0;
 				level.rs_friendlyFire = 1;
@@ -1524,7 +1531,7 @@ void G_RuleSetUpdate ( void ) {
 			} else if ( g_gametype.integer == GT_TEAM ) {
 				G_TeamSizeRuleSet();
 
-				level.rs_mercylimit = 50;
+				level.rs_mercylimit = 0; //50;
 				level.rs_overtime = 2;
 				level.rs_scorelimit = 0;
 				level.rs_friendlyFire = 1;
@@ -1535,7 +1542,7 @@ void G_RuleSetUpdate ( void ) {
 			} else if ( g_gametype.integer == GT_CTF ) {
 				G_TeamSizeRuleSet();
 
-				level.rs_mercylimit = 1000;
+				level.rs_mercylimit = 0; //1000;
 				level.rs_overtime = 2;
 				level.rs_scorelimit = 0;
 				level.rs_friendlyFire = 1;
@@ -1580,7 +1587,7 @@ void G_RuleSetUpdate ( void ) {
 
 			if ( g_gametype.integer == GT_TOURNAMENT ) {
 				level.rs_timelimit = 10;
-				level.rs_mercylimit = 20;
+				level.rs_mercylimit = 0; //20;
 				level.rs_overtime = 2;
 				level.rs_scorelimit = 0;
 				level.rs_friendlyFire = 0;
@@ -1603,7 +1610,7 @@ void G_RuleSetUpdate ( void ) {
 			} else if ( g_gametype.integer == GT_TEAM ) {
 				G_TeamSizeRuleSet();
 
-				level.rs_mercylimit = 50;
+				level.rs_mercylimit = 0; //50;
 				level.rs_overtime = 2;
 				level.rs_scorelimit = 0;
 				level.rs_friendlyFire = 0;
@@ -1614,7 +1621,7 @@ void G_RuleSetUpdate ( void ) {
 			} else if ( g_gametype.integer == GT_CTF ) {
 				G_TeamSizeRuleSet();
 
-				level.rs_mercylimit = 1000;
+				level.rs_mercylimit = 0; //1000;
 				level.rs_overtime = 2;
 				level.rs_scorelimit = 0;
 				level.rs_friendlyFire = 0;
@@ -1669,9 +1676,9 @@ void G_RuleSetUpdate ( void ) {
 			level.rs_armor = g_armor.integer;
 
 			if ( g_gametype.integer == GT_FFA || g_gametype.integer == GT_AA1 ) {
-				level.rs_roundBasedMatches = 0;
+				level.rs_roundFormat = 0;
 			} else {
-				level.rs_roundBasedMatches = g_roundBasedMatches.integer;
+				level.rs_roundFormat = g_roundFormat.integer;
 			}
 
 			level.rs_warmup = g_warmup.integer;
@@ -3696,10 +3703,15 @@ qboolean ScoreIsTooFarApart( void ) {
 		b = level.clients[level.sortedClients[1]].ps.persistant[PERS_SCORE];
 	}
 
-	// advance the round if player/team is only 4 points behind
+	// advance the round if player is only 4 points behind, or 19 in team matches
 	c = a - b;
-	if ( c < 5 && c > -5 )
-		return qfalse;
+	if ( g_gametype.integer >= GT_TEAM ) {
+		if ( c < 20 && c > -20 )
+			return qfalse;
+	} else {
+		if ( c < 5 && c > -5 )
+			return qfalse;
+	}
 
 	// if trailing player/team does not have at least half of the leader's score, end the round
 	if ( a > ( b * 2 ) )
@@ -3798,10 +3810,10 @@ void CheckExitRules( void ) {
 		LogExit( "Match disqualified." );
 	}
 
-	// round based matches
+	// round based matches, 1r = must get at least half of leader to advance, 2r = get more points than other(s), 3r = overtime
 	if ( timelimit ) {
 
-		if ( level.rs_roundBasedMatches ) {
+		if ( level.rs_roundFormat ) {
 
 			if ( level.currentRound == 0 ) {
 

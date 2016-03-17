@@ -255,6 +255,16 @@ typedef enum {
 	INV_KCARD_YELLOW
 } invIndex_t;
 
+// rule sets
+typedef enum {
+	RSET_CUSTOM,
+	RSET_STANDARD,
+	RSET_HARDCORE,
+	RSET_NIGHTMARE,
+	RSET_ARENA,
+	RSET_MAX_RULESET
+} ruleset_t;
+
 #define	CTRL_MOVEMENTDIR	1
 #define	CTRL_ATTACKPRESS	2
 #define	CTRL_JUMPPRESS		4

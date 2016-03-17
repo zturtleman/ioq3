@@ -4039,6 +4039,16 @@ static void HUD_MegaRuleSet( int xpos, int ypos, float scale ) {
 		}
 	}
 
+	s = "ROUND FORMAT:";
+	UI_DrawCustomProportionalString( xst, y, s, UI_DROPSHADOW, 0.5 * scale, colorLAmber, qfalse );
+	if ( cgs.roundBasedMatches ) {
+			s = "Two rounds";
+	} else {
+			s = "Single round";
+	}
+	UI_DrawCustomProportionalString( xend, y, s, UI_DROPSHADOW | UI_RIGHT, 0.5 * scale, color, qfalse );
+	y += 8 * scale;
+
 	if (cgs.scorelimit) {
 		s = "SCORE LIMIT:";
 		UI_DrawCustomProportionalString( xst, y, s, UI_DROPSHADOW, 0.5 * scale, colorLAmber, qfalse );

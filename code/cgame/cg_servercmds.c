@@ -1813,6 +1813,13 @@ static void CG_EndStats ( void ) {
 			Com_Printf( "  OVERTIME: Sudden death\n" );
 		}
 	}
+
+	if ( cgs.roundBasedMatches ) {
+			Com_Printf( "  ROUND FORMAT: Two rounds\n" );
+	} else {
+			Com_Printf( "  ROUND FORMAT: Single round\n" );
+	}
+
 	CG_PrintValueStats("SCORE LIMIT", cgs.scorelimit, " point");
 	if ( cgs.teamSize > 0) {
 		CG_PrintValueStats("TEAM SIZE SET", cgs.teamSize, " player");
