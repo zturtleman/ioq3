@@ -214,6 +214,7 @@ static void CG_Obituary( entityState_t *ent ) {
 			break;
 		case MOD_WATER:
 			message = "sank like a turd";
+			deathIcon = cgs.media.iconDrown;
 			break;
 		case MOD_SLIME:
 			message = "gulped a load of slime";

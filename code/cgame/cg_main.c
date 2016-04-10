@@ -1818,6 +1818,7 @@ static void CG_RegisterGraphics( void ) {
 	cgs.media.iconSkull = trap_R_RegisterShaderNoMip( "icons/icon_skull" );
 	cgs.media.iconSkullFlame = trap_R_RegisterShaderNoMip( "icons/icon_skullflame" );
 	cgs.media.iconSkullTele = trap_R_RegisterShaderNoMip( "icons/icon_skulltele" );
+	cgs.media.iconDrown = trap_R_RegisterShaderNoMip( "icons/icon_drown" );
 
 	cgs.media.hudButtonPress = trap_R_RegisterShaderNoMip( "gfx/hud/joypad" );
 

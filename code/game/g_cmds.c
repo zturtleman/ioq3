@@ -2867,6 +2867,18 @@ void Cmd_Stats_f( gentity_t *ent ) {
 
 /*
 =================
+Cmd_Print_RuleSet_f
+=================
+*/
+void Cmd_Print_RuleSet_f( gentity_t *ent ) {
+
+	trap_SendServerCommand( ent-g_entities, "printRuleSet" );
+
+}
+
+
+/*
+=================
 Cmd_DropWeapon_f
 =================
 */
@@ -3061,6 +3073,8 @@ void ClientCommand( int clientNum ) {
 		Cmd_Ready_f( ent );
 	else if (Q_stricmp (cmd, "players") == 0)
 		Cmd_Players_f( ent );
+	else if (Q_stricmp (cmd, "ruleSet") == 0 || Q_stricmp (cmd, "rs") == 0)
+		Cmd_Print_RuleSet_f( ent );
 
 	else if (Q_stricmp (cmd, "dropWeapon") == 0)
 		Cmd_DropWeapon_f( ent );

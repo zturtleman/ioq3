@@ -4042,7 +4042,7 @@ static void HUD_MegaRuleSet( int xpos, int ypos, float scale ) {
 	s = "ROUND FORMAT:";
 	UI_DrawCustomProportionalString( xst, y, s, UI_DROPSHADOW, 0.5 * scale, colorLAmber, qfalse );
 	if ( cgs.roundBasedMatches ) {
-			s = "Two rounds";
+			s = "Double rounds";
 	} else {
 			s = "Single round";
 	}

@@ -59,6 +59,7 @@ START SERVER MENU *****
 #define ID_STARTSERVERBACK		17
 #define ID_STARTSERVERNEXT		18
 #define ID_RULESET				19
+#define ID_SHORTGAME			20
 
 typedef struct {
 	menuframework_s	menu;
@@ -173,7 +174,7 @@ static void StartServer_Update( void ) {
 	{
 		if (top+i >= s_startserver.nummaps)
 			break;
-		
+
 		info = UI_GetArenaInfoByNumber( s_startserver.maplist[ top + i ]);
 		Q_strncpyz( mapname, Info_ValueForKey( info, "map"), MAX_NAMELENGTH );
 		Q_strupr( mapname );
@@ -212,7 +213,7 @@ static void StartServer_Update( void ) {
 		// set the highlight
 		s_startserver.next.generic.flags &= ~QMF_INACTIVE;
 		i = s_startserver.currentmap - top;
-		if ( i >=0 && i < MAX_MAPSPERPAGE ) 
+		if ( i >=0 && i < MAX_MAPSPERPAGE )
 		{
 			s_startserver.mappics[i].generic.flags    |= QMF_HIGHLIGHT;
 			s_startserver.mapbuttons[i].generic.flags &= ~QMF_PULSEIFFOCUS;
@@ -222,7 +223,7 @@ static void StartServer_Update( void ) {
 		info = UI_GetArenaInfoByNumber( s_startserver.maplist[ s_startserver.currentmap ]);
 		Q_strncpyz( s_startserver.mapname.string, Info_ValueForKey( info, "map" ), MAX_NAMELENGTH);
 	}
-	
+
 	Q_strupr( s_startserver.mapname.string );
 }
 
@@ -266,7 +267,7 @@ static void StartServer_GametypeEvent( void* ptr, int event ) {
 	}*/
 	for( i = 0; i < count; i++ ) {
 		info = UI_GetArenaInfoByNumber( i );
-	
+
 		gamebits = GametypeBits( Info_ValueForKey( info, "type") );
 		if( !( gamebits & matchbits ) ) {
 			continue;
@@ -381,7 +382,7 @@ static void StartServer_LevelshotDraw( void *self ) {
 	y = b->generic.y;
 	w = b->width;
 	h =	b->height + 28;
-	if( b->generic.flags & QMF_HIGHLIGHT ) {	
+	if( b->generic.flags & QMF_HIGHLIGHT ) {
 		UI_DrawHandlePic( x, y, w, h, b->focusshader );
 	}
 }
@@ -416,7 +417,7 @@ static void StartServer_MenuInit( void ) {
 	s_startserver.framel.generic.type  = MTYPE_BITMAP;
 	s_startserver.framel.generic.name  = GAMESERVER_FRAMEL;
 	s_startserver.framel.generic.flags = QMF_INACTIVE;
-	s_startserver.framel.generic.x	   = 0;  
+	s_startserver.framel.generic.x	   = 0;
 	s_startserver.framel.generic.y	   = 78;
 	s_startserver.framel.width  	   = 256;
 	s_startserver.framel.height  	   = 329;
@@ -570,14 +571,14 @@ void StartServer_Cache( void )
 	char			picname[64];
 	char			mapname[ MAX_NAMELENGTH ];
 
-	trap_R_RegisterShaderNoMip( GAMESERVER_BACK0 );	
-	trap_R_RegisterShaderNoMip( GAMESERVER_BACK1 );	
-	trap_R_RegisterShaderNoMip( GAMESERVER_NEXT0 );	
-	trap_R_RegisterShaderNoMip( GAMESERVER_NEXT1 );	
-	trap_R_RegisterShaderNoMip( GAMESERVER_FRAMEL );	
-	trap_R_RegisterShaderNoMip( GAMESERVER_FRAMER );	
-	trap_R_RegisterShaderNoMip( GAMESERVER_SELECT );	
-	trap_R_RegisterShaderNoMip( GAMESERVER_SELECTED );	
+	trap_R_RegisterShaderNoMip( GAMESERVER_BACK0 );
+	trap_R_RegisterShaderNoMip( GAMESERVER_BACK1 );
+	trap_R_RegisterShaderNoMip( GAMESERVER_NEXT0 );
+	trap_R_RegisterShaderNoMip( GAMESERVER_NEXT1 );
+	trap_R_RegisterShaderNoMip( GAMESERVER_FRAMEL );
+	trap_R_RegisterShaderNoMip( GAMESERVER_FRAMER );
+	trap_R_RegisterShaderNoMip( GAMESERVER_SELECT );
+	trap_R_RegisterShaderNoMip( GAMESERVER_SELECTED );
 	trap_R_RegisterShaderNoMip( GAMESERVER_UNKNOWNMAP );
 	trap_R_RegisterShaderNoMip( GAMESERVER_ARROWS );
 	trap_R_RegisterShaderNoMip( GAMESERVER_ARROWSL );
@@ -590,7 +591,7 @@ void StartServer_Cache( void )
 			info = UI_GetArenaInfoByNumber( i );
 			Q_strncpyz( mapname, Info_ValueForKey( info, "map"), MAX_NAMELENGTH );
 			Q_strupr( mapname );
-	
+
 			Com_sprintf( picname, sizeof(picname), "levelshots/%s", mapname );
 			trap_R_RegisterShaderNoMip(picname);
 		}
@@ -643,6 +644,7 @@ typedef struct {
 	menufield_s			scorelimit;
 	menuradiobutton_s	friendlyfire;
 	menulist_s			ruleSet;
+	menuradiobutton_s	shortGame;
 	menufield_s			hostname;
 	menuradiobutton_s	pure;
 	menulist_s			botSkill;
@@ -664,7 +666,7 @@ typedef struct {
 	qboolean			newBot;
 	int					newBotIndex;
 	char				newBotName[16];
-	
+
 	/*menulist_s		punkbuster;*/
 } serveroptions_t;
 
@@ -747,6 +749,7 @@ static void ServerOptions_Start( void ) {
 	int		dedicated;
 	int		friendlyfire;
 	int		ruleSet;
+	int		shortGame;
 	int		flaglimit;
 	int		pure;
 	int		skill;
@@ -761,6 +764,7 @@ static void ServerOptions_Start( void ) {
 	dedicated	 = s_serveroptions.dedicated.curvalue;
 	friendlyfire	= s_serveroptions.friendlyfire.curvalue;
 	ruleSet	 		= s_serveroptions.ruleSet.curvalue;
+	shortGame 		= s_serveroptions.shortGame.curvalue;
 	pure			= s_serveroptions.pure.curvalue;
 	skill			= s_serveroptions.botSkill.curvalue + 1;
 
@@ -814,7 +818,8 @@ static void ServerOptions_Start( void ) {
 	trap_Cvar_Set("sv_hostname", s_serveroptions.hostname.field.buffer );
 
 	trap_Cvar_SetValue( "g_ruleset", Com_Clamp( 0, 4, ruleSet ) ); // allow custom settings
-	
+	trap_Cvar_SetValue( "g_shortGame", shortGame );
+
 	/*trap_Cvar_SetValue( "sv_punkbuster", s_serveroptions.punkbuster.curvalue );*/
 
 	// the wait commands will allow the dedicated to take effect
@@ -866,7 +871,7 @@ static void ServerOptions_InitPlayerItems( void ) {
 	else {
 		v = 1;	// bot
 	}
-	
+
 	for( n = 0; n < PLAYER_SLOTS; n++ ) {
 		s_serveroptions.playerType[n].curvalue = v;
 	}
@@ -966,7 +971,7 @@ ServerOptions_Event
 */
 static void ServerOptions_Event( void* ptr, int event ) {
 	switch( ((menucommon_s*)ptr)->id ) {
-	
+
 	//if( event != QM_ACTIVATED && event != QM_LOSTFOCUS) {
 	//	return;
 	//}
@@ -1269,7 +1274,7 @@ static void PlayerName_Draw( void *item ) {
 	if ( focus )
 	{
 		// draw cursor
-		UI_FillRect( s->generic.left, s->generic.top, s->generic.right-s->generic.left+1, s->generic.bottom-s->generic.top+1, listbar_color ); 
+		UI_FillRect( s->generic.left, s->generic.top, s->generic.right-s->generic.left+1, s->generic.bottom-s->generic.top+1, listbar_color );
 		UI_DrawChar( x, y, 13, UI_CENTER|UI_BLINK|UI_SMALLFONT, color);
 	}
 
@@ -1333,11 +1338,21 @@ static void ServerOptions_MenuInit( qboolean multiplayer ) {
 	s_serveroptions.ruleSet.generic.id			= ID_RULESET;
 	s_serveroptions.ruleSet.generic.flags		= QMF_PULSEIFFOCUS|QMF_SMALLFONT;
 	s_serveroptions.ruleSet.generic.name		= "Rule Set:";
-	s_serveroptions.ruleSet.generic.callback	= ServerOptions_Event;
+	//s_serveroptions.ruleSet.generic.callback	= ServerOptions_Event;
 	s_serveroptions.ruleSet.generic.x			= OPTIONS_X;
 	s_serveroptions.ruleSet.generic.y			= y;
 	s_serveroptions.ruleSet.itemnames			= ruleSet_list;
 	s_serveroptions.ruleSet.curvalue			= 1;
+
+	y += BIGCHAR_HEIGHT;
+	s_serveroptions.shortGame.generic.type		= MTYPE_RADIOBUTTON;
+	s_serveroptions.shortGame.generic.name		= "Short Game:";
+	s_serveroptions.shortGame.generic.flags		= QMF_PULSEIFFOCUS|QMF_SMALLFONT;
+	s_serveroptions.shortGame.generic.callback	= ServerOptions_Event;
+	s_serveroptions.shortGame.generic.id		= ID_SHORTGAME;
+	s_serveroptions.shortGame.generic.x			= OPTIONS_X;
+	s_serveroptions.shortGame.generic.y			= y;
+	s_serveroptions.shortGame.curvalue			= 0;
 
 	y += (BIGCHAR_HEIGHT+2) * 2;
 	/*s_serveroptions.scorelimit.generic.type			= MTYPE_FIELD;
@@ -1429,7 +1444,7 @@ static void ServerOptions_MenuInit( qboolean multiplayer ) {
 	s_serveroptions.punkbuster.generic.x				= OPTIONS_X;
 	s_serveroptions.punkbuster.generic.y				= y;
 	s_serveroptions.punkbuster.itemnames				= punkbuster_items;*/
-	
+
 	y = 80;
 	s_serveroptions.botSkill.generic.type			= MTYPE_SPINCONTROL;
 	s_serveroptions.botSkill.generic.flags			= QMF_PULSEIFFOCUS|QMF_SMALLFONT;
@@ -1554,13 +1569,14 @@ static void ServerOptions_MenuInit( qboolean multiplayer ) {
 	}
 
 	Menu_AddItem( &s_serveroptions.menu, &s_serveroptions.ruleSet );
+	Menu_AddItem( &s_serveroptions.menu, &s_serveroptions.shortGame );
 
 	Menu_AddItem( &s_serveroptions.menu, &s_serveroptions.back );
 	Menu_AddItem( &s_serveroptions.menu, &s_serveroptions.next );
 	Menu_AddItem( &s_serveroptions.menu, &s_serveroptions.go );
 
 	/*Menu_AddItem( &s_serveroptions.menu, (void*) &s_serveroptions.punkbuster );*/
-	
+
 	ServerOptions_SetMenuItems();
 }
 
@@ -1729,7 +1745,7 @@ static void UI_BotSelectMenu_UpdateGrid( void ) {
 
 	j = botSelectInfo.modelpage * MAX_MODELSPERPAGE;
 	for( i = 0; i < (PLAYERGRID_ROWS * PLAYERGRID_COLS); i++, j++) {
-		if( j < botSelectInfo.numBots ) { 
+		if( j < botSelectInfo.numBots ) {
 			info = UI_GetBotInfoByNumber( botSelectInfo.sortedBotNums[j] );
 			ServerPlayerIcon( Info_ValueForKey( info, "model" ), botSelectInfo.boticons[i], MAX_QPATH );
 			Q_strncpyz( botSelectInfo.botnames[i], Info_ValueForKey( info, "name" ), 16 );

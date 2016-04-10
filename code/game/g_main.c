@@ -209,7 +209,7 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_scoreBalance, "g_scoreBalance", "1", CVAR_RULESET | CVAR_ARCHIVE, 0, qfalse  },
 	{ &g_teamSize, "g_teamSize", "0", CVAR_RULESET | CVAR_ARCHIVE, 0, qfalse  },
 	{ &g_teamSizeQuota, "g_teamSizeQuota", "2", CVAR_RULESET | CVAR_ARCHIVE, 0, qfalse  },
-	{ &g_playersLocOverlay, "g_playersLocOverlay", "0", CVAR_RULESET /*| CVAR_CHEAT*/, 0, qfalse  }, // just a cheat
+	{ &g_playersLocOverlay, "g_playersLocOverlay", "0", CVAR_RULESET | CVAR_CHEAT, 0, qfalse  }, // just a cheat, mainly for debug, will be removed
 
 	{ &g_speed, "g_speed", "400", CVAR_RULESET | CVAR_CHEAT, 0, qtrue  }, // mmp - is 320 in vq3
 	{ &g_gravity, "g_gravity", "1000", CVAR_RULESET | CVAR_CHEAT, 0, qtrue  }, // mmp - is 800 in vq3
@@ -2740,7 +2740,7 @@ void BeginIntermission( void ) {
 
 	//G_Printf( "^1DEBUG: BeginIntermission" );
 
-	trap_SendServerCommand( -1, va("bgm_endMatch") );
+	trap_SendServerCommand( -1, "bgm_endMatch" );
 
 	// if in tournament mode, change the wins / losses
 	if ( g_gametype.integer == GT_TOURNAMENT ) {

@@ -890,6 +890,7 @@ typedef struct {
 	qhandle_t	iconSkull;
 	qhandle_t	iconSkullFlame;
 	qhandle_t	iconSkullTele;
+	qhandle_t	iconDrown;
 
 	qhandle_t	rulesBG256; // ruleset background
 	qhandle_t	rulesBG064; // objective background

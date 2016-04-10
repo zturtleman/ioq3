@@ -1629,8 +1629,9 @@ static void CG_ParseReadyMask ( void ) {
 
 /*
 =================
-CG_EndStats
+CG_Stats
 
+Display end-game stats, and/or rule set
 =================
 */
 
@@ -1652,7 +1653,7 @@ void CG_PrintValueStats( char *string, int result, const char *afterString ) {
 	}
 }
 
-static void CG_EndStats ( void ) {
+static void CG_Stats ( int endGame ) {
 
 	int			s1, s2, score;
 	qboolean	specialRule = qfalse;
@@ -1664,56 +1665,68 @@ static void CG_EndStats ( void ) {
 
 	int			msec, sec, min;
 
-	cgs.endGameStats_Active = qfalse;
-	CG_AddToHUDInfo ( hud_notifyBoxRoute.integer,
-			S_COLOR_GREEN "End-game player stats have been sent to all clients, please observe console if you wish.\n", 0, 0 );
+	if ( endGame ) {
 
-	//Com_Printf( S_COLOR_SKY "DEBUG: %i=='%i'\n", emoticonSkipPos, emoticon);
+		// stats
 
-	Com_Printf( "\n======================================\nPLAYER STATS:\n======================================\n" );
+		cgs.endGameStats_Active = qfalse;
+		CG_AddToHUDInfo ( hud_notifyBoxRoute.integer,
+				S_COLOR_GREEN "End-game player stats have been sent to all clients, please observe console if you wish.\n", 0, 0 );
 
-	if ( cgs.gametype >= GT_TEAM ) {
-		s1 = cgs.scores1;
-		s2 = cgs.scores2;
+		Com_Printf( "\n======================================\nPLAYER STATS:\n======================================\n" );
 
-		Com_Printf( "RED: %4i        vs.        BLUE: %4i\n", s1, s2 );
-		Com_Printf( "--------------------------------------\n" );
+		if ( cgs.gametype >= GT_TEAM ) {
+			s1 = cgs.scores1;
+			s2 = cgs.scores2;
+
+			Com_Printf( "RED: %4i        vs.        BLUE: %4i\n", s1, s2 );
+			Com_Printf( "--------------------------------------\n" );
+		}
+
+		for ( i=0 ; i < cgs.endGameStats_CurSlot ; i++ ) {
+			name = cgs.clientinfo[ cgs.endGameStats[i].clientNo ].name;
+			Com_Printf( "NAME: %s\n", name );
+			if ( cgs.gametype >= GT_TEAM ) {
+				if ( cgs.endGameStats[i].sessionTeam == TEAM_RED ) {
+					Com_Printf( "TEAM: RED\n" );
+				} else {
+					Com_Printf( "TEAM: BLUE\n" );
+				}
+			}
+			Com_Printf( "SCORE: %4i  PING: %3i  TIME: %2im\n", cgs.endGameStats[i].score, cgs.endGameStats[i].ping, cgs.endGameStats[i].playTime );
+			if (cgs.endGameStats[i].deaths > 0) {
+				kdr = ((float)cgs.endGameStats[i].kills) / ((float)cgs.endGameStats[i].deaths);
+			} else {
+				kdr = (float)cgs.endGameStats[i].kills;
+			}
+			Com_Printf( "KILLS: %4i  DEATHS: %4i  KDR: %6.3f\n", cgs.endGameStats[i].kills, cgs.endGameStats[i].deaths, kdr );
+			if ( cgs.gametype >= GT_TEAM ) {
+				if ( cgs.friendlyFire ) {
+					Com_Printf( "SUICIDES: %4i  TEAMKILLS: %4i\n", cgs.endGameStats[i].suicides, cgs.endGameStats[i].teamKills );
+				} else {
+					Com_Printf( "SUICIDES: %4i\n", cgs.endGameStats[i].suicides );
+				}
+			if ( cgs.gametype == GT_CTF ) {
+					Com_Printf( "CAPTURES: %4i  MAX KILL STREAK: %4i\n", cgs.endGameStats[i].captures, cgs.endGameStats[i].killStreak );
+				} else {
+					Com_Printf( "MAX KILL STREAK: %4i\n", cgs.endGameStats[i].killStreak );
+				}
+			} else {
+				Com_Printf( "SUICIDES: %4i  MAX KILL STREAK: %4i\n", cgs.endGameStats[i].suicides, cgs.endGameStats[i].killStreak );
+			}
+
+			Com_Printf( "--------------------------------------\n" );
+		}
+
+	} else {
+
+		CG_AddToHUDInfo ( hud_notifyBoxRoute.integer, "RuleSet information was echoed into the console, per request.\n", 0, 0 );
+
+		Com_Printf( "\n======================================\nCURRENT MATCH OPTIONS AND RULESET:\n======================================\n" );
+
 	}
 
-	for ( i=0 ; i < cgs.endGameStats_CurSlot ; i++ ) {
-		name = cgs.clientinfo[ cgs.endGameStats[i].clientNo ].name;
-		Com_Printf( "NAME: %s\n", name );
-		if ( cgs.gametype >= GT_TEAM ) {
-			if ( cgs.endGameStats[i].sessionTeam == TEAM_RED ) {
-				Com_Printf( "TEAM: RED\n" );
-			} else {
-				Com_Printf( "TEAM: BLUE\n" );
-			}
-		}
-		Com_Printf( "SCORE: %4i  PING: %3i  TIME: %2im\n", cgs.endGameStats[i].score, cgs.endGameStats[i].ping, cgs.endGameStats[i].playTime );
-		if (cgs.endGameStats[i].deaths > 0) {
-			kdr = ((float)cgs.endGameStats[i].kills) / ((float)cgs.endGameStats[i].deaths);
-		} else {
-			kdr = (float)cgs.endGameStats[i].kills;
-		}
-		Com_Printf( "KILLS: %4i  DEATHS: %4i  KDR: %6.3f\n", cgs.endGameStats[i].kills, cgs.endGameStats[i].deaths, kdr );
-		if ( cgs.gametype >= GT_TEAM ) {
-			if ( cgs.friendlyFire ) {
-				Com_Printf( "SUICIDES: %4i  TEAMKILLS: %4i\n", cgs.endGameStats[i].suicides, cgs.endGameStats[i].teamKills );
-			} else {
-				Com_Printf( "SUICIDES: %4i\n", cgs.endGameStats[i].suicides );
-			}
-		if ( cgs.gametype == GT_CTF ) {
-				Com_Printf( "CAPTURES: %4i  MAX KILL STREAK: %4i\n", cgs.endGameStats[i].captures, cgs.endGameStats[i].killStreak );
-			} else {
-				Com_Printf( "MAX KILL STREAK: %4i\n", cgs.endGameStats[i].killStreak );
-			}
-		} else {
-			Com_Printf( "SUICIDES: %4i  MAX KILL STREAK: %4i\n", cgs.endGameStats[i].suicides, cgs.endGameStats[i].killStreak );
-		}
-
-		Com_Printf( "--------------------------------------\n" );
-	}
+	// ruleset info
 
 	switch ( cgs.gametype ) {
 		case GT_FFA:
@@ -1739,19 +1752,23 @@ static void CG_EndStats ( void ) {
 			break;
 	}
 
-	if ( cgs.totalPlayTime < 6000000 ) {
-		msec = cgs.totalPlayTime / 100;
-		sec = msec / 10;
-		min = sec / 60;
-		msec -= sec * 10;
-		sec -= min * 60;
-	} else {
-		msec = 9;
-		sec = 59;
-		min = 99;
-	}
+	if ( endGame ) {
 
-	Com_Printf( "PLAY TIME: %02i:%02i.%i\n", min, sec, msec );
+		if ( cgs.totalPlayTime < 6000000 ) {
+			msec = cgs.totalPlayTime / 100;
+			sec = msec / 10;
+			min = sec / 60;
+			msec -= sec * 10;
+			sec -= min * 60;
+		} else {
+			msec = 9;
+			sec = 59;
+			min = 99;
+		}
+
+		Com_Printf( "PLAY TIME: %02i:%02i.%i\n", min, sec, msec );
+
+	}
 
 	s = CG_ConfigString( CS_MESSAGE );
 	if ( s[0] ) {
@@ -1815,7 +1832,7 @@ static void CG_EndStats ( void ) {
 	}
 
 	if ( cgs.roundBasedMatches ) {
-			Com_Printf( "  ROUND FORMAT: Two rounds\n" );
+			Com_Printf( "  ROUND FORMAT: Double rounds\n" );
 	} else {
 			Com_Printf( "  ROUND FORMAT: Single round\n" );
 	}
@@ -2053,7 +2070,13 @@ static void CG_ServerCommand( void ) {
 
 	// End stats receiver buffer
 	if ( !strcmp ( cmd, "endStats" ) ) {
-		CG_EndStats();
+		CG_Stats(1);
+		return;
+	}
+
+	// print ruleset in console
+	if ( !strcmp ( cmd, "printRuleSet" ) ) {
+		CG_Stats(0);
 		return;
 	}
 
