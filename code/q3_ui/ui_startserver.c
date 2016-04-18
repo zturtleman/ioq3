@@ -707,6 +707,7 @@ static const char *ruleSet_list[] = {
 	"Hardcore",
 	"Nightmare!",
 	"Arena",
+	"Rockets",
 	NULL
 };
 
@@ -817,7 +818,7 @@ static void ServerOptions_Start( void ) {
 	trap_Cvar_SetValue( "sv_pure", pure );
 	trap_Cvar_Set("sv_hostname", s_serveroptions.hostname.field.buffer );
 
-	trap_Cvar_SetValue( "g_ruleset", Com_Clamp( 0, 4, ruleSet ) ); // allow custom settings
+	trap_Cvar_SetValue( "g_ruleset", Com_Clamp( 0, 5, ruleSet ) ); // allow custom settings
 	trap_Cvar_SetValue( "g_shortGame", shortGame );
 
 	/*trap_Cvar_SetValue( "sv_punkbuster", s_serveroptions.punkbuster.curvalue );*/

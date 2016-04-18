@@ -1687,6 +1687,24 @@ void ClientSpawn(gentity_t *ent) {
 				client->ps.stats[STAT_ARMORTIER] = 3; // armor_body protection
 
 				client->disallowItemPickUp = 1; // meant to delay pickup on items when spawning on them
+			} else if ( level.rs_matchMode == MM_ROCKET_MANIAX ) {
+				// rockets maniax arena
+				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_ROCKET_LAUNCHER );
+
+				client->ps.ammo[AT_SHELLS] = 0;
+				client->ps.ammo[AT_ROCKETS] = -1;
+				client->ps.ammo[AT_CELLS] = 0;
+				client->ps.ammo[AT_BULLETS] = 0;
+				client->ps.ammo[AT_GAS] = 0;
+
+				// start health at 100, unless the player gave themself a handicap
+				ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH];
+
+				// start with no armor
+				client->ps.stats[STAT_ARMOR] = 0;
+				client->ps.stats[STAT_ARMORTIER] = 1; // armor_body protection
+
+				client->disallowItemPickUp = 1; // meant to delay pickup on items when spawning on them
 			} else {
 				// start health at 100, unless the player gave themself a handicap
 				ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH];

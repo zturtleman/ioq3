@@ -1791,6 +1791,9 @@ static void CG_Stats ( int endGame ) {
 		case 4:
 			Com_Printf( "RULE SET: Arena\n\n" );
 			break;
+		case 5:
+			Com_Printf( "RULE SET: Rockets\n\n" );
+			break;
 		default:
 			Com_Printf( "RULE SET: Custom\n\n" );
 	}
@@ -1805,16 +1808,19 @@ static void CG_Stats ( int endGame ) {
 			Com_Printf( "  MATCH MODE: Weapon-stay\n" );
 			break;
 		case MM_PICKUP_ALWAYS:
-			Com_Printf( "  MATCH MODE: Weapon pickup always\n" );
+			Com_Printf( "  MATCH MODE: Weapon always pickup\n" );
 			break;
 		case MM_PICKUP_ALWAYS_NOAMMO:
-			Com_Printf( "  MATCH MODE: No Ammo!\n" );
+			Com_Printf( "  MATCH MODE: No ammo\n" );
 			break;
 		case MM_ALLWEAPONS_MAXAMMO:
 			Com_Printf( "  MATCH MODE: Most weapons, max ammo\n" );
 			break;
 		case MM_ALLWEAPONS:
 			Com_Printf( "  MATCH MODE: All weapons\n" );
+			break;
+		case MM_ROCKET_MANIAX:
+			Com_Printf( "  MATCH MODE: Rocket-maniax\n" );
 			break;
 		default:
 			Com_Printf( "  MATCH MODE: WTF???\n" );

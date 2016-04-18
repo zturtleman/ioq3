@@ -1308,6 +1308,7 @@ void G_RuleSetUpdate ( void ) {
 		level.rulesetEnforced = qtrue;
 
 		level.rs_armor = 1;
+		level.rs_popCTF = 0;
 
 		switch ( g_gametype.integer ) {
 
@@ -1644,6 +1645,85 @@ void G_RuleSetUpdate ( void ) {
 
 			break;
 
+		case 5:
+
+			level.rs_teamLocOverlay = 0;
+			level.rs_hitSound = 0;
+			level.rs_randomSpawn = 1;
+			level.rs_scoreBalance = 1;
+
+			level.rs_quadMode = 0;
+			level.rs_selfDamage = 1;
+
+			level.rs_doubleAmmo = 0;
+			level.rs_keycardRespawn = 30;
+			level.rs_keycardDropable = 1;
+
+			level.rs_noArenaGrenades = 0;
+			level.rs_noArenaLightningGun = 0;
+			level.rs_enemyAttackLevel = 0.5;
+
+			level.rs_matchMode = MM_ROCKET_MANIAX;
+
+			if ( g_gametype.integer == GT_TOURNAMENT ) {
+				level.rs_timelimit = 10;
+				level.rs_mercylimit = 0; //20;
+				level.rs_overtime = 2;
+				level.rs_scorelimit = 0;
+				level.rs_friendlyFire = 1;
+				level.rs_weaponRespawn = 30;
+				level.rs_forceRespawn = 5;
+				level.rs_powerUps = 0;
+
+				level.rs_warmup = 10;
+			} else if ( g_gametype.integer == GT_AA1 ) {
+				level.rs_timelimit = 10;
+				level.rs_mercylimit = 0;
+				level.rs_overtime = 0;
+				level.rs_scorelimit = 0;
+				level.rs_friendlyFire = 1;
+				level.rs_weaponRespawn = 0;
+				level.rs_forceRespawn = 10;
+				level.rs_powerUps = 1;
+
+				level.rs_warmup = 10;
+			} else if ( g_gametype.integer == GT_TEAM ) {
+				G_TeamSizeRuleSet();
+
+				level.rs_mercylimit = 0; //50;
+				level.rs_overtime = 2;
+				level.rs_scorelimit = 0;
+				level.rs_friendlyFire = 1;
+				level.rs_weaponRespawn = 30;
+				level.rs_forceRespawn = 5;
+
+				level.rs_warmup = 10;
+			} else if ( g_gametype.integer == GT_CTF ) {
+				G_TeamSizeRuleSet();
+
+				level.rs_mercylimit = 0; //1000;
+				level.rs_overtime = 2;
+				level.rs_scorelimit = 0;
+				level.rs_friendlyFire = 1;
+				level.rs_weaponRespawn = 15;
+				level.rs_forceRespawn = 10;
+
+				level.rs_warmup = 10;
+			} else { /* GT_FFA... */
+				level.rs_timelimit = 10;
+				level.rs_mercylimit = 0;
+				level.rs_overtime = 0;
+				level.rs_scorelimit = 666; // was 35
+				level.rs_friendlyFire = 1;
+				level.rs_weaponRespawn = 10;
+				level.rs_forceRespawn = 10;
+				level.rs_powerUps = 1;
+
+				level.rs_warmup = 0;
+			}
+
+			break;
+
 		default:
 			level.rulesetEnforced = qfalse;
 
@@ -1674,6 +1754,7 @@ void G_RuleSetUpdate ( void ) {
 			level.rs_enemyAttackLevel = g_enemyAttackLevel.value;
 			level.rs_powerUps = g_powerUps.integer;
 			level.rs_armor = g_armor.integer;
+			level.rs_popCTF = 0;
 
 			if ( g_gametype.integer == GT_FFA || g_gametype.integer == GT_AA1 ) {
 				level.rs_roundFormat = 0;
@@ -3705,9 +3786,20 @@ qboolean ScoreIsTooFarApart( void ) {
 
 	// advance the round if player is only 4 points behind, or 19 in team matches
 	c = a - b;
+
 	if ( g_gametype.integer >= GT_TEAM ) {
-		if ( c < 20 && c > -20 )
-			return qfalse;
+		if ( g_gametype.integer == GT_CTF ) {
+			if ( level.rs_popCTF ) {
+				if ( c < 2 && c > -2 )
+					return qfalse;
+			} else {
+				if ( c < 200 && c > -200 )
+					return qfalse;
+			}
+		} else {
+			if ( c < 20 && c > -20 )
+				return qfalse;
+		}
 	} else {
 		if ( c < 5 && c > -5 )
 			return qfalse;

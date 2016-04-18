@@ -3965,6 +3965,9 @@ static void HUD_MegaRuleSet( int xpos, int ypos, float scale ) {
 		case 4:
 			s = "(Arena)";
 			break;
+		case 5:
+			s = "(Rockets)";
+			break;
 		default:
 			s = "(Custom)";
 			break;
@@ -4001,16 +4004,19 @@ static void HUD_MegaRuleSet( int xpos, int ypos, float scale ) {
 		s = "Weapon-stay";
 		break;
 	case MM_PICKUP_ALWAYS:
-		s = "Weapon pickup always";
+		s = "Weapon always pickup";
 		break;
 	case MM_PICKUP_ALWAYS_NOAMMO:
-		s = "No Ammo";
+		s = "No ammo";
 		break;
 	case MM_ALLWEAPONS_MAXAMMO:
 		s = "Most weapons, max ammo";
 		break;
 	case MM_ALLWEAPONS:
 		s = "All weapons";
+		break;
+	case MM_ROCKET_MANIAX:
+		s = "Rocket-maniax";
 		break;
 	default:
 		s = "WTF???";
