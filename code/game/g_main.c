@@ -252,7 +252,7 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_podiumDrop, "g_podiumDrop", "70", 0, 0, qfalse },
 
 	{ &g_allowVote, "g_allowVote", "1", CVAR_ARCHIVE, 0, qfalse },
-	{ &g_allowedVoteNames, "g_allowedVoteNames", "/map_restart/nextmap/map/mute/endWarmup/rpickup/", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_allowedVoteNames, "g_allowedVoteNames", "/restart/nextmap/map/mute/endWarmup/rpickup/", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_voteWaitTime, "g_voteWaitTime", "10", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_specChat, "g_specChat", "1", CVAR_ARCHIVE, 0, qtrue },
 	{ &g_listEntity, "g_listEntity", "0", 0, 0, qfalse },
@@ -461,10 +461,10 @@ int G_AllowedVotes ( gentity_t *ent, qboolean printNames ) {
 		/*Q_strncpyz( string, "Valid commands are: ", sizeof(string));*/
 	}
 
-	if(Q_stristr(voteNames, "/map_restart/" ) != NULL) {
+	if(Q_stristr(voteNames, "/restart/" ) != NULL) {
 		voteFlags |= VOTE_MAP_RESTART;
 		if ( printNames == qtrue ) {
-			trap_SendServerCommand( ent-g_entities, va("print \"map_restart\n\"" ) );
+			trap_SendServerCommand( ent-g_entities, va("print \"restart\n\"" ) );
 
 		}
 	}
@@ -482,23 +482,23 @@ int G_AllowedVotes ( gentity_t *ent, qboolean printNames ) {
 
 		}
 	}
-	if(Q_stristr(voteNames, "/g_gametype/" ) != NULL) {
+	if(Q_stristr(voteNames, "/gametype/" ) != NULL) {
 		voteFlags |= VOTE_GAMETYPE;
 		if ( printNames == qtrue ) {
-			trap_SendServerCommand( ent-g_entities, va("print \"g_gametype <n>\n\"" ) );
+			trap_SendServerCommand( ent-g_entities, va("print \"gametype <n>\n\"" ) );
 
 		}
 	}
-	if(Q_stristr(voteNames, "/g_matchMode/" ) != NULL && level.rulesetEnforced == qfalse) {
+	if(Q_stristr(voteNames, "/matchMode/" ) != NULL && level.rulesetEnforced == qfalse) {
 		voteFlags |= VOTE_MATCHMODE;
 		if ( printNames == qtrue ) {
-			trap_SendServerCommand( ent-g_entities, va("print \"g_matchMode <n>\n\"" ) );
+			trap_SendServerCommand( ent-g_entities, va("print \"matchMode <n>\n\"" ) );
 		}
 	}
-	if(Q_stristr(voteNames, "/g_proMode/" ) != NULL) {
+	if(Q_stristr(voteNames, "/proMode/" ) != NULL) {
 		voteFlags |= VOTE_PROMODE;
 		if ( printNames == qtrue ) {
-			trap_SendServerCommand( ent-g_entities, va("print \"g_proMode <0/1>\n\"" ) );
+			trap_SendServerCommand( ent-g_entities, va("print \"proMode <0/1>\n\"" ) );
 		}
 	}
 	if(Q_stristr(voteNames, "/clientkick/" ) != NULL) {
@@ -560,33 +560,33 @@ int G_AllowedVotes ( gentity_t *ent, qboolean printNames ) {
 	if(Q_stristr(voteNames, "/timelimit/" ) != NULL && level.rulesetEnforced == qfalse) {
 		voteFlags |= VOTE_TIMELIMIT;
 		if ( printNames == qtrue ) {
-			trap_SendServerCommand( ent-g_entities, va("print \"timelimit <time>\n\"" ) );
+			trap_SendServerCommand( ent-g_entities, va("print \"timelimit <minute>\n\"" ) );
 
 		}
 	}
 	if(Q_stristr(voteNames, "/scorelimit/" ) != NULL && level.rulesetEnforced == qfalse) {
 		voteFlags |= VOTE_SCORELIMIT;
 		if ( printNames == qtrue ) {
-			trap_SendServerCommand( ent-g_entities, va("print \"fraglimit <frags>\n\"" ) );
+			trap_SendServerCommand( ent-g_entities, va("print \"scorelimit <score>\n\"" ) );
 
 		}
 	}
-	if(Q_stristr(voteNames, "/g_ruleSet/" ) != NULL) {
+	if(Q_stristr(voteNames, "/ruleSet/" ) != NULL) {
 		voteFlags |= VOTE_RULESET;
 		if ( printNames == qtrue ) {
-			trap_SendServerCommand( ent-g_entities, va("print \"g_ruleset <n>\n\"" ) );
+			trap_SendServerCommand( ent-g_entities, va("print \"ruleset <n>\n\"" ) );
 		}
 	}
-	if(Q_stristr(voteNames, "/g_teamSize/" ) != NULL && g_gametype.integer >= GT_TEAM) {
+	if(Q_stristr(voteNames, "/teamSize/" ) != NULL && g_gametype.integer >= GT_TEAM) {
 		voteFlags |= VOTE_TEAMSIZE;
 		if ( printNames == qtrue ) {
-			trap_SendServerCommand( ent-g_entities, va("print \"g_teamsize <n>\n\"" ) );
+			trap_SendServerCommand( ent-g_entities, va("print \"teamsize <n>\n\"" ) );
 		}
 	}
-	if(Q_stristr(voteNames, "/g_shortGame/" ) != NULL) {
+	if(Q_stristr(voteNames, "/shortGame/" ) != NULL) {
 		voteFlags |= VOTE_SHORTGAME;
 		if ( printNames == qtrue ) {
-			trap_SendServerCommand( ent-g_entities, va("print \"g_shortGame <0/1>\n\"" ) );
+			trap_SendServerCommand( ent-g_entities, va("print \"shortGame <0/1>\n\"" ) );
 		}
 	}
 	if(Q_stristr(voteNames, "/ext/" ) != NULL) {

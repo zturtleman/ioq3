@@ -2308,6 +2308,8 @@ static const char *gameNames[] = {
 /*
 ==================
 Cmd_CallVote_f
+
+TODO: code this better
 ==================
 */
 void Cmd_CallVote_f( gentity_t *ent ) {
@@ -2346,7 +2348,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 
 	if ( level.voteTime ) {
 		//trap_SendServerCommand( ent-g_entities, "print \"A vote is already in progress.\n\"" );
-		trap_SendServerCommand( ent-g_entities, va("notify %i\\\"Another vote is in progress, sorry.\n\"", NF_ERROR ) );
+		trap_SendServerCommand( ent-g_entities, va("notify %i\\\"A vote is already in progress, sorry.\n\"", NF_ERROR ) );
 		return;
 	}
 	if ( ent->client->pers.voteCount >= MAX_VOTE_COUNT ) {
@@ -2386,12 +2388,12 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	allowedVotes = G_AllowedVotes( ent, qfalse );
 	//trap_SendServerCommand( ent-g_entities, va("notify %i\\\"DEBUG: %i\n\"", NF_ERROR, allowedVotes ) );
 
-	if ( !Q_stricmp( arg1, "map_restart" ) && (allowedVotes & VOTE_MAP_RESTART) ) {
+	if ( !Q_stricmp( arg1, "restart" ) && (allowedVotes & VOTE_MAP_RESTART) ) {
 	} else if ( !Q_stricmp( arg1, "nextmap" ) && (allowedVotes & VOTE_NEXTMAP) ) {
 	} else if ( !Q_stricmp( arg1, "map" ) && (allowedVotes & VOTE_MAP) ) {
-	} else if ( !Q_stricmp( arg1, "g_gametype" ) && (allowedVotes & VOTE_GAMETYPE) ) {
-	} else if ( !Q_stricmp( arg1, "g_matchMode" ) && (allowedVotes & VOTE_MATCHMODE) ) {
-	} else if ( !Q_stricmp( arg1, "g_proMode" ) && (allowedVotes & VOTE_PROMODE) ) {
+	} else if ( !Q_stricmp( arg1, "gametype" ) && (allowedVotes & VOTE_GAMETYPE) ) {
+	} else if ( !Q_stricmp( arg1, "matchMode" ) && (allowedVotes & VOTE_MATCHMODE) ) {
+	} else if ( !Q_stricmp( arg1, "proMode" ) && (allowedVotes & VOTE_PROMODE) ) {
 	} else if ( !Q_stricmp( arg1, "clientkick" ) && (allowedVotes & VOTE_CLIENTKICK) ) {
 	} else if ( !Q_stricmp( arg1, "kick" ) && (allowedVotes & VOTE_KICK) ) {
 	} else if ( !Q_stricmp( arg1, "clientmute" ) && (allowedVotes & VOTE_CLIENTMUTE) ) {
@@ -2405,9 +2407,9 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 			level.rulesetEnforced == qfalse ) {
 	} else if ( !Q_stricmp( arg1, "scorelimit" ) && (allowedVotes & VOTE_SCORELIMIT) &&
 			level.rulesetEnforced == qfalse ) {
-	} else if ( !Q_stricmp( arg1, "g_ruleSet" ) && (allowedVotes & VOTE_RULESET) ) {
-	} else if ( !Q_stricmp( arg1, "g_teamSize" ) && (allowedVotes & VOTE_TEAMSIZE) ) {
-	} else if ( !Q_stricmp( arg1, "g_shortGame" ) && (allowedVotes & VOTE_SHORTGAME) ) {
+	} else if ( !Q_stricmp( arg1, "ruleSet" ) && (allowedVotes & VOTE_RULESET) ) {
+	} else if ( !Q_stricmp( arg1, "teamSize" ) && (allowedVotes & VOTE_TEAMSIZE) ) {
+	} else if ( !Q_stricmp( arg1, "shortGame" ) && (allowedVotes & VOTE_SHORTGAME) ) {
 	} else if ( !Q_stricmp( arg1, "ext" ) && (allowedVotes & VOTE_EXT) ) {
 	} else {
 		trap_SendServerCommand( ent-g_entities, va("notify %i\\\"Invalid vote command.\n\"", NF_ERROR ) );
@@ -2422,17 +2424,18 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	}
 
 	// special case for g_gametype, check for bad values
-	if ( !Q_stricmp( arg1, "g_gametype" ) ) {
+	if ( !Q_stricmp( arg1, "gametype" ) ) {
 		i = atoi( arg2 );
 		if( i == GT_SINGLE_PLAYER || i < GT_FFA || i >= GT_MAX_GAME_TYPE) {
 			trap_SendServerCommand( ent-g_entities, "print \"Invalid gametype.\n\"" );
 			return;
 		}
 
-		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %d; map_restart", arg1, i );
+		Com_sprintf( level.voteString, sizeof( level.voteString ), "g_gametype %d; map_restart", i );
 		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %s", arg1, gameNames[i] );
 		level.currentVoteIsKick = qfalse;
-	} else if ( !Q_stricmp( arg1, "g_matchMode" ) ) {
+
+	} else if ( !Q_stricmp( arg1, "matchMode" ) ) {
 		i = atoi( arg2 );
 
 		// correct the value incase the vote caller is an asshole
@@ -2442,10 +2445,11 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 			i = MM_NUM_MMODES - 1;
 		}
 
-		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %d; map_restart", arg1, i );
+		Com_sprintf( level.voteString, sizeof( level.voteString ), "g_matchMode %d; map_restart", i );
 		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %d", arg1, i );
 		level.currentVoteIsKick = qfalse;
-	} else if ( !Q_stricmp( arg1, "g_proMode" ) ) {
+
+	} else if ( !Q_stricmp( arg1, "proMode" ) ) {
 		i = atoi( arg2 );
 
 		// correct the value incase the vote caller is an asshole
@@ -2455,9 +2459,10 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 			i = 1;
 		}
 
-		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %d; map_restart", arg1, i );
+		Com_sprintf( level.voteString, sizeof( level.voteString ), "g_proMode %d; map_restart", i );
 		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %d", arg1, i );
 		level.currentVoteIsKick = qfalse;
+
 	} else if ( !Q_stricmp( arg1, "ext" ) ) {
 		char	s[MAX_STRING_CHARS];
 
@@ -2475,7 +2480,8 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s", s ); // exec cvar ext_[arg2]
 		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s", arg2 );
 		level.currentVoteIsKick = qfalse;
-	} else if ( !Q_stricmp( arg1, "g_ruleSet" ) ) {
+
+	} else if ( !Q_stricmp( arg1, "ruleSet" ) ) {
 		i = atoi( arg2 );
 
 		// correct the value incase the vote caller is an asshole
@@ -2485,11 +2491,11 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 			i = 4;
 		}
 
-		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %d; map_restart", arg1, i );
+		Com_sprintf( level.voteString, sizeof( level.voteString ), "g_ruleSet %d; map_restart", i );
 		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %d", arg1, i );
 		level.currentVoteIsKick = qfalse;
 
-	} else if ( !Q_stricmp( arg1, "g_teamSize" ) ) {
+	} else if ( !Q_stricmp( arg1, "teamSize" ) ) {
 		i = atoi( arg2 );
 
 		// correct the value incase the vote caller is an asshole
@@ -2499,14 +2505,14 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 			i = 16;
 		}
 
-		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %d; map_restart", arg1, i );
+		Com_sprintf( level.voteString, sizeof( level.voteString ), "g_teamSize %d; map_restart", i );
 		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %d", arg1, i );
 		level.currentVoteIsKick = qfalse;
 
-	} else if ( !Q_stricmp( arg1, "g_shortGame" ) ) {
+	} else if ( !Q_stricmp( arg1, "shortGame" ) ) {
 		i = atoi( arg2 );
 
-		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %d; map_restart", arg1, i );
+		Com_sprintf( level.voteString, sizeof( level.voteString ), "g_shortGame %d; map_restart", i );
 		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %d", arg1, i );
 		level.currentVoteIsKick = qfalse;
 
@@ -2524,6 +2530,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		}
 		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s", level.voteString );
 		level.currentVoteIsKick = qfalse;
+
 	} else if ( !Q_stricmp( arg1, "nextmap" ) ) {
 		char	s[MAX_STRING_CHARS];
 
@@ -2542,6 +2549,58 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "nextmap", level.voteString );
 
 		level.currentVoteIsKick = qfalse;
+
+/*	} else if ( !Q_stricmp( arg1, "clientmute" ) || !Q_stricmp( arg1, "mute" ) ) {
+		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s \"%s\"", arg1, arg2 );
+		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s", level.voteString );
+		level.currentVoteIsKick = qfalse;
+
+	} else if ( !Q_stricmp( arg1, "giveadmin" ) ) {
+		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s \"%s\"", arg1, arg2 );
+		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s", level.voteString );
+		level.currentVoteIsKick = qfalse;*/
+
+	} else if ( !Q_stricmp( arg1, "restart" ) ) {
+		Com_sprintf( level.voteString, sizeof( level.voteString ), "map_restart", arg1, arg2 );
+		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s", level.voteString );
+		level.currentVoteIsKick = qfalse;
+
+	} else if ( !Q_stricmp( arg1, "timelimit" ) ) {
+		i = atoi( arg2 );
+
+		// correct the value incase the vote caller is an asshole
+		if ( i < 3) {
+			i = 3;
+		} else if (i > 30) {
+			i = 30;
+		}
+
+		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %d; map_restart", arg1, i );
+		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %d", arg1, i );
+		level.currentVoteIsKick = qfalse;
+
+	} else if ( !Q_stricmp( arg1, "scorelimit" ) ) {
+		i = atoi( arg2 );
+
+		// correct the value incase the vote caller is an asshole
+		if ( g_gametype.integer == GT_CTF && !level.rs_popCTF ) {
+			if ( i < 500) {
+				i = 0; // assume the person wants no scorelimit
+			} else if (i > 5000) {
+				i = 5000;
+			}
+		} else {
+			if ( i < 5) {
+				i = 0; // assume the person wants no scorelimit
+			} else if (i > 5000) {
+				i = 5000;
+			}
+		}
+
+		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %d; map_restart", arg1, i );
+		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %d", arg1, i );
+		level.currentVoteIsKick = qfalse;
+
 	} else if ( !Q_stricmp( arg1, "clientkick" ) || !Q_stricmp( arg1, "kick" ) ) {
 		if ( level.numVotingClients < 4 ) {
 			trap_SendServerCommand( ent-g_entities, va("notify %i\\\"Not enough active players to call such a vote, sorry.\n\"", NF_ERROR ) );
@@ -2550,6 +2609,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s \"%s\"", arg1, arg2 );
 		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s", level.voteString );
 		level.currentVoteIsKick = qtrue;
+
 	} else {
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s \"%s\"", arg1, arg2 );
 		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s", level.voteString );
