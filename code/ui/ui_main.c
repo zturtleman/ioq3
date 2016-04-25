@@ -5034,6 +5034,8 @@ UI_Init
 void _UI_Init( qboolean inGameLoad ) {
 	const char *menuSet;
 
+	Swap_Init();
+
 	//uiInfo.inGameLoad = inGameLoad;
 
 	UI_RegisterCvars();

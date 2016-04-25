@@ -412,6 +412,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	srand( randomSeed );
 
+	Swap_Init();
+
 	G_RegisterCvars();
 
 	G_ProcessIPBans();

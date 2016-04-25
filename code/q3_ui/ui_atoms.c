@@ -1060,6 +1060,8 @@ UI_Init
 =================
 */
 void UI_Init( void ) {
+	Swap_Init();
+
 	UI_RegisterCvars();
 
 	UI_InitGameinfo();
