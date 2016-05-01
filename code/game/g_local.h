@@ -1192,6 +1192,8 @@ extern	vmCvar_t	g_randomSpawn;
 extern	vmCvar_t	g_adminPassword;
 extern	vmCvar_t	g_mapRotation;
 
+extern	vmCvar_t	g_allowedAdminCmds;
+
 extern	vmCvar_t	g_serviceScheduleSun;
 extern	vmCvar_t	g_serviceScheduleMon;
 extern	vmCvar_t	g_serviceScheduleTues;

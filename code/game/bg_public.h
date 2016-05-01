@@ -295,6 +295,27 @@ typedef enum {
 #define VOTE_SHORTGAME		0x00040000
 #define VOTE_DO_WARMUP		0 // remove
 
+// admin cmd options
+
+// vote options
+#define ADMIN_MAP_RESTART	0x00000001
+#define ADMIN_MAP			0x00000002
+#define ADMIN_MSG			0x00000004
+#define ADMIN_MUTE			0x00000008
+#define ADMIN_PLAYERS		0x00000010
+#define ADMIN_RPICKUP		0x00000020
+#define ADMIN_UNMUTE		0x00000040
+#define ADMIN_VSTR			0x00000080
+#define ADMIN_GAMETYPE		0x00000100
+#define ADMIN_RULESET		0x00000200
+#define ADMIN_TIMELIMIT		0x00000400
+#define ADMIN_SCORELIMIT	0x00000800
+#define ADMIN_MATCHMODE		0x00001000
+#define ADMIN_PROMODE		0x00002000
+#define ADMIN_KICK			0x00004000
+#define ADMIN_TEAMSIZE		0x00008000
+#define ADMIN_SHORTGAME		0x00010000
+
 // player_state->persistant[] indexes
 // these fields are the only part of player_state that isn't
 // cleared on respawn

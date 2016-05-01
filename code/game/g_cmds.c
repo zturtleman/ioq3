@@ -239,11 +239,161 @@ void Cmd_Players_f( gentity_t *ent ) {
 
 }
 
+
+/*
+==================
+Cmd_AllowedAdminCmds_f
+==================
+*/
+
+int Cmd_AllowedAdminCmds_f ( gentity_t *ent, qboolean printNames ) {
+
+	char	adminNames[MAX_CVAR_VALUE_STRING];
+	int		adminFlags = 0;
+	qboolean	commaUse = qfalse;
+
+	trap_Cvar_VariableStringBuffer( "g_allowedAdminCmds", adminNames, sizeof( adminNames ) );
+
+	// TODO: allow '*' to enable all admins
+	// if a star wildcard is present, everything is allowed
+	/*if(!Q_stricmp(adminNames, "*" ))
+		return 65535;*/
+
+	if ( printNames == qtrue ) {
+		trap_SendServerCommand( ent-g_entities, va("print \"Valid admin commands are:\n-------------------------\n\"" ) );
+		/*Q_strncpyz( string, "Valid commands are: ", sizeof(string));*/
+	}
+
+	if(Q_stristr(adminNames, "/restart/" ) != NULL) {
+		adminFlags |= ADMIN_MAP_RESTART;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"restart\n\"" ) );
+
+		}
+	}
+	if(Q_stristr(adminNames, "/map/" ) != NULL) {
+		adminFlags |= ADMIN_MAP;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"map <mapname>\n\"" ) );
+
+		}
+	}
+	if(Q_stristr(adminNames, "/msg/" ) != NULL) {
+		adminFlags |= ADMIN_MSG;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"msg\n\"" ) );
+
+		}
+	}
+	if(Q_stristr(adminNames, "/players/" ) != NULL) {
+		adminFlags |= ADMIN_PLAYERS;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"players\n\"" ) );
+
+		}
+	}
+	if(Q_stristr(adminNames, "/gametype/" ) != NULL) {
+		adminFlags |= ADMIN_GAMETYPE;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"gametype <n>\n\"" ) );
+
+		}
+	}
+	if(Q_stristr(adminNames, "/matchMode/" ) != NULL && level.rulesetEnforced == qfalse) {
+		adminFlags |= ADMIN_MATCHMODE;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"matchMode <n>\n\"" ) );
+		}
+	}
+	if(Q_stristr(adminNames, "/proMode/" ) != NULL) {
+		adminFlags |= ADMIN_PROMODE;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"proMode <0/1>\n\"" ) );
+		}
+	}
+	if(Q_stristr(adminNames, "/kick/" ) != NULL) {
+		adminFlags |= ADMIN_KICK;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"kick <player>\n\"" ) );
+
+		}
+	}
+	if(Q_stristr(adminNames, "/mute/" ) != NULL) {
+		adminFlags |= ADMIN_MUTE;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"mute <player>\n\"" ) );
+
+		}
+	}
+	if(Q_stristr(adminNames, "/unmute/" ) != NULL) {
+		adminFlags |= ADMIN_UNMUTE;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"unmute <player>\n\"" ) );
+
+		}
+	}
+	if(Q_stristr(adminNames, "/rpickup/" ) != NULL && g_gametype.integer >= GT_TEAM) {
+		adminFlags |= ADMIN_RPICKUP;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"rpickup\n\"" ) );
+
+		}
+	}
+	if(Q_stristr(adminNames, "/timelimit/" ) != NULL && level.rulesetEnforced == qfalse) {
+		adminFlags |= ADMIN_TIMELIMIT;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"timelimit <minute>\n\"" ) );
+
+		}
+	}
+	if(Q_stristr(adminNames, "/scorelimit/" ) != NULL && level.rulesetEnforced == qfalse) {
+		adminFlags |= ADMIN_SCORELIMIT;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"scorelimit <score>\n\"" ) );
+
+		}
+	}
+	if(Q_stristr(adminNames, "/ruleSet/" ) != NULL) {
+		adminFlags |= ADMIN_RULESET;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"ruleset <n>\n\"" ) );
+		}
+	}
+	if(Q_stristr(adminNames, "/teamSize/" ) != NULL && g_gametype.integer >= GT_TEAM) {
+		adminFlags |= ADMIN_TEAMSIZE;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"teamsize <n>\n\"" ) );
+		}
+	}
+	if(Q_stristr(adminNames, "/shortGame/" ) != NULL) {
+		adminFlags |= ADMIN_SHORTGAME;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"shortGame <0/1>\n\"" ) );
+		}
+	}
+	if(Q_stristr(adminNames, "/vstr/" ) != NULL) {
+		adminFlags |= ADMIN_VSTR;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"vstr <cvar>\n\"" ) );
+		}
+	}
+
+	if ( printNames == qtrue ) {
+		if (adminFlags == 0)
+			trap_SendServerCommand( ent-g_entities, va("print \"Oddly, no admin commands were made available.\n\"" ) );
+	}
+
+	return adminFlags;
+
+}
+
+
 /*
 =================
 Cmd_Admin_f
 
 Commands only available to admins
+TODO: code some of these better
 =================
 */
 
@@ -529,15 +679,9 @@ void Cmd_Admin_Kick_f( gentity_t *ent ) {
 	}
 	clnum = ClientNumForString( str ); // TODO: optimize this
 
-	/*trap_SendServerCommand( -1,
-		va("notify %i\\\"%s" S_COLOR_WHITE " was kicked by admin %s" S_COLOR_WHITE ".\n\"",
-		NF_GAMEINFO, cl->pers.netname, ent->client->pers.netname) );*/
-
 	buffer[0] = '\0';
 	strcat(buffer, va("was kicked by admin %s", ent->client->pers.netname) );
 	trap_DropClient ( clnum, buffer );
-	//trap_DropClient ( clnum, va("was kicked by admin %s", ent->client->pers.netname) );
-	//trap_DropClient ( clnum, "TEST" );
 
 	// make a server log about admin kick, incase abuse happens
 	G_LogPrintf( "Admin Kick: %s (No. %i) was kicked by admin %s (No. %i)\n",
@@ -550,12 +694,185 @@ void Cmd_Admin_Kick_f( gentity_t *ent ) {
 
 /*
 -----------------
+*/
+
+void Cmd_Admin_Gametype_f( gentity_t *ent, int i ) {
+
+	if( i == GT_SINGLE_PLAYER || i < GT_FFA || i >= GT_MAX_GAME_TYPE) {
+		trap_SendServerCommand( ent-g_entities, "print \"Invalid gametype.\n\"" );
+		return;
+	}
+
+	G_LogPrintf( "Admin GameType: Admin %s (No. %i) changed gametype to %i\n",
+			ent->client->pers.netname, ent-g_entities, i );
+
+	trap_SendConsoleCommand( EXEC_APPEND, va("g_gametype %i; map_restart\n", i) );
+
+}
+
+/*
 -----------------
+*/
+
+void Cmd_Admin_MatchMode_f( gentity_t *ent, int i ) {
+
+	if ( i < 0 || i >= MM_NUM_MMODES ) {
+		trap_SendServerCommand( ent-g_entities, "print \"Invalid matchmode.\n\"" );
+		return;
+	}
+
+	G_LogPrintf( "Admin MatchMode: Admin %s (No. %i) changed matchmode to %i\n",
+			ent->client->pers.netname, ent-g_entities, i );
+
+	trap_SendConsoleCommand( EXEC_APPEND, va("g_matchmode %i; map_restart\n", i) );
+
+}
+
+/*
+-----------------
+*/
+
+void Cmd_Admin_ProMode_f( gentity_t *ent, int i ) {
+
+	if ( i < 0 )
+		i = 0;
+	else if ( i > 1 )
+		i = 1;
+
+	G_LogPrintf( "Admin ProMode: Admin %s (No. %i) changed proMode to %i\n",
+			ent->client->pers.netname, ent-g_entities, i );
+
+	trap_SendConsoleCommand( EXEC_APPEND, va("g_proMode %i; map_restart\n", i) );
+
+}
+
+/*
+-----------------
+*/
+
+void Cmd_Admin_Timelimit_f( gentity_t *ent, int i ) {
+
+	if( i == GT_SINGLE_PLAYER || i < GT_FFA || i >= GT_MAX_GAME_TYPE) {
+		trap_SendServerCommand( ent-g_entities, "print \"Invalid gametype.\n\"" );
+		return;
+	}
+
+	G_LogPrintf( "Admin TimeLimit: Admin %s (No. %i) changed timelimit to %i\n",
+			ent->client->pers.netname, ent-g_entities, i );
+
+	if ( level.warmupTime )
+		trap_SendConsoleCommand( EXEC_APPEND, va("timelimit %i\n", i) );
+	else
+		trap_SendConsoleCommand( EXEC_APPEND, va("timelimit %i; map_restart\n", i) );
+
+}
+
+/*
+-----------------
+*/
+
+void Cmd_Admin_Scorelimit_f( gentity_t *ent, int i ) {
+
+	if( i == GT_SINGLE_PLAYER || i < GT_FFA || i >= GT_MAX_GAME_TYPE) {
+		trap_SendServerCommand( ent-g_entities, "print \"Invalid gametype.\n\"" );
+		return;
+	}
+
+	G_LogPrintf( "Admin ScoreLimit: Admin %s (No. %i) changed scorelimit to %i\n",
+			ent->client->pers.netname, ent-g_entities, i );
+
+	if ( level.warmupTime )
+		trap_SendConsoleCommand( EXEC_APPEND, va("scorelimit %i\n", i) );
+	else
+		trap_SendConsoleCommand( EXEC_APPEND, va("scorelimit %i; map_restart\n", i) );
+
+}
+
+/*
+-----------------
+*/
+
+void Cmd_Admin_RuleSet_f( gentity_t *ent, int i ) {
+
+	if( i < 0 || i > 4 ) {
+		trap_SendServerCommand( ent-g_entities, "print \"Invalid ruleSet.\n\"" );
+		return;
+	}
+
+	G_LogPrintf( "Admin RuleSet: Admin %s (No. %i) changed ruleSet to %i\n",
+			ent->client->pers.netname, ent-g_entities, i );
+
+	trap_SendConsoleCommand( EXEC_APPEND, va("g_ruleSet %i; map_restart\n", i) );
+
+}
+
+/*
+-----------------
+*/
+
+void Cmd_Admin_TeamSize_f( gentity_t *ent, int i ) {
+
+	if( i < 0 || i > 16 ) {
+		trap_SendServerCommand( ent-g_entities, "print \"Invalid teamsize.\n\"" );
+		return;
+	}
+
+	G_LogPrintf( "Admin TeamSize: Admin %s (No. %i) changed teamSize to %i\n",
+			ent->client->pers.netname, ent-g_entities, i );
+
+	if ( level.warmupTime )
+		trap_SendConsoleCommand( EXEC_APPEND, va("g_teamSize %i\n", i) );
+	else
+		trap_SendConsoleCommand( EXEC_APPEND, va("g_teamSize %i; map_restart\n", i) );
+
+}
+
+/*
+-----------------
+*/
+
+void Cmd_Admin_ShortGame_f( gentity_t *ent, int i ) {
+
+	if ( i < 0 )
+		i = 0;
+	else if ( i > 1 )
+		i = 1;
+
+	G_LogPrintf( "Admin ShortGame: Admin %s (No. %i) changed shortGame to %i\n",
+			ent->client->pers.netname, ent-g_entities, i );
+
+	if ( level.warmupTime )
+		trap_SendConsoleCommand( EXEC_APPEND, va("g_shortGame %i\n", i) );
+	else
+		trap_SendConsoleCommand( EXEC_APPEND, va("g_shortGame %i; map_restart\n", i) );
+
+}
+
+/*
+-----------------
+*/
+
+void Cmd_Admin_Restart_f( gentity_t *ent ) {
+
+	G_LogPrintf( "Admin Restart: Admin %s (No. %i) restarted the map\n",
+			ent->client->pers.netname, ent-g_entities );
+
+	trap_SendConsoleCommand( EXEC_APPEND, "map_restart\n");
+
+}
+
+/*
+-----------------
+Cmd_Admin_f
 -----------------
 */
 
 void Cmd_Admin_f( gentity_t *ent ) {
 	char		cmd[MAX_TOKEN_CHARS];
+
+	char		arg[MAX_STRING_TOKENS];
+
+	int			allowedCmds;
 
 	if ( ent->client->sess.admin == qfalse ) {
 		trap_SendServerCommand( ent-g_entities, va("notify %i\\\"You do not have administrator rights.\n\"", NF_ERROR) );
@@ -564,50 +881,90 @@ void Cmd_Admin_f( gentity_t *ent ) {
 
 	// if no command is given, display a list of commands
 	if ( trap_Argc() < 2 ) {
-		trap_SendServerCommand( ent-g_entities, "print \"Usage: admin <cmd (client)>\n\"" );
+		trap_SendServerCommand( ent-g_entities, "print \"Usage: admin <cmd> (arg)\n\n\"" );
 	} else {
 
-		trap_Argv( 1, cmd, sizeof( cmd ) );
+		allowedCmds = Cmd_AllowedAdminCmds_f( ent, qfalse );
 
-		if (Q_stricmp (cmd, "mute") == 0) {
+		trap_Argv( 1, cmd, sizeof( cmd ) );
+		trap_Argv( 2, arg, sizeof( arg ) );
+		//atoi( arg )
+
+		if (Q_stricmp (cmd, "mute") == 0 && (allowedCmds & ADMIN_MUTE) ) {
 			Cmd_Admin_Mute_f( ent );
 			return;
 		}
-		if (Q_stricmp (cmd, "unmute") == 0) {
+		if (Q_stricmp (cmd, "unmute") == 0 && (allowedCmds & ADMIN_UNMUTE)) {
 			Cmd_Admin_Unmute_f( ent );
 			return;
 		}
-		if (Q_stricmp (cmd, "kick") == 0) {
+		if (Q_stricmp (cmd, "kick") == 0 && (allowedCmds & ADMIN_KICK)) {
 			Cmd_Admin_Kick_f( ent );
 			return;
 		}
-		if (Q_stricmp (cmd, "vstr") == 0) {
+		if (Q_stricmp (cmd, "vstr") == 0 && (allowedCmds & ADMIN_VSTR)) {
 			Cmd_Admin_VStr_f( ent );
 			return;
 		}
-		if (Q_stricmp (cmd, "players") == 0) {
+		if (Q_stricmp (cmd, "players") == 0 && (allowedCmds & ADMIN_PLAYERS)) {
 			Cmd_Admin_Players_f( ent );
 			return;
 		}
-		if (Q_stricmp (cmd, "map") == 0) {
+		if (Q_stricmp (cmd, "map") == 0 && (allowedCmds & ADMIN_MAP)) {
 			Cmd_Admin_Map_f( ent );
 			return;
 		}
-		if (Q_stricmp (cmd, "msg") == 0) {
+		if (Q_stricmp (cmd, "msg") == 0 && (allowedCmds & ADMIN_MSG)) {
 			Cmd_Admin_Msg_f( ent );
 			return;
 		}
-		if (Q_stricmp (cmd, "rpickup") == 0) {
+		if (Q_stricmp (cmd, "rpickup") == 0 && (allowedCmds & ADMIN_RPICKUP)) {
 			Cmd_Admin_RPickup_f( ent );
+			return;
+		}
+		if (Q_stricmp (cmd, "restart") == 0 && (allowedCmds & ADMIN_MAP_RESTART) ) {
+			Cmd_Admin_Restart_f( ent );
+			return;
+		}
+		if (Q_stricmp (cmd, "gametype") == 0 && (allowedCmds & ADMIN_GAMETYPE) ) {
+			Cmd_Admin_Gametype_f( ent, atoi( arg ) );
+			return;
+		}
+		if (Q_stricmp (cmd, "matchmode") == 0 && (allowedCmds & ADMIN_MATCHMODE) ) {
+			Cmd_Admin_MatchMode_f( ent, atoi( arg ) );
+			return;
+		}
+		if (Q_stricmp (cmd, "promode") == 0 && (allowedCmds & ADMIN_PROMODE) ) {
+			Cmd_Admin_ProMode_f( ent, atoi( arg ) );
+			return;
+		}
+		if (Q_stricmp (cmd, "timelimit") == 0 && (allowedCmds & ADMIN_TIMELIMIT) ) {
+			Cmd_Admin_Timelimit_f( ent, atoi( arg ) );
+			return;
+		}
+		if (Q_stricmp (cmd, "scorelimit") == 0 && (allowedCmds & ADMIN_SCORELIMIT) ) {
+			Cmd_Admin_Scorelimit_f( ent, atoi( arg ) );
+			return;
+		}
+		if (Q_stricmp (cmd, "ruleset") == 0 && (allowedCmds & ADMIN_RULESET) ) {
+			Cmd_Admin_RuleSet_f( ent, atoi( arg ) );
+			return;
+		}
+		if (Q_stricmp (cmd, "teamsize") == 0 && (allowedCmds & ADMIN_TEAMSIZE) ) {
+			Cmd_Admin_TeamSize_f( ent, atoi( arg ) );
+			return;
+		}
+		if (Q_stricmp (cmd, "shortgame") == 0 && (allowedCmds & ADMIN_SHORTGAME) ) {
+			Cmd_Admin_ShortGame_f( ent, atoi( arg ) );
 			return;
 		}
 
 		// invalid command
-		trap_SendServerCommand( ent-g_entities, "print \"Invalid admin command.\n\"" );
+		trap_SendServerCommand( ent-g_entities, "print \"Invalid admin command.\n\n\"" );
 
 	}
 
-	trap_SendServerCommand( ent-g_entities, "print \"Valid commands are: kick, map, msg, mute, players, rpickup, unmute, vstr\n\"" );
+	Cmd_AllowedAdminCmds_f( ent, qtrue );
 
 }
 

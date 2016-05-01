@@ -127,6 +127,7 @@ vmCvar_t	g_allowSpecCallVote;
 vmCvar_t	g_randomSpawn;
 vmCvar_t	g_adminPassword;
 vmCvar_t	g_mapRotation;
+vmCvar_t	g_allowedAdminCmds;
 vmCvar_t	g_enemyAttackLevel;
 vmCvar_t	g_powerUps;
 vmCvar_t	g_armor;
@@ -323,6 +324,8 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_adminPassword, "g_adminPassword", "", 0, 0, qfalse },
 	{ &g_mapRotation, "g_mapRotation", "rotation.cfg", CVAR_ARCHIVE | CVAR_NORESTART, 0, qfalse },
 
+	{ &g_allowedAdminCmds, "g_allowedAdminCmds", "/restart/map/msg/players/gametype/matchMode/proMode/kick/mute/unmute/rpickup/timelimit/scorelimit/ruleSet/teamSize/shortGame/vstr/", CVAR_ARCHIVE, 0, qfalse }, // mmp
+
 // scheduled maintenance vstr server calls
 // a call is exec at the end of the match
 	{ &g_serviceScheduleSun, "g_serviceScheduleSun", "", CVAR_ARCHIVE, 0, qfalse },
@@ -443,10 +446,10 @@ G_AllowedVotes
 
 int G_AllowedVotes ( gentity_t *ent, qboolean printNames ) {
 
-	char	tempStr[MAX_VOTENAME_LENGTH];
+	char	tempStr[MAX_VOTENAME_LENGTH]; // TODO: remove, it's unused
 	char	voteNames[MAX_CVAR_VALUE_STRING];
-	int	voteFlags = 0;
-	char	string[128];
+	int		voteFlags = 0;
+	char	string[128]; // TODO: remove, it's unused
 	qboolean	commaUse = qfalse;
 
 	trap_Cvar_VariableStringBuffer( "g_allowedVoteNames", voteNames, sizeof( voteNames ) );
