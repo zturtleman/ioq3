@@ -60,6 +60,7 @@ START SERVER MENU *****
 #define ID_STARTSERVERNEXT		18
 #define ID_RULESET				19
 #define ID_SHORTGAME			20
+#define ID_PROMODE				21
 
 typedef struct {
 	menuframework_s	menu;
@@ -645,6 +646,7 @@ typedef struct {
 	menuradiobutton_s	friendlyfire;
 	menulist_s			ruleSet;
 	menuradiobutton_s	shortGame;
+	menuradiobutton_s	proMode;
 	menufield_s			hostname;
 	menuradiobutton_s	pure;
 	menulist_s			botSkill;
@@ -751,6 +753,7 @@ static void ServerOptions_Start( void ) {
 	int		friendlyfire;
 	int		ruleSet;
 	int		shortGame;
+	int		proMode;
 	int		flaglimit;
 	int		pure;
 	int		skill;
@@ -758,14 +761,15 @@ static void ServerOptions_Start( void ) {
 	char	buf[64];
 	const char *info;
 
-	timelimit	 = atoi( s_serveroptions.timelimit.field.buffer );
-	fraglimit	 = atoi( s_serveroptions.fraglimit.field.buffer );
-	flaglimit	 = atoi( s_serveroptions.flaglimit.field.buffer );
-	scorelimit	 = atoi( s_serveroptions.scorelimit.field.buffer );
-	dedicated	 = s_serveroptions.dedicated.curvalue;
+	timelimit		= atoi( s_serveroptions.timelimit.field.buffer );
+	fraglimit		= atoi( s_serveroptions.fraglimit.field.buffer );
+	flaglimit		= atoi( s_serveroptions.flaglimit.field.buffer );
+	scorelimit		= atoi( s_serveroptions.scorelimit.field.buffer );
+	dedicated		= s_serveroptions.dedicated.curvalue;
 	friendlyfire	= s_serveroptions.friendlyfire.curvalue;
 	ruleSet	 		= s_serveroptions.ruleSet.curvalue;
 	shortGame 		= s_serveroptions.shortGame.curvalue;
+	proMode 		= s_serveroptions.proMode.curvalue;
 	pure			= s_serveroptions.pure.curvalue;
 	skill			= s_serveroptions.botSkill.curvalue + 1;
 
@@ -820,6 +824,7 @@ static void ServerOptions_Start( void ) {
 
 	trap_Cvar_SetValue( "g_ruleset", Com_Clamp( 0, 5, ruleSet ) ); // allow custom settings
 	trap_Cvar_SetValue( "g_shortGame", shortGame );
+	trap_Cvar_SetValue( "g_proMode", proMode );
 
 	/*trap_Cvar_SetValue( "sv_punkbuster", s_serveroptions.punkbuster.curvalue );*/
 
@@ -1355,6 +1360,16 @@ static void ServerOptions_MenuInit( qboolean multiplayer ) {
 	s_serveroptions.shortGame.generic.y			= y;
 	s_serveroptions.shortGame.curvalue			= 0;
 
+	y += BIGCHAR_HEIGHT;
+	s_serveroptions.proMode.generic.type		= MTYPE_RADIOBUTTON;
+	s_serveroptions.proMode.generic.name		= "Pro-Mode:";
+	s_serveroptions.proMode.generic.flags		= QMF_PULSEIFFOCUS|QMF_SMALLFONT;
+	s_serveroptions.proMode.generic.callback	= ServerOptions_Event;
+	s_serveroptions.proMode.generic.id			= ID_PROMODE;
+	s_serveroptions.proMode.generic.x			= OPTIONS_X;
+	s_serveroptions.proMode.generic.y			= y;
+	s_serveroptions.proMode.curvalue			= 0;
+
 	y += (BIGCHAR_HEIGHT+2) * 2;
 	/*s_serveroptions.scorelimit.generic.type			= MTYPE_FIELD;
 	s_serveroptions.scorelimit.generic.name			= "Score Limit:";
@@ -1571,6 +1586,7 @@ static void ServerOptions_MenuInit( qboolean multiplayer ) {
 
 	Menu_AddItem( &s_serveroptions.menu, &s_serveroptions.ruleSet );
 	Menu_AddItem( &s_serveroptions.menu, &s_serveroptions.shortGame );
+	Menu_AddItem( &s_serveroptions.menu, &s_serveroptions.proMode );
 
 	Menu_AddItem( &s_serveroptions.menu, &s_serveroptions.back );
 	Menu_AddItem( &s_serveroptions.menu, &s_serveroptions.next );
