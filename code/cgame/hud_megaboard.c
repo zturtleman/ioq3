@@ -342,9 +342,9 @@ static void HUD_MegaDrawClientScore( int x, int y, score_t *score, int scRank, v
 		// if this is a cpu bot, indicate that this is so
 //		CG_DrawCustomString( x-1, y+3, 6, 8, "^3BOT", fade );// mmp - need to make new bot icons... if possible  :(
 		UI_DrawCustomProportionalString( x + 20, y, "BOT", UI_DROPSHADOW | UI_CENTER, 0.50, colorYel, qfalse );
-	} else if ( ci->handicap > 0 && ci->handicap < 100 ) {
+	} else if ( ci->handicap > 0 ) {
 		// draw handicap if any is set
-		Com_sprintf( string, sizeof( string ), S_COLOR_GREEN"%2i", ci->handicap );
+		Com_sprintf( string, sizeof( string ), S_COLOR_GREEN"%2i%%", ci->handicap );
 //		CG_DrawCustomString( x, y+3, 8, 8, string, fade );
 		UI_DrawCustomProportionalString( x + 20, y, string, UI_DROPSHADOW | UI_CENTER, 0.50, colorWht, qfalse );
 	}

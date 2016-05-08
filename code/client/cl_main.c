@@ -3585,7 +3585,7 @@ void CL_Init( void ) {
 	Cvar_Get ("color2", "0", CVAR_USERINFO | CVAR_ARCHIVE );*/
 	Cvar_Get ("chatColorCode", "2", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("teamchatColorCode", "5", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("handicap", "100", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("handicap", "0", CVAR_USERINFO );
 	Cvar_Get ("teamtask", "0", CVAR_USERINFO );
 	Cvar_Get ("sex", "yes", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("cl_anonymous", "0", CVAR_USERINFO | CVAR_ARCHIVE );

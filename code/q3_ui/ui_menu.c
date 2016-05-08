@@ -273,7 +273,7 @@ static void Main_MenuDraw( void ) {
 	UI_DrawHandlePic( 0, y2, 640, 64, s_main.bannerDemo );
 
 	// draw test banner
-//	UI_DrawHandlePic( 0, 48, 640, 64, s_main.bannerTest ); // only use this when testing an unreleased build
+	UI_DrawHandlePic( 0, 48, 640, 64, s_main.bannerTest ); // only use this when testing an unreleased build
 }
 
 
@@ -282,7 +282,7 @@ static void Main_MenuDraw( void ) {
 UI_TeamArenaExists
 ===============
 */
-static qboolean UI_TeamArenaExists( void ) {
+/*static qboolean UI_TeamArenaExists( void ) {
 	int		numdirs;
 	char	dirlist[2048];
 	char	*dirptr;
@@ -301,7 +301,7 @@ static qboolean UI_TeamArenaExists( void ) {
     dirptr += dirlen + strlen(descptr) + 1;
 	}
 	return qfalse;
-}
+}*/
 
 
 /*
@@ -449,7 +449,7 @@ void UI_MainMenu( void ) {
 	s_main.dlc.generic.y				= y;
 	s_main.dlc.generic.id				= ID_MODS;
 	s_main.dlc.generic.callback			= Main_MenuEvent;
-	s_main.dlc.string				= "DOWNLOADABLE CONTENT... J/K";
+	s_main.dlc.string				= "DLC STORE... J/K";
 	s_main.dlc.color				= color_red;
 	s_main.dlc.style				= style;
 

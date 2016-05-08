@@ -1139,7 +1139,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	int			take;
 	int			asave;
 	int			knockback;
-	int			max;
+	int			max; // TODO: remove if no longer needed
+	int			handicap;
 	int			levelGain;
 	int			lastHit;
 
@@ -1188,13 +1189,15 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		/*return;*/
 	}
 
-	// reduce damage by the attacker's handicap value
-	// unless they are rocket jumping
-	/*if ( attacker->client && attacker != targ ) {
-		max = attacker->client->ps.stats[STAT_MAX_HEALTH];
-		damage = damage * max / 100;
-	}*/
-	// mmp - sorry, this was abused
+	// increase damage to target if they have a handicap
+	if ( attacker->client && attacker != targ ) {
+		//max = attacker->client->ps.stats[STAT_MAX_HEALTH];
+		handicap = targ->client->pers.maxHealth;
+		if ( handicap ) {
+			damage = damage + ( damage * (handicap / 100));
+			//G_Printf( "DEBUG: DAMAGE=%i\n", damage ); // debug
+		}
+	}
 
 	// increase damage if in overtime/sudden death
 	if ( attacker->client && attacker != targ ) {

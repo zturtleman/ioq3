@@ -37,6 +37,10 @@ Draw functions
 ===========================================================================
 */
 
+#define	HUD_HEALTH_OVER				100
+#define	HUD_HEALTH_LOW				25
+#define	HUD_HEALTH_VERY_LOW			10
+
 /*
 =================
 HUD_FuncColorGet
@@ -2851,11 +2855,6 @@ void HUD_MegaDrawStatusHealth( int xpos, int xoff, int ypos, int posLock, int al
 	char		*s;
 	int			value;
 
-	// temp variable for health display
-	int			healthOver;
-	int			healthLow;
-	int			healthVeryLow;
-
 	if ( !hud_statusHealth_show.integer ) {
 		return;
 	}
@@ -2867,27 +2866,20 @@ void HUD_MegaDrawStatusHealth( int xpos, int xoff, int ypos, int posLock, int al
 
 	value = ps->stats[STAT_HEALTH];
 
-	healthOver = ci->handicap;
-	if ( healthOver <= 0 ) {
-		healthOver = 100;
-	}
-	healthLow = healthOver * 0.25;
-	healthVeryLow = healthOver * 0.10;
-
 	if (hud_statusHealth_colorType.integer==1) {
 		switch ( team) {
 			case TEAM_RED:
-				if (value > healthOver) {
+				if (value > HUD_HEALTH_OVER) {
 					// over 100 health
 					HUD_FuncColorGet ( hud_statusHealth_colorHighRed.string, color );
-				} else if (value >= healthLow) {
+				} else if (value >= HUD_HEALTH_LOW) {
 					// 25 - 100 health
 					HUD_FuncColorGet ( hud_statusHealth_colorNormalRed.string, color );
 				} else {
 					// hide if value is zero, and if clients wants it that way
 					if (value <= 0 && !hud_statusHealth_showZero.integer) {
 						return;
-					} else if ( (value > healthVeryLow && !(cg.time & 256)) || (value < healthVeryLow + 1 && !(cg.time & 128) ) ){
+					} else if ( (value > HUD_HEALTH_VERY_LOW && !(cg.time & 256)) || (value < HUD_HEALTH_VERY_LOW + 1 && !(cg.time & 128) ) ){
 						// < 25 health
 						HUD_FuncColorGet ( hud_statusHealth_colorLowRed.string, color );
 					} else {
@@ -2898,17 +2890,17 @@ void HUD_MegaDrawStatusHealth( int xpos, int xoff, int ypos, int posLock, int al
 				break;
 
 			case TEAM_BLUE:
-				if (value > healthOver) {
+				if (value > HUD_HEALTH_OVER) {
 					// over 100 health
 					HUD_FuncColorGet ( hud_statusHealth_colorHighBlue.string, color );
-				} else if (value >= healthLow) {
+				} else if (value >= HUD_HEALTH_LOW) {
 					// 25 - 100 health
 					HUD_FuncColorGet ( hud_statusHealth_colorNormalBlue.string, color );
 				} else {
 					// hide if value is zero, and if clients wants it that way
 					if (value <= 0 && !hud_statusHealth_showZero.integer) {
 						return;
-					} else if ( (value > healthVeryLow && !(cg.time & 256)) || (value < healthVeryLow + 1 && !(cg.time & 128) ) ){
+					} else if ( (value > HUD_HEALTH_VERY_LOW && !(cg.time & 256)) || (value < HUD_HEALTH_VERY_LOW + 1 && !(cg.time & 128) ) ){
 						// < 25 health
 						HUD_FuncColorGet ( hud_statusHealth_colorLowBlue.string, color );
 					} else {
@@ -2919,17 +2911,17 @@ void HUD_MegaDrawStatusHealth( int xpos, int xoff, int ypos, int posLock, int al
 				break;
 
 			default:
-				if (value > healthOver) {
+				if (value > HUD_HEALTH_OVER) {
 					// over 100 health
 					HUD_FuncColorGet ( hud_statusHealth_colorHigh.string, color );
-				} else if (value >= healthLow) {
+				} else if (value >= HUD_HEALTH_LOW) {
 					// 25 - 100 health
 					HUD_FuncColorGet ( hud_statusHealth_colorNormal.string, color );
 				} else {
 					// hide if value is zero, and if clients wants it that way
 					if (value <= 0 && !hud_statusHealth_showZero.integer) {
 						return;
-					} else if ( (value > healthVeryLow && !(cg.time & 256)) || (value < healthVeryLow + 1 && !(cg.time & 128) ) ){
+					} else if ( (value > HUD_HEALTH_VERY_LOW && !(cg.time & 256)) || (value < HUD_HEALTH_VERY_LOW + 1 && !(cg.time & 128) ) ){
 						// < 25 health
 						HUD_FuncColorGet ( hud_statusHealth_colorLow.string, color );
 					} else {
@@ -2959,11 +2951,6 @@ void HUD_MegaDrawStatusHealthIcon( int xpos, int xoff, int ypos, int posLock, in
 	char		*s;
 	int		value;
 
-	// temp variable for health display
-	int		healthOver;
-	int		healthLow;
-	int		healthVeryLow;
-
 	if ( !hud_statusHealthIcon_show.integer ) {
 		return;
 	}
@@ -2975,27 +2962,20 @@ void HUD_MegaDrawStatusHealthIcon( int xpos, int xoff, int ypos, int posLock, in
 
 	value = ps->stats[STAT_HEALTH];
 
-	healthOver = ci->handicap;
-	if ( healthOver <= 0 ) {
-		healthOver = 100;
-	}
-	healthLow = healthOver * 0.25;
-	healthVeryLow = healthOver * 0.10;
-
 	if (hud_statusHealthIcon_colorType.integer==1) {
 		switch ( team) {
 			case TEAM_RED:
-				if (value > healthOver) {
+				if (value > HUD_HEALTH_OVER) {
 					// over 100 health
 					HUD_FuncColorGet ( hud_statusHealthIcon_colorHighRed.string, color );
-				} else if (value >= healthLow) {
+				} else if (value >= HUD_HEALTH_LOW) {
 					// 25 - 100 health
 					HUD_FuncColorGet ( hud_statusHealthIcon_colorNormalRed.string, color );
 				} else {
 					// hide if value is zero, and if clients wants it that way
 					if (value <= 0 && !hud_statusHealthIcon_showZero.integer) {
 						return;
-					} else if ( (value > healthVeryLow && !(cg.time & 256)) || (value < healthVeryLow + 1 && !(cg.time & 128) ) ){
+					} else if ( (value > HUD_HEALTH_VERY_LOW && !(cg.time & 256)) || (value < HUD_HEALTH_VERY_LOW + 1 && !(cg.time & 128) ) ){
 						// < 25 health
 						HUD_FuncColorGet ( hud_statusHealthIcon_colorLowRed.string, color );
 					} else {
@@ -3006,17 +2986,17 @@ void HUD_MegaDrawStatusHealthIcon( int xpos, int xoff, int ypos, int posLock, in
 				break;
 
 			case TEAM_BLUE:
-				if (value > healthOver) {
+				if (value > HUD_HEALTH_OVER) {
 					// over 100 health
 					HUD_FuncColorGet ( hud_statusHealthIcon_colorHighBlue.string, color );
-				} else if (value >= healthLow) {
+				} else if (value >= HUD_HEALTH_LOW) {
 					// 25 - 100 health
 					HUD_FuncColorGet ( hud_statusHealthIcon_colorNormalBlue.string, color );
 				} else {
 					// hide if value is zero, and if clients wants it that way
 					if (value <= 0 && !hud_statusHealthIcon_showZero.integer) {
 						return;
-					} else if ( (value > healthVeryLow && !(cg.time & 256)) || (value < healthVeryLow + 1 && !(cg.time & 128) ) ){
+					} else if ( (value > HUD_HEALTH_VERY_LOW && !(cg.time & 256)) || (value < HUD_HEALTH_VERY_LOW + 1 && !(cg.time & 128) ) ){
 						// < 25 health
 						HUD_FuncColorGet ( hud_statusHealthIcon_colorLowBlue.string, color );
 					} else {
@@ -3027,17 +3007,17 @@ void HUD_MegaDrawStatusHealthIcon( int xpos, int xoff, int ypos, int posLock, in
 				break;
 
 			default:
-				if (value > healthOver) {
+				if (value > HUD_HEALTH_OVER) {
 					// over 100 health
 					HUD_FuncColorGet ( hud_statusHealthIcon_colorHigh.string, color );
-				} else if (value >= healthLow) {
+				} else if (value >= HUD_HEALTH_LOW) {
 					// 25 - 100 health
 					HUD_FuncColorGet ( hud_statusHealthIcon_colorNormal.string, color );
 				} else {
 					// hide if value is zero, and if clients wants it that way
 					if (value <= 0 && !hud_statusHealthIcon_showZero.integer) {
 						return;
-					} else if ( (value > healthVeryLow && !(cg.time & 256)) || (value < healthVeryLow + 1 && !(cg.time & 128) ) ){
+					} else if ( (value > HUD_HEALTH_VERY_LOW && !(cg.time & 256)) || (value < HUD_HEALTH_VERY_LOW + 1 && !(cg.time & 128) ) ){
 						// < 25 health
 						HUD_FuncColorGet ( hud_statusHealthIcon_colorLow.string, color );
 					} else {
@@ -4425,9 +4405,6 @@ void HUD_DrawMetalHUD ( int posRight ) {
 	int			value;
 	int			bits;
 	int			max;
-	int			healthOver;
-	int			healthLow;
-	int			healthVeryLow;
 
 /*
 ---------------------------------------------------------------------------
@@ -4439,19 +4416,11 @@ void HUD_DrawMetalHUD ( int posRight ) {
 	ps = &cg.snap->ps;
 	ci = &cgs.clientinfo[cg.snap->ps.clientNum];
 
-	healthOver = ci->handicap;
-	if ( healthOver <= 0 ) {
-		healthOver = 100;
-	}
-	healthLow = healthOver * 0.25;
-	healthVeryLow = healthOver * 0.10;
-	value = ps->stats[STAT_HEALTH];
-
 	// health
-	if ( value > healthOver ) {
+	if ( value > HUD_HEALTH_OVER ) {
 		UI_DrawNumCharInteger( posCenter - 24, 460, 16, value, 0, qfalse );
 	} else
-	if ( ( value >= healthLow ) || (value > healthVeryLow && !(cg.time & 256)) || (value < healthVeryLow + 1 && !(cg.time & 128) ) ){
+	if ( ( value >= HUD_HEALTH_LOW ) || (value > HUD_HEALTH_VERY_LOW && !(cg.time & 256)) || (value < HUD_HEALTH_VERY_LOW + 1 && !(cg.time & 128) ) ){
 		UI_DrawNumCharInteger( posCenter - 24, 460, 16, value, 1, qfalse );
 	}
 

@@ -1455,8 +1455,13 @@ void SV_UserinfoChanged( client_t *cl ) {
 	val = Info_ValueForKey (cl->userinfo, "handicap");
 	if (strlen(val)) {
 		i = atoi(val);
-		if (i<=0 || i>100 || strlen(val) > 4) {
+		/*if (i<=0 || i>100 || strlen(val) > 4) {
 			Info_SetValueForKey( cl->userinfo, "handicap", "100" );
+		}*/
+		if ( i < 0 || strlen(val) < 1) {
+			Info_SetValueForKey( cl->userinfo, "handicap", "0" );
+		} else if ( i > 666 || strlen(val) > 3 ) {
+			Info_SetValueForKey( cl->userinfo, "handicap", "666" );
 		}
 	}
 

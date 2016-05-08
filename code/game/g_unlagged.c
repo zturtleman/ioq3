@@ -193,7 +193,7 @@ void G_TimeShiftClient( gentity_t *ent, int time, qboolean debug, gentity_t *deb
 					frac,
 					ent->client->history[j].currentOrigin[0],
 					ent->client->history[j].currentOrigin[1],
-					ent->client->history[j].currentOrigin[2], 
+					ent->client->history[j].currentOrigin[2],
 					ent->client->history[k].currentOrigin[0],
 					ent->client->history[k].currentOrigin[1],
 					ent->client->history[k].currentOrigin[2],
@@ -240,7 +240,7 @@ void G_TimeShiftAllClients( int time, gentity_t *skip ) {
 	int			i;
 	gentity_t	*ent;
 #ifdef MISSIONPACK
-	qboolean debug = ( skip != NULL && skip->client && 
+	qboolean debug = ( skip != NULL && skip->client &&
 			/*skip->client->pers.debugDelag && */ skip->s.weapon == WP_RAILGUN );
 #else
 	qboolean debug = qfalse;
@@ -261,9 +261,10 @@ void G_TimeShiftAllClients( int time, gentity_t *skip ) {
 G_DoTimeShiftFor
 
 Decide what time to shift everyone back to, and do it
+TODO: Clean this up
 ================
 */
-void G_DoTimeShiftFor( gentity_t *ent ) {	
+void G_DoTimeShiftFor( gentity_t *ent ) {
 	int wpflags[WP_NUM_WEAPONS] = { 0, 1, 2, 4, 0, 0, 8
 									#ifdef MISSIONPACK
 										, 16
@@ -286,9 +287,9 @@ void G_DoTimeShiftFor( gentity_t *ent ) {
 	if ( ent->client->pers.delag & 1 || ent->client->pers.delag & wpflag ) {
 		// do the full lag compensation, except what the client nudges
 		time = ent->client->attackTime + ent->client->pers.cmdTimeNudge;
-                //Give the lightning gun some handicap (lag was part of weapon balance in VQ3)
-                /*if(ent->client->ps.weapon == WP_LIGHTNING )
-                    time+=50;*/
+		//Give the lightning gun some handicap (lag was part of weapon balance in VQ3) <-- BULLSHIT!
+		/*if(ent->client->ps.weapon == WP_LIGHTNING )
+				time+=50;*/
 	}
 	else {
 		// do just 50ms
@@ -413,7 +414,7 @@ qboolean G_PredictPlayerSlideMove( gentity_t *ent, float frametime ) {
 	vec3_t		endVelocity;
 	vec3_t		endClipVelocity;
 //	vec3_t		worldUp = { 0.0f, 0.0f, 1.0f };
-	
+
 	numbumps = 4;
 
 	VectorCopy( ent->s.pos.trDelta, primal_velocity );

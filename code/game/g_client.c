@@ -826,7 +826,7 @@ if desired.
 */
 void ClientUserinfoChanged( int clientNum ) {
 	gentity_t *ent;
-	int		teamTask, teamLeader, team, health;
+	int		teamTask, teamLeader, team, health; // TODO: the health variable is no longer needed, it can be removed now
 	char	*s;
 	char	model[MAX_QPATH];
 	char	headModel[MAX_QPATH];
@@ -935,25 +935,25 @@ void ClientUserinfoChanged( int clientNum ) {
 		}
 	}
 
-	// set max health
-#ifdef MISSIONPACK
-	if (client->ps.powerups[PW_GUARD]) {
-		client->pers.maxHealth = 200;
-	} else {
-		health = atoi( Info_ValueForKey( userinfo, "handicap" ) );
-		client->pers.maxHealth = health;
-		if ( client->pers.maxHealth < 1 || client->pers.maxHealth > 100 ) {
-			client->pers.maxHealth = 100;
-		}
+	// set max health and handicap
+	// TODO: differentiate 'client->pers.maxHealth' from 'STAT_MAX_HEALTH',
+	//       possibly change maxHealth to damageScale or something
+	//
+	//       the new handicap will either increase or decrease damage dealt
+	//
+	//       handicap will be a votable item
+	client->pers.maxHealth = atoi( Info_ValueForKey( userinfo, "handicap" ) );
+	if ( client->pers.maxHealth < 0 ) {
+		client->pers.maxHealth = 0;
+	} else if ( client->pers.maxHealth > 666 ) {
+		client->pers.maxHealth = 666;
 	}
-#else
-	health = atoi( Info_ValueForKey( userinfo, "handicap" ) );
+	/*health = atoi( Info_ValueForKey( userinfo, "handicap" ) );
 	client->pers.maxHealth = health;
 	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > 100 ) {
 		client->pers.maxHealth = 100;
-	}
-#endif
-	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
+	}*/
+	client->ps.stats[STAT_MAX_HEALTH] = 100;
 
 	// set model
 	if( g_gametype.integer >= GT_TEAM ) {
@@ -1526,13 +1526,16 @@ void ClientSpawn(gentity_t *ent) {
 	client->airOutTime = level.time + 12000;
 
 	trap_GetUserinfo( index, userinfo, sizeof(userinfo) );
-	// set max health
+	// set handicap
 	client->pers.maxHealth = atoi( Info_ValueForKey( userinfo, "handicap" ) );
-	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > 100 ) {
-		client->pers.maxHealth = 100;
+	if ( client->pers.maxHealth < 0 ) {
+		client->pers.maxHealth = 0;
+	} else if ( client->pers.maxHealth > 666 ) {
+		client->pers.maxHealth = 666;
 	}
+
 	// clear entity values
-	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
+	client->ps.stats[STAT_MAX_HEALTH] = 100 /*client->pers.maxHealth*/;
 	client->ps.eFlags = flags;
 
 	ent->s.groundEntityNum = ENTITYNUM_NONE;
@@ -1598,7 +1601,7 @@ void ClientSpawn(gentity_t *ent) {
 
 				client->ps.stats[STAT_INVENTORY] |= 7; // start with all keycards
 
-				// start health at 30, unless the player gave themself a handicap
+				// start health at 30
 				healthSet = client->ps.stats[STAT_MAX_HEALTH] * .3;
 				if ( healthSet < 1 ) {
 					healthSet = 1; // just so they won't start with 0 health
@@ -1640,7 +1643,7 @@ void ClientSpawn(gentity_t *ent) {
 				// start player with pent, since this mode can be spammy
 				client->ps.powerups[PW_PENT] = level.time + 3000;
 
-				// start health at 250, unless the player gave themself a handicap
+				// start health at 250
 				ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH] * 2.5;
 
 				// start with tier 3 armor at 200
@@ -1679,7 +1682,7 @@ void ClientSpawn(gentity_t *ent) {
 					client->ps.ammo[AT_GAS] = 100;
 				}
 
-				// start health at 200, unless the player gave themself a handicap
+				// start health at 200
 				ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH] * 2;
 
 				// start wither tier 3 armor at 200
@@ -1697,7 +1700,7 @@ void ClientSpawn(gentity_t *ent) {
 				client->ps.ammo[AT_BULLETS] = 0;
 				client->ps.ammo[AT_GAS] = 0;
 
-				// start health at 100, unless the player gave themself a handicap
+				// start health at 100
 				ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH];
 
 				// start with no armor
@@ -1706,12 +1709,12 @@ void ClientSpawn(gentity_t *ent) {
 
 				client->disallowItemPickUp = 1; // meant to delay pickup on items when spawning on them
 			} else {
-				// start health at 100, unless the player gave themself a handicap
+				// start health at 100
 				ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH];
 			}
 		}
 	} else {
-		// start health at 100, unless the player gave themself a handicap
+		// start health at 100
 		ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH];
 	}
 
