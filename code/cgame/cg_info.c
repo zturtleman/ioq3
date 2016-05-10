@@ -348,6 +348,11 @@ void CG_DrawInformation( void ) {
 		UI_DrawCustomProportionalString( 336, 90, "Cheats are enabled", UI_LEFT|UI_DROPSHADOW, 0.6, colorWhite, qtrue );
 	}
 
+	// protip message
+	if ( map[0] ) {
+		UI_DrawCustomProportionalString( centerPos, 464, "PROTIP: By playing MFArena, you are supporting MFArena. Thank you.", UI_CENTER | UI_DROPSHADOW, 0.50, g_color_table[ColorIndex(COLOR_YELLOW)], qtrue );
+	}
+
 	// game type
 	/*switch ( cgs.gametype ) {
 	case GT_FFA:

@@ -40,7 +40,7 @@
 ##MFArena Prototype Notes
 * The options thoughout the UI were not updated with the changes made to the game, requiring some options to be set via the console.
 * The cvar 'g_promode' enables classic Quake physics modes W-Mode(World/QW) and A-Mode(Arena/VQ3).
-* Selecting between 'World' and 'Arena' physics, require binding a key to '+button12', which can be set in the 'misc.' section of the 'controls' menu.
+* Selecting between 'World' and 'Arena' physics, require binding a key to '+button12' known as the 'special' button, which can be set in the 'misc.' section of the 'controls' menu.
 * The cvars 'fraglimit' and 'capturelimit' were replaced with 'scorelimit'.
 * There is a rule set enforcer set by default, called 'g_ruleSet'.  Setting it to '0' will allow a custom rule set.  A value of '1' (default) will enforce a standard rule set, locking most rule set cvars (e.g. 'timelimit', 'scorelimit', etc.).  Setting the value to '2', will enable hardcore mode.
 * Some of the 'cg_*' cvars that control HUD functions won't work, as they are being replaced with the new HUD system.
@@ -50,7 +50,7 @@
 ##Compiling the engine
 * Enter the directory where MFArena's source is cloned (downloaded via git).
 * Besure you have install the game assets for MFArena.
-* Make sure your system has the SDL-dev libraries (including SDL2) installed.
+* Make sure your system has the SDL2-dev libraries installed.
 * Open a console, and type 'make'.
 * After the engine compiled successfully, copy (or move) files 'mfaded.*', 'mfarena.*' and 'renderer_opengl*.so' from 'build/release-linux-*' back to the directory where you install MFArena.
 * Run 'mfarena' (eg: ./mfarena.x86_64), and enjoy.

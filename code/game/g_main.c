@@ -3725,7 +3725,7 @@ void CheckIntermissionExit( void ) {
 
 		if ( level.time > level.exitTime + 10000 && !level.intermissionEndAlert ) {
 			level.intermissionEndAlert = 69;
-			trap_SendServerCommand( -1, va("notify %i\\\"Next match will begin in 5 seconds.  Get ready!\n\"",
+			trap_SendServerCommand( -1, va("notify %i\\\""S_COLOR_YELLOW"Next match will begin in 5 seconds.  Get ready!\n\"",
 							NF_GAMEINFO) );
 		}
 
