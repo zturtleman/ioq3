@@ -858,36 +858,19 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 		// boing sound at origin, jump sound on player
 		trap_S_StartSound ( cent->lerpOrigin, -1, CHAN_VOICE, cgs.media.jumpPadSound );
-//		trap_S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*jump1.wav" ) );
 		trap_S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, va("*jump%c.wav", '1'+(rand()&3) ) ) );
 		break;
 
 	case EV_JUMP:
 		DEBUGNAME("EV_JUMP");
-//		trap_S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*jump1.wav" ) );
 		trap_S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, va("*jump%c.wav", '1'+(rand()&3) ) ) );
 		break;
-	case EV_TAUNT:
+	case EV_TAUNT: // TODO: clients sometimes don't receive the same taunt, make this more consistant
 		DEBUGNAME("EV_TAUNT");
-		trap_S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, va("*taunt%c.wav", '1'+((cg.time / 1024)&3) ) ) );
+		if ( cg_playerTaunt.integer ) {
+			trap_S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, va("*taunt%c.wav", '1'+((cg.time / 1024)&3) ) ) );
+		}
 		break;
-//		trap_S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*taunt.wav" ) );
-/*	case EV_TAUNT1:
-		DEBUGNAME("EV_TAUNT1");
-		trap_S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*taunt1.wav" ) );
-		break;
-	case EV_TAUNT2:
-		DEBUGNAME("EV_TAUNT2");
-		trap_S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*taunt2.wav" ) );
-		break;
-	case EV_TAUNT3:
-		DEBUGNAME("EV_TAUNT3");
-		trap_S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*taunt3.wav" ) );
-		break;
-	case EV_TAUNT4:
-		DEBUGNAME("EV_TAUNT4");
-		trap_S_StartSound (NULL, es->number, CHAN_VOICE, CG_CustomSound( es->number, "*taunt4.wav" ) );
-		break;*/
 #ifdef MISSIONPACK
 	case EV_TAUNT_YES:
 		DEBUGNAME("EV_TAUNT_YES");

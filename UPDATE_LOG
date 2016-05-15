@@ -2,7 +2,7 @@ Update 16XXXX
 -------------
 - Source code now on Github.
 - Players are now given credit for crushing another player with a crusher.
-- Map "MFDM10: Deadly heights" is added.
+- Maps "MFDM10: Deadly heights" and "MFARENA03: Pillar Whore" are added.
 - Depending on the gametype, matches are now split up into two rounds.  If the first round ends, the player who's behind must have at least half the score of the leader to advance to the next round.  There are no breaks in between rounds, and second rounds starts with no interuption, as if there were no rounds.  It should be noted and cleared out, that this is no way related to Clan Arena, and Clan Arena will NEVER be a part of MFArena, due to Clan Arena having such a toxic community.
 - Handicap is no longer simular to Quake 3's handicap in anyway what so ever.  A player with a handicap of 100, will receive 100% of extra damage dealt, while setting handicap to 0, will disable the handicap.  Players updating using an older game config may want to change their handicap, since it may be archived as 100.  Also, handicap should no longer be archived (saved in the configs).
 - Super Shotgun has been slightly tweaked.  Reload for the Super Shotgun was increased by 200 ms.  However, there was a slight buff as well.  One pellet will at least hit where the crosshair is pointing.

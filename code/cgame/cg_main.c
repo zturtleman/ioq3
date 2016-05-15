@@ -197,6 +197,7 @@ vmCvar_t	cg_oldPlasma;
 vmCvar_t	cg_damageKick; //
 vmCvar_t	cg_chatSound; //
 vmCvar_t	cg_teamChatSound; //
+vmCvar_t	cg_playerTaunt; //
 
 vmCvar_t	cg_trueLightning;
 
@@ -742,6 +743,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_damageKick, "cg_damageKick", "1", CVAR_ARCHIVE},
 	{ &cg_chatSound, "cg_chatSound", "1", CVAR_ARCHIVE},
 	{ &cg_teamChatSound, "cg_teamChatSound", "2", CVAR_ARCHIVE},
+	{ &cg_playerTaunt, "cg_playerTaunt", "1", CVAR_ARCHIVE}, // enables client side player's taunt for the
 
 //unlagged - client options
 	{ &cg_delag, "cg_delag", "1", CVAR_ARCHIVE | CVAR_USERINFO },

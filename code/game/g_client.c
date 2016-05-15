@@ -1514,6 +1514,7 @@ void ClientSpawn(gentity_t *ent) {
 	client->accuracy_hits = accuracy_hits;
 	client->accuracy_shots = accuracy_shots;
 	client->lastkilled_client = -1;
+	client->lastBlasterShot = level.time; // reset blaster charge
 
 	for ( i = 0 ; i < MAX_PERSISTANT ; i++ ) {
 		client->ps.persistant[i] = persistant[i];

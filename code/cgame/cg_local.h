@@ -1516,6 +1516,7 @@ extern	vmCvar_t		cg_oldPlasma;
 extern	vmCvar_t		cg_damageKick;
 extern	vmCvar_t		cg_chatSound;
 extern	vmCvar_t		cg_teamChatSound;
+extern	vmCvar_t		cg_playerTaunt;
 
 extern	vmCvar_t		cg_trueLightning;
 
