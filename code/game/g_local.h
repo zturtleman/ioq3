@@ -654,6 +654,7 @@ typedef struct {
 	int				rs_armor;
 	int				rs_popCTF;
 	int				rs_roundFormat; // enables 3 round matches, 1r = normal, 2r = losing player must have half of leader, 3r = overtime
+	int				rs_dynamicItemSpawns; // increases item respawn times as rounds advance
 
 	// not really rulesets, but correctly applies the right value for each cvar
 	int				rs_warmup;
@@ -1181,6 +1182,7 @@ extern	vmCvar_t	g_armor;
 extern	vmCvar_t	g_allowGhost;
 extern	vmCvar_t	g_shortGame;
 extern	vmCvar_t	g_roundFormat;
+extern	vmCvar_t	g_dynamicItemSpawns;
 
 extern	vmCvar_t	g_iUnderstandBotsAreBroken; // mmp
 

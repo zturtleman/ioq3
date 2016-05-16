@@ -36,6 +36,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 
+#define	RESPAWN_WEAPON			30
 #define	RESPAWN_ARMOR			20
 #define	RESPAWN_HEALTH			30 // is 35 in q3a
 #define	RESPAWN_AMMO			30 // is 40 in q3a
@@ -358,7 +359,13 @@ void HealthDecay (gentity_t *ent) {
 
 	if (strcmp(ent->activator->classname,"player")
 		|| ent->activator->client->ps.stats[STAT_HEALTH] <= 100) {
-		ent->nextthink = level.time + RESPAWN_MEGAHEALTH * 1000;
+
+		// increase item spawn times based on game round and overtimes
+		if ( level.rs_dynamicItemSpawns ) {
+			ent->nextthink = level.time + ( RESPAWN_MEGAHEALTH + (level.currentRound * 5) + ( level.overtime * 5 ) ) * 1000;
+		} else {
+			ent->nextthink = level.time + RESPAWN_MEGAHEALTH * 1000;
+		}
 		ent->think = RespawnItem;
 		return;
 	}
@@ -664,6 +671,7 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	qboolean		predict;
 	int			weaponRespawn;
 	int			respawnValue;
+	int			respawnTimeAdd;
 
 	if (!other->client)
 		return;
@@ -693,18 +701,25 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 
 	predict = other->client->pers.predictItemPickup;
 
+	// increase item spawn times based on game round and overtimes
+	if ( level.rs_dynamicItemSpawns ) {
+		respawnTimeAdd = (level.currentRound * 5) + ( level.overtime * 5 );
+	} else {
+		respawnTimeAdd = 0;
+	}
+
 	// call the item-specific pickup function
 	switch( ent->item->giType ) {
 	case IT_WEAPON:
 		weaponRespawn = level.rs_weaponRespawn;
 		if ( level.rs_matchMode == MM_PICKUP_ALWAYS || level.rs_matchMode == MM_PICKUP_ALWAYS_NOAMMO ) {
 			if ( weaponRespawn < 1 ) {
-				weaponRespawn = 30;
+				weaponRespawn = RESPAWN_WEAPON;
 			}
 		}
 
 		if (weaponRespawn > 0) {
-			respawn = Pickup_Weapon(ent, other, weaponRespawn);
+			respawn = Pickup_Weapon(ent, other, weaponRespawn) + respawnTimeAdd;
 			alwaysSpawned = 0; // this shouldn't be needed, will remove later
 		} else {
 			alwaysSpawned = Pickup_Weapon(ent, other, 0);
@@ -713,11 +728,12 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 //		predict = qfalse;
 		break;
 	case IT_AMMO:
-		respawn = Pickup_Ammo(ent, other);
+		// TODO: code this better
+		respawn = Pickup_Ammo(ent, other) + respawnTimeAdd;
 
 		// if matchmode is set to weaponstay, then make ammo respawn more often
 		if (respawn == RESPAWN_AMMO && level.rs_matchMode == MM_PICKUP_ONCE) {
-			respawn = RESPAWN_AMMO_WEAPONSTAY;
+			respawn = RESPAWN_AMMO_WEAPONSTAY + respawnTimeAdd;
 		}
 //		predict = qfalse;
 		break;
@@ -729,7 +745,7 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 		respawnValue = level.rs_keycardRespawn;
 
 		if (respawnValue > 0) {
-			respawn = Pickup_Keycard(ent, other, respawnValue);
+			respawn = Pickup_Keycard(ent, other, respawnValue) + respawnTimeAdd;
 			alwaysSpawned = 0; // this shouldn't be needed, will remove later
 		} else {
 			alwaysSpawned = Pickup_Keycard(ent, other, 0);
@@ -742,10 +758,10 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 ////		predict = qfalse;
 		break;
 	case IT_ARMOR:
-		respawn = Pickup_Armor(ent, other);
+		respawn = Pickup_Armor(ent, other) + respawnTimeAdd;
 		break;
 	case IT_HEALTH:
-		respawn = Pickup_Health(ent, other);
+		respawn = Pickup_Health(ent, other) + respawnTimeAdd;
 		break;
 	case IT_POWERUP:
 		respawn = Pickup_Powerup(ent, other);
@@ -760,7 +776,7 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 		respawn = Pickup_Team(ent, other);
 		break;
 	case IT_HOLDABLE:
-		respawn = Pickup_Holdable(ent, other);
+		respawn = Pickup_Holdable(ent, other) + respawnTimeAdd;
 		break;
 	default:
 		return;

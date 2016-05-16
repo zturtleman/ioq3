@@ -134,6 +134,7 @@ vmCvar_t	g_armor;
 vmCvar_t	g_allowGhost;
 vmCvar_t	g_shortGame;
 vmCvar_t	g_roundFormat;
+vmCvar_t	g_dynamicItemSpawns;
 
 vmCvar_t	g_iUnderstandBotsAreBroken; // mmp
 
@@ -313,6 +314,7 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_allowGhost, "g_allowGhost", "0", 0, 0, qtrue }, // incomplete, please don't abuse, or it'll become cheat protected
 	{ &g_shortGame, "g_shortGame", "0", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // halves timelimit by half
 	{ &g_roundFormat, "g_roundFormat", "1", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // enables 3 round matches, 1r = normal, 2r = losing player must have half of leader, 3r = overtime
+	{ &g_dynamicItemSpawns, "g_dynamicItemSpawns", "1", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // increases item respawn times as rounds advance
 
 	{ &g_iUnderstandBotsAreBroken, "iUnderstandBotsAreBroken", "0", CVAR_ARCHIVE, 0, qtrue }, // server admin understands bots are broken, and really wants them in a server
 
@@ -1312,6 +1314,7 @@ void G_RuleSetUpdate ( void ) {
 
 		level.rs_armor = 1;
 		level.rs_popCTF = 0;
+		level.rs_dynamicItemSpawns = 1;
 
 		switch ( g_gametype.integer ) {
 
@@ -1758,6 +1761,7 @@ void G_RuleSetUpdate ( void ) {
 			level.rs_powerUps = g_powerUps.integer;
 			level.rs_armor = g_armor.integer;
 			level.rs_popCTF = 0;
+			level.rs_dynamicItemSpawns = g_dynamicItemSpawns.integer;
 
 			if ( g_gametype.integer == GT_FFA || g_gametype.integer == GT_AA1 ) {
 				level.rs_roundFormat = 0;
