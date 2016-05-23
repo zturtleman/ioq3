@@ -234,7 +234,7 @@ static void PM_Friction( void ) {
 	if ( pm->ps->pm_type == PM_SPECTATOR) {
 		drop += speed*pm_spectatorfriction*pml.frametime;
 	} else {
-		if ( pml.ladder && ! (pm->ps->pm_flags & PMF_TIME_KNOCKBACK) ) {
+		if ( pml.ladder && !(pm->ps->pm_flags & PMF_TIME_KNOCKBACK) && !( pm->waterlevel ) ) {
 			drop += speed*pm_ladderfriction*pml.frametime;
 		}
 	}
