@@ -208,6 +208,7 @@ vmCvar_t	cg_lumOverlay;
 
 vmCvar_t	cg_weaponCycleSkipsBlaster;
 vmCvar_t	cg_placebo;
+vmCvar_t	cg_weaponBobbing;
 
 // hud
 vmCvar_t	hud_scoreboard_pingType;
@@ -771,6 +772,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_weaponCycleSkipsBlaster, "cg_weaponCycleSkipsBlaster", "1", CVAR_ARCHIVE},
 
 	{ &cg_placebo, "cg_placebo", "0", CVAR_ARCHIVE}, // placebo...  does it work?  you decide, 2016
+	{ &cg_weaponBobbing, "cg_weaponBobbing", "1", CVAR_ARCHIVE},
 
 // hud
 	{ &hud_scoreboard_pingType, "hud_scoreboard_pingType", "0", CVAR_ARCHIVE},

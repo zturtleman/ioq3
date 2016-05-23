@@ -1527,6 +1527,7 @@ extern	vmCvar_t		cg_lumOverlay;
 
 extern	vmCvar_t		cg_weaponCycleSkipsBlaster;
 extern	vmCvar_t		cg_placebo;
+extern	vmCvar_t		cg_weaponBobbing;
 
 
 // hud
