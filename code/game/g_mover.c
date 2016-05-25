@@ -604,6 +604,9 @@ void Reached_BinaryMover( gentity_t *ent ) {
 		if ( !ent->activator ) {
 			ent->activator = ent;
 		}
+		/*if ( ent->comboflags ) {
+			G_Printf ("^6DEBUG: comboflags = %.4x\n", ent->comboflags);
+		}*/
 		G_UseTargets( ent, ent->activator );
 	} else if ( ent->moverState == MOVER_2TO1 ) {
 		// reached pos1
@@ -956,6 +959,7 @@ void SP_func_door (gentity_t *ent) {
 	float	distance;
 	vec3_t	size;
 	float	lip;
+	int		comboflags;
 
 	ent->sound1to2 = ent->sound2to1 = G_SoundIndex("sound/movers/doors/dr1_strt.wav");
 	ent->soundPos1 = ent->soundPos2 = G_SoundIndex("sound/movers/doors/dr1_end.wav");
@@ -970,6 +974,9 @@ void SP_func_door (gentity_t *ent) {
 	if (!ent->wait)
 		ent->wait = 2;
 	ent->wait *= 1000;
+
+	// allow multiple button requirements to open door
+	G_SpawnInt( "comboflags", "0", &comboflags );
 
 	// default lip of 8 units
 	G_SpawnFloat( "lip", "8", &lip );
@@ -989,6 +996,8 @@ void SP_func_door (gentity_t *ent) {
 	VectorSubtract( ent->r.maxs, ent->r.mins, size );
 	distance = DotProduct( abs_movedir, size ) - lip;
 	VectorMA( ent->pos1, distance, ent->movedir, ent->pos2 );
+
+	ent->comboflags = comboflags & 255; // can only have 8 flags
 
 	// if "start_open", reverse position 1 and 2
 	if ( ent->spawnflags & 1 ) {
@@ -1218,7 +1227,8 @@ void SP_func_button( gentity_t *ent ) {
 	float		distance;
 	vec3_t		size;
 	float		lip;
-	int ignoresplash;
+	int			ignoresplash;
+	int			comboflags;
 
 	ent->sound1to2 = G_SoundIndex("sound/movers/switches/butn2.wav");
 
@@ -1238,6 +1248,10 @@ void SP_func_button( gentity_t *ent ) {
 	trap_SetBrushModel( ent, ent->model );
 
 	G_SpawnInt( "ignoresplash", "0", &ignoresplash );
+
+	// allow multiple button requirements to open door
+	G_SpawnInt( "comboflags", "0", &comboflags );
+
 	G_SpawnFloat( "lip", "4", &lip );
 
 	G_SetMovedir( ent->s.angles, ent->movedir );
@@ -1247,6 +1261,8 @@ void SP_func_button( gentity_t *ent ) {
 	VectorSubtract( ent->r.maxs, ent->r.mins, size );
 	distance = abs_movedir[0] * size[0] + abs_movedir[1] * size[1] + abs_movedir[2] * size[2] - lip;
 	VectorMA (ent->pos1, distance, ent->movedir, ent->pos2);
+
+	ent->comboflags = comboflags & 255; // can only have 8 flags
 
 	if (ent->health) {
 		// shootable button

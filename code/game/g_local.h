@@ -180,6 +180,7 @@ struct gentity_s {
 	qboolean	ignoresplash; // ignores splash damage, meant for buttons and such
 	qboolean	globalExpSound; // global explosion sound (rockets and grenades)
 	int			keycard; // mmp - for use with keycards
+	int			comboflags; // mmp - "combo flag", mainly for multiple buttons to press to open a door
 
 	int			damage;
 	int			splashDamage; // quad will increase this without increasing radius

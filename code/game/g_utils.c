@@ -58,7 +58,7 @@ const char *BuildShaderStateConfig(void) {
 	static char	buff[MAX_STRING_CHARS*4];
 	char out[(MAX_QPATH * 2) + 5];
 	int i;
-  
+
 	memset(buff, 0, MAX_STRING_CHARS);
 	for (i = 0; i < remapCount; i++) {
 		Com_sprintf(out, (MAX_QPATH * 2) + 5, "%s=%s:%5.2f@", remappedShaders[i].oldShader, remappedShaders[i].newShader, remappedShaders[i].timeOffset);
@@ -234,7 +234,7 @@ match (string)self.target and call their .use function
 */
 void G_UseTargets( gentity_t *ent, gentity_t *activator ) {
 	gentity_t		*t;
-	
+
 	if ( !ent ) {
 		return;
 	}
@@ -255,6 +255,18 @@ void G_UseTargets( gentity_t *ent, gentity_t *activator ) {
 			G_Printf ("WARNING: Entity used itself.\n");
 		} else {
 			if ( t->use ) {
+				//G_Printf ("^5DEBUG: comboflags = %.4x -> %.4x\n", ent->comboflags, t->comboflags);
+
+				// mmp - are we using an entity that uses a comboflags value
+				if ( ( ent->comboflags & 255 ) && ( t->comboflags & 255 ) ) {
+					//G_Printf ("^5DEBUG: COMBOFLAGS GO!\n");
+					t->comboflags |= ( ent->comboflags & 255 ) << 8; // get required value
+					//G_Printf ("^5DEBUG: comboflags = %.4x -> %.4x\n", ent->comboflags, t->comboflags);
+					if ( ( t->comboflags >> 8 ) != ( t->comboflags & 255 ) ) {
+						//G_Printf ("^5DEBUG: RETURN\n");
+						return; // nope, there's more we need to do to activate this
+					}
+				}
 				t->use (t, ent, activator);
 			}
 		}
@@ -344,7 +356,7 @@ void G_SetMovedir( vec3_t angles, vec3_t movedir ) {
 
 float vectoyaw( const vec3_t vec ) {
 	float	yaw;
-	
+
 	if (vec[YAW] == 0 && vec[PITCH] == 0) {
 		yaw = 0;
 	} else {
@@ -421,12 +433,12 @@ gentity_t *G_Spawn( void ) {
 		}
 		G_Error( "G_Spawn: no free entities" );
 	}
-	
+
 	// open up a new slot
 	level.num_entities++;
 
 	// let the server system know that there are more entities
-	trap_LocateGameData( level.gentities, level.num_entities, sizeof( gentity_t ), 
+	trap_LocateGameData( level.gentities, level.num_entities, sizeof( gentity_t ),
 		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
 	G_InitGentity( e );
