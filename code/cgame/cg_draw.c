@@ -2764,7 +2764,6 @@ vvvvvvvvvvvvvvvvvvvvv
 				//HUD_MegaDrawFragInfo(posRight - 4, 480 - 48, 240, CHAT_HEIGHT, 1, UI_DROPSHADOW, 0.50);
 			}
 
-
 			color1[0] = color1[1] = color1[2] = 0.125;
 			color1[3] = 1.0;
 
@@ -2967,6 +2966,10 @@ vvvvvvvvvvvvvvvvvvvvv
 					}
 
 					HUD_MegaDrawTestStat ( posCenter, 480 - 24, team, 0, 1.0, color);
+
+
+						HUD_DrawPickupInfo( hud_pickUpInfo_xPos.integer + alignTable[hud_pickUpInfo_xAlign.integer & 3],
+								hud_pickUpInfo_yPos.integer, hud_pickUpInfo_align.integer, hud_pickUpInfo_style.integer, hud_pickUpInfo_scale.value );
 
 					if (hud_keys_show.integer == 1 || ( hud_keys_show.integer == 2 && cg.snap->ps.pm_flags & PMF_FOLLOW )) {
 						HUD_MegaDrawShowKeys ( hud_keys_xPos.integer, alignTable[hud_keys_xAlign.integer & 3], hud_keys_yPos.integer, hud_keys_align.integer, hud_keys_scale.value);

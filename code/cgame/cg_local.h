@@ -683,6 +683,8 @@ typedef struct {
 	int			itemPickup;
 	int			itemPickupTime;
 	int			itemPickupBlendTime;	// the pulse around the crosshair is timed seperately
+	int			itemPickupMultiCount;
+	int			itemPickupPrev;
 
 	int			weaponSelectTime;
 	int			weaponAnimation;
@@ -1886,6 +1888,15 @@ extern	vmCvar_t		hud_fragInfo_lines;
 extern	vmCvar_t		hud_fragInfo_dir;
 extern	vmCvar_t		hud_fragInfo_align;
 extern	vmCvar_t		hud_fragInfo_scale;
+
+extern	vmCvar_t		hud_pickUpInfo_show;
+extern	vmCvar_t		hud_pickUpInfo_xPos;
+extern	vmCvar_t		hud_pickUpInfo_xAlign;
+extern	vmCvar_t		hud_pickUpInfo_yPos;
+extern	vmCvar_t		hud_pickUpInfo_align;
+extern	vmCvar_t		hud_pickUpInfo_style;
+extern	vmCvar_t		hud_pickUpInfo_time;
+extern	vmCvar_t		hud_pickUpInfo_scale;
 
 extern	vmCvar_t		hud_filterColors;
 extern	vmCvar_t		hud_aspectRatioScale;

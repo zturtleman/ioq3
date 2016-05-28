@@ -462,10 +462,10 @@ void HUD_MegaDrawFPS( int xpos, int xoff, int ypos, int posLock, int align, int 
 	char		*s;
 	static int	previousTimes[FPS_FRAMES];
 	static int	index;
-	int		i, total;
-	int		fps;
+	int			i, total;
+	int			fps;
 	static	int	previous;
-	int		t, frameTime;
+	int			t, frameTime;
 
 	vec4_t		color;
 
@@ -514,11 +514,11 @@ HUD_MegaDrawTimer
 static HUD_MegaDrawTimer( int xpos, int ypos, int style, float scale, vec4_t color ) {
 
 	char		*s;
-	int		mins, seconds, tens;
-	int		msec;
-	int		timeLimit;
+	int			mins, seconds, tens;
+	int			msec;
+	int			timeLimit;
 
-	int		timeLimitHalfMin;
+	int			timeLimitHalfMin;
 
 	if ( !hud_gameClock_show.integer ) {
 		return 0;
@@ -558,10 +558,10 @@ void HUD_MegaDrawDigitTimer( int xpos, int xoff, int ypos, int posLock, int alig
 						float scaleX, float scaleY, const char* colorStr ) {
 
 	char		*s;
-	int		mins, seconds, tens;
-	int		msec;
-	int		timeLimit;
-	int		gameClock;
+	int			mins, seconds, tens;
+	int			msec;
+	int			timeLimit;
+	int			gameClock;
 
 	vec4_t		color;
 
@@ -865,15 +865,15 @@ void HUD_MegaDrawBriefScore( /*int xpos, int ypos, int layout, int style, float 
 						/*char *colorStr1, char *colorStr2,*/ const char *colorStr ) {
 
 	const char	*s;
-	int		s1, s2, score;
-	int		x, y;
-	int		altStyle;
+	int			s1, s2, score;
+	int			x, y;
+	int			altStyle;
 	vec4_t		bgColor;
 	vec4_t		amberColor;
 	gitem_t		*item;
 	float		axscale, ayscale;
 	qhandle_t	hShader;
-	int		flagInfo;
+	int			flagInfo;
 	float		gt_x, gt_y;
 	int			scoreWidth;
 	float		scoreWidthAdj;
@@ -1156,17 +1156,18 @@ HUD_MegaDrawFragInfo
 =================
 */
 #define	MDHUDFragTextHeight			16
-#define	MDHUDFragTextIconSize			16
+#define	MDHUDFragTextIconSize		16
 
 static void HUD_MegaDrawFragInfo( int xpos, int ypos, int xsize, int ysize, int ydir, int align, int style, float scale ) {
 
-	int		w, h;
-	int		i, len;
-	int		tempYPos;
+	int			w, h;
+	int			i, len;
+	int			tempYPos;
 	qboolean	dropShadow;
-	int		preScale;
-	int		killerWidth, weaponSize, xposAdj, victomWidth;
-	int		tempYPosOffset;
+	int			preScale;
+	int			killerWidth, weaponSize, xposAdj, victomWidth;
+	int			killerPos, weaponPos, victomPos;
+	int			tempYPosOffset;
 	vec4_t		hcolorBlk;
 	vec4_t		hcolor;
 
@@ -1194,6 +1195,8 @@ static void HUD_MegaDrawFragInfo( int xpos, int ypos, int xsize, int ysize, int 
 
 		trap_R_SetColor( hcolor ); // reset texture color tint
 
+		// TODO: code this better
+
 		if (ydir) {
 			for (i = cgs.hudFragInfoLastPos; i < cgs.hudFragInfoPos; i++) {
 
@@ -1209,25 +1212,10 @@ static void HUD_MegaDrawFragInfo( int xpos, int ypos, int xsize, int ysize, int 
 
 						xposAdj = xpos - ( killerWidth + weaponSize + victomWidth ) / 2;
 
-						UI_DrawProportionalStringColor( xposAdj,
-								tempYPosOffset, cgs.hudFragInfoKiller[i % ysize], hcolor, scale, cgs.media.charsetProp,
-								style, qfalse );
-						if (style & UI_DROPSHADOW) {
-							trap_R_SetColor( hcolorBlk );
-							trap_R_DrawStretchPic( (float)(xposAdj + killerWidth) * cgs.screenXScale + 1 + cgs.screenXOffset,
-										(float)tempYPosOffset * cgs.screenYScale + 1 + cgs.screenYOffset,
-										(float)weaponSize * cgs.screenXScale, (float)weaponSize * cgs.screenYScale,
-										0.0, 0.0, 1.0, 1.0, cgs.hudFragInfoDeathIcon[i % ysize] );
-							trap_R_SetColor( hcolor ); // reset texture color tint
-						}
-						trap_R_DrawStretchPic( (float)(xposAdj + killerWidth) * cgs.screenXScale + cgs.screenXOffset,
-									(float)tempYPosOffset * cgs.screenYScale + cgs.screenYOffset,
-									(float)weaponSize * cgs.screenXScale, (float)weaponSize * cgs.screenYScale,
-									0.0, 0.0, 1.0, 1.0, cgs.hudFragInfoDeathIcon[i % ysize] );
-						UI_DrawProportionalStringColor( xposAdj + killerWidth + weaponSize,
-								tempYPosOffset, cgs.hudFragInfoVictom[i % ysize], hcolor, scale, cgs.media.charsetProp,
-								style, qfalse );
-						break;
+						killerPos = xposAdj;
+						weaponPos = (xposAdj + killerWidth) * cgs.screenXScale + cgs.screenXOffset;
+						victomPos = xposAdj + killerWidth + weaponSize;
+
 						break;
 
 					case 2:
@@ -1235,75 +1223,46 @@ static void HUD_MegaDrawFragInfo( int xpos, int ypos, int xsize, int ysize, int 
 						killerWidth = UI_ProportionalColorStringWidth( cgs.hudFragInfoKiller[i % ysize] ) * scale;
 						victomWidth = UI_ProportionalColorStringWidth( cgs.hudFragInfoVictom[i % ysize] ) * scale;
 
-						UI_DrawProportionalStringColor( xpos - (killerWidth + weaponSize + victomWidth),
-								tempYPosOffset, cgs.hudFragInfoKiller[i % ysize], hcolor, scale, cgs.media.charsetProp,
-								style, qfalse );
-						if (style & UI_DROPSHADOW) {
-							trap_R_SetColor( hcolorBlk );
-							trap_R_DrawStretchPic( (float)(xpos - (weaponSize + victomWidth)) * cgs.screenXScale + 1 + cgs.screenXOffset,
-										(float)tempYPosOffset * cgs.screenYScale + 1 + cgs.screenYOffset,
-										(float)weaponSize * cgs.screenXScale, (float)weaponSize * cgs.screenYScale,
-										0.0, 0.0, 1.0, 1.0, cgs.hudFragInfoDeathIcon[i % ysize] );
-							trap_R_SetColor( hcolor ); // reset texture color tint
-						}
-						trap_R_DrawStretchPic( (float)(xpos - (weaponSize + victomWidth)) * cgs.screenXScale + cgs.screenXOffset,
-									(float)tempYPosOffset * cgs.screenYScale + cgs.screenYOffset,
-									(float)weaponSize * cgs.screenXScale, (float)weaponSize * cgs.screenYScale,
-									0.0, 0.0, 1.0, 1.0, cgs.hudFragInfoDeathIcon[i % ysize] );
-						UI_DrawProportionalStringColor( xpos - victomWidth,
-								tempYPosOffset, cgs.hudFragInfoVictom[i % ysize], hcolor, scale, cgs.media.charsetProp,
-								style, qfalse );
+						killerPos = xpos - (killerWidth + weaponSize + victomWidth);
+						weaponPos = (xpos - (weaponSize + victomWidth)) * cgs.screenXScale + 1 + cgs.screenXOffset;
+						victomPos = xpos - victomWidth;
+
 						break;
 
 					default:
 						// align left
 						killerWidth = UI_ProportionalColorStringWidth( cgs.hudFragInfoKiller[i % ysize] ) * scale;
 
-						UI_DrawProportionalStringColor( xpos,
-								tempYPosOffset, cgs.hudFragInfoKiller[i % ysize], hcolor, scale, cgs.media.charsetProp,
-								style, qfalse );
-						if (style & UI_DROPSHADOW) {
-							trap_R_SetColor( hcolorBlk );
-							trap_R_DrawStretchPic( (float)(xpos + killerWidth) * cgs.screenXScale + 1 + cgs.screenXOffset,
-										(float)tempYPosOffset * cgs.screenYScale + 1 + cgs.screenYOffset,
-										(float)weaponSize * cgs.screenXScale, (float)weaponSize * cgs.screenYScale,
-										0.0, 0.0, 1.0, 1.0, cgs.hudFragInfoDeathIcon[i % ysize] );
-							trap_R_SetColor( hcolor ); // reset texture color tint
-						}
-						trap_R_DrawStretchPic( (float)(xpos + killerWidth) * cgs.screenXScale + cgs.screenXOffset,
-									(float)tempYPosOffset * cgs.screenYScale + cgs.screenYOffset,
-									(float)weaponSize * cgs.screenXScale, (float)weaponSize * cgs.screenYScale,
-									0.0, 0.0, 1.0, 1.0, cgs.hudFragInfoDeathIcon[i % ysize] );
-						UI_DrawProportionalStringColor( xpos + killerWidth + weaponSize,
-								tempYPosOffset, cgs.hudFragInfoVictom[i % ysize], hcolor, scale, cgs.media.charsetProp,
-								style, qfalse );
+						killerPos = xpos;
+						weaponPos = (xpos + killerWidth) * cgs.screenXScale + 1 + cgs.screenXOffset;
+						victomPos = xpos + killerWidth + weaponSize;
+
 						break;
 				}
-			}
-		} /*else {
-			tempYPos = -1;
-			for (i = cgs.hudInfoLastPos[hudBox]; i < cgs.hudInfoPos[hudBox]; i++) {
-				tempYPos++;
-				UI_DrawCustomProportionalString( xpos, ypos + tempYPos * preScale,
-						cgs.hudInfoMsgs[hudBox][i % ysize], style, scale, hcolor, qfalse );
-			}
-		}*/
 
+				UI_DrawProportionalStringColor( killerPos,
+						tempYPosOffset, cgs.hudFragInfoKiller[i % ysize], hcolor, scale, cgs.media.charsetProp,
+						style, qfalse );
+				if (style & UI_DROPSHADOW) {
+					trap_R_SetColor( hcolorBlk );
+					trap_R_DrawStretchPic( (float)weaponPos + 1,
+								(float)tempYPosOffset * cgs.screenYScale + 1 + cgs.screenYOffset,
+								(float)weaponSize * cgs.screenXScale, (float)weaponSize * cgs.screenYScale,
+								0.0, 0.0, 1.0, 1.0, cgs.hudFragInfoDeathIcon[i % ysize] );
+					trap_R_SetColor( hcolor ); // reset texture color tint
+				}
+				trap_R_DrawStretchPic( (float)weaponPos,
+							(float)tempYPosOffset * cgs.screenYScale + cgs.screenYOffset,
+							(float)weaponSize * cgs.screenXScale, (float)weaponSize * cgs.screenYScale,
+							0.0, 0.0, 1.0, 1.0, cgs.hudFragInfoDeathIcon[i % ysize] );
+				UI_DrawProportionalStringColor( victomPos,
+						tempYPosOffset, cgs.hudFragInfoVictom[i % ysize], hcolor, scale, cgs.media.charsetProp,
+						style, qfalse );
+
+			}
+		}
 
 	}
-
-	/*
-	killerWidth = UI_ProportionalColorStringWidth( "TEST1" ) * scale;
-	victomWidth = UI_ProportionalColorStringWidth( "TEST2" ) * scale;
-
-	UI_DrawProportionalStringColor( xpos - (killerWidth + weaponSize + victomWidth),
-			ypos, "TEST1", hcolor, scale, cgs.media.charsetProp,
-			style, qtrue );
-	CG_DrawPic ( xpos - (weaponSize + victomWidth), ypos, weaponSize, weaponSize, cgs.media.scoreIconOK );
-	UI_DrawProportionalStringColor( xpos - killerWidth,
-			ypos, "TEST2", hcolor, scale, cgs.media.charsetProp,
-			style, qtrue );
-	*/
 
 }
 
@@ -1316,12 +1275,12 @@ HUD_MegaDrawHUDInfo
 
 static void HUD_MegaDrawHUDInfo( int xpos, int ypos, int xsize, int ysize, int ydir, int hudBox, int style, float scale ) {
 
-	int		w, h;
-	int		i, len;
-	int		tempYPos;
+	int			w, h;
+	int			i, len;
+	int			tempYPos;
 	qboolean	dropShadow;
-	int		preScale;
-	vec4_t	hcolor;
+	int			preScale;
+	vec4_t		hcolor;
 
 	if (ysize <= 0) {
 		return; // disabled
@@ -1376,14 +1335,14 @@ TODO: Remove this
 
 static void HUD_MegaDrawChat( int xpos, int ypos, int xsize, int ysize, int ydir, int style, float scale, vec4_t hcolor ) {
 
-	int		w, h;
-	int		i, len;
+	int			w, h;
+	int			i, len;
 
-	int		tempYPos;
+	int			tempYPos;
 
 	qboolean	dropShadow;
 
-	int		preScale;
+	int			preScale;
 
 	if (ysize <= 0)
 		return; // disabled
@@ -4227,101 +4186,101 @@ static void HUD_MegaObjective( int xpos, int ypos, float scale, int team ) {
 	switch ( cgs.gametype ) {
 	case GT_FFA:
 		UI_DrawCustomProportionalString( xst, y,
-		"FREE FOR ALL (DEATH MATCH)",
-		UI_DROPSHADOW, 0.5 * scale, colorLAmber, qfalse );
+			"FREE FOR ALL (DEATH MATCH)",
+			UI_DROPSHADOW, 0.5 * scale, colorLAmber, qfalse );
 		y += 12 * scale;
 
 		UI_DrawCustomProportionalString( xInd, y,
-		"1. Shoot shit",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"1. Shoot shit",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 		y += 8 * scale;
 
 		UI_DrawCustomProportionalString( xInd, y,
-		"2. Read No.1",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"2. Read No.1",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 		y += 8 * scale;
 
 		UI_DrawCustomProportionalString( xInd, y,
-		"3. Grab power ups, and shoot more",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"3. Grab power ups, and shoot more",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 		y += 8 * scale;
 
 		UI_DrawCustomProportionalString( xInd, y,
-		"shit",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"shit",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 
 		break;
 	case GT_TOURNAMENT:
 		UI_DrawCustomProportionalString( xst, y,
-		"TOURNAMENT",
-		UI_DROPSHADOW, 0.5 * scale, colorLAmber, qfalse );
+			"TOURNAMENT",
+			UI_DROPSHADOW, 0.5 * scale, colorLAmber, qfalse );
 		y += 12 * scale;
 
 		UI_DrawCustomProportionalString( xInd, y,
-		"1. Grab the best weapons",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"1. Grab the best weapons",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 		y += 8 * scale;
 
 		UI_DrawCustomProportionalString( xInd, y,
-		"2. Kill your opponent",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"2. Kill your opponent",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 		y += 8 * scale;
 
 		UI_DrawCustomProportionalString( xInd, y,
-		"3. Win the match",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"3. Win the match",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 
 		break;
 	case GT_TEAM:
 		UI_DrawCustomProportionalString( xst, y,
-		"TEAM DEATH MATCH",
-		UI_DROPSHADOW, 0.5 * scale, colorLAmber, qfalse );
+			"TEAM DEATH MATCH",
+			UI_DROPSHADOW, 0.5 * scale, colorLAmber, qfalse );
 		y += 12 * scale;
 
 		UI_DrawCustomProportionalString( xInd, y,
-		"1. Kill the enemy",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"1. Kill the enemy",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 		y += 8 * scale;
 
 		UI_DrawCustomProportionalString( xInd, y,
-		"2. Don't shoot your teammates",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"2. Don't shoot your teammates",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 		y += 8 * scale;
 
 		UI_DrawCustomProportionalString( xInd, y,
-		"3. Grab power ups, and keep killing",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"3. Grab power ups, and keep killing",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 		y += 8 * scale;
 
 		UI_DrawCustomProportionalString( xInd, y,
-		"your enemies",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"your enemies",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 
 		break;
 	case GT_CTF:
 		UI_DrawCustomProportionalString( xst, y,
-		"CAPTURE THE FLAG",
-		UI_DROPSHADOW, 0.5 * scale, colorLAmber, qfalse );
+			"CAPTURE THE FLAG",
+			UI_DROPSHADOW, 0.5 * scale, colorLAmber, qfalse );
 		y += 12 * scale;
 
 		UI_DrawCustomProportionalString( xInd, y,
-		"1. Grab the enemy's flag",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"1. Grab the enemy's flag",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 		y += 8 * scale;
 
 		UI_DrawCustomProportionalString( xInd, y,
-		"2. Capture it, by bringing it to",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"2. Capture it, by bringing it to",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 		y += 8 * scale;
 
 		UI_DrawCustomProportionalString( xInd, y,
-		"your team's base",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"your team's base",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 		y += 8 * scale;
 
 		UI_DrawCustomProportionalString( xInd, y,
-		"3. Prevent the enemy from scoring",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"3. Prevent the enemy from scoring",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 
 		break;
 
@@ -4335,42 +4294,42 @@ static void HUD_MegaObjective( int xpos, int ypos, float scale, int team ) {
 		if ( team == TEAM_BLUE ) {
 
 			UI_DrawCustomProportionalString( xInd, y,
-			"1. Survive",
-			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+				"1. Survive",
+				UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 			y += 8 * scale;
 
 			UI_DrawCustomProportionalString( xInd, y,
-			"2. ?",
-			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+				"2. ?",
+				UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 			y += 8 * scale;
 
 			UI_DrawCustomProportionalString( xInd, y,
-			"3. Profit!",
-			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+				"3. Profit!",
+				UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 
 		} else {
 
 			UI_DrawCustomProportionalString( xInd, y,
-			"1. Find the target player",
-			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+				"1. Find the target player",
+				UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 			y += 8 * scale;
 
 			UI_DrawCustomProportionalString( xInd, y,
-			"2. Attack the target player",
-			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+				"2. Attack the target player",
+				UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 			y += 8 * scale;
 
 			UI_DrawCustomProportionalString( xInd, y,
-			"3. Kill for a victory",
-			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+				"3. Kill for a victory",
+				UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 
 		}
 
 		break;
 	default:
 		UI_DrawCustomProportionalString( xInd, y,
-		"Win the match... Yeah, do that",
-		UI_DROPSHADOW, 0.5 * scale, color, qfalse );
+			"Win the match... Yeah, do that",
+			UI_DROPSHADOW, 0.5 * scale, color, qfalse );
 
 		break;
 	}
@@ -4457,6 +4416,123 @@ void HUD_DrawMetalHUD ( int posRight ) {
 	}
 
 
+}
+
+
+/*
+===================
+HUD_DrawPickupItem
+
+TODO: clean up this mess
+===================
+*/
+
+#define	MDHUDPickUpIconSize			32
+#define	MDHUDPickUpHeight			MDHUDPickUpIconSize / 2
+#define	MDHUDPickUpTextOffset		MDHUDPickUpIconSize / 4
+
+static void HUD_DrawPickupInfo( int xpos, int ypos, int align, int style, float scale ) {
+	int			value;
+	int			w, h;
+	int			i, len;
+	int			tempYPos;
+	qboolean	dropShadow;
+	int			preScale;
+	int			iconSize;
+	int			yPosOffset;
+	vec4_t		hcolorBlk;
+	vec4_t		hcolor;
+	int			itemLength, multiLength;
+	int			iconPos, itemPos, multiPos;
+	char		*multiText;
+
+	if ( cg.snap->ps.stats[STAT_HEALTH] <= 0 ) {
+		return;
+	}
+
+	if ( hud_pickUpInfo_time.integer > 0 && ( cg.time > (cg.itemPickupTime + (hud_pickUpInfo_time.integer * 1000)) ) ) {
+		return;
+	}
+
+	style = HUD_FuncStyleSet ( align, style );
+	style &= (~UI_FORMATMASK); // text alignment is stripped
+
+	preScale = scale * MDHUDPickUpHeight;
+	iconSize = MDHUDPickUpIconSize * scale;
+	yPosOffset = MDHUDPickUpTextOffset * scale;
+	align = align&3;
+
+	hcolor[0] = hcolor[1] = hcolor[2] = hcolor[3] = 1.0f;
+
+	hcolorBlk[0] = hcolorBlk[1] = hcolorBlk[2] = 0.0f;
+	hcolorBlk[3] = 1.0f;
+
+	value = cg.itemPickup;
+
+	if ( value ) {
+
+		itemLength = UI_ProportionalColorStringWidth( bg_itemlist[ value ].pickup_name ) * scale;
+		if ( cg.itemPickupMultiCount ) {
+			multiText = va( " x%i", cg.itemPickupMultiCount + 1 ); // TODO: use the 'times' symbol instead of 'x'
+			multiLength = UI_ProportionalColorStringWidth( multiText ) * scale;
+		} else {
+			multiLength = 0;
+		}
+
+		switch(align) {
+			case 1:
+				// align center
+				iconPos = xpos - (iconSize + itemLength + multiLength) / 2;
+				break;
+			case 2:
+				// align right
+				iconPos = xpos - (iconSize + itemLength + multiLength);
+				break;
+			default:
+				// align left
+				iconPos = xpos;
+				break;
+		}
+		itemPos = iconPos + iconSize;
+		multiPos = itemPos + itemLength;
+
+		if (style & UI_DROPSHADOW) {
+			trap_R_SetColor( hcolorBlk );
+			trap_R_DrawStretchPic( (float)iconPos * cgs.screenXScale + cgs.screenXOffset + 1, (float)ypos * cgs.screenYScale + cgs.screenYOffset + 1,
+						(float)iconSize * cgs.screenXScale, (float)iconSize * cgs.screenYScale,
+						0, 0, 1, 1, cg_items[ value ].icon );
+			trap_R_SetColor( hcolor ); // reset texture color tint
+		}
+		trap_R_DrawStretchPic( (float)iconPos * cgs.screenXScale + cgs.screenXOffset, (float)ypos * cgs.screenYScale + cgs.screenYOffset,
+					(float)iconSize * cgs.screenXScale, (float)iconSize * cgs.screenYScale,
+					0, 0, 1, 1, cg_items[ value ].icon );
+
+		UI_DrawCustomProportionalString( itemPos, ypos + yPosOffset,
+			bg_itemlist[ value ].pickup_name,
+			UI_DROPSHADOW, scale, hcolor, qfalse );
+
+		if ( multiLength ) {
+			UI_DrawCustomProportionalString( multiPos, ypos + yPosOffset,
+				multiText,
+				UI_DROPSHADOW, scale, hcolor, qfalse );
+		}
+	}
+
+	/*y -= ICON_SIZE;
+
+	value = cg.itemPickup;
+	if ( value ) {
+		fadeColor = CG_FadeColor( cg.itemPickupTime, 3000 );
+		if ( fadeColor ) {
+			CG_RegisterItemVisuals( value );
+			trap_R_SetColor( fadeColor );
+			CG_DrawPic( 8, y, ICON_SIZE, ICON_SIZE, cg_items[ value ].icon );
+			CG_DrawBigString( ICON_SIZE + 16, y + (ICON_SIZE/2 - BIGCHAR_HEIGHT/2), bg_itemlist[ value ].pickup_name, fadeColor[0] );
+			trap_R_SetColor( NULL );
+		}
+	}
+
+	return y;*/
 }
 
 

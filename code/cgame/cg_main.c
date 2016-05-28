@@ -567,6 +567,15 @@ vmCvar_t	hud_fragInfo_dir;
 vmCvar_t	hud_fragInfo_align;
 vmCvar_t	hud_fragInfo_scale;
 
+vmCvar_t	hud_pickUpInfo_show;
+vmCvar_t	hud_pickUpInfo_xPos;
+vmCvar_t	hud_pickUpInfo_xAlign;
+vmCvar_t	hud_pickUpInfo_yPos;
+vmCvar_t	hud_pickUpInfo_align;
+vmCvar_t	hud_pickUpInfo_style;
+vmCvar_t	hud_pickUpInfo_time;
+vmCvar_t	hud_pickUpInfo_scale;
+
 vmCvar_t	hud_filterColors;
 vmCvar_t	hud_aspectRatioScale;
 vmCvar_t	hud_autoRatioScale;
@@ -1129,6 +1138,15 @@ static cvarTable_t cvarTable[] = {
 	{ &hud_fragInfo_dir, "hud_fragInfo_dir", "1", CVAR_ARCHIVE},
 	{ &hud_fragInfo_align, "hud_fragInfo_align", "2", CVAR_ARCHIVE},
 	{ &hud_fragInfo_scale, "hud_fragInfo_scale", "0.5", CVAR_ARCHIVE},
+
+	{ &hud_pickUpInfo_show, "hud_pickUpInfo_show", "1", CVAR_ARCHIVE},
+	{ &hud_pickUpInfo_xPos, "hud_pickUpInfo_xPos", "0", CVAR_ARCHIVE},
+	{ &hud_pickUpInfo_xAlign, "hud_pickUpInfo_xAlign", "1", CVAR_ARCHIVE},
+	{ &hud_pickUpInfo_yPos, "hud_pickUpInfo_yPos", "392", CVAR_ARCHIVE},
+	{ &hud_pickUpInfo_align, "hud_pickUpInfo_align", "1", CVAR_ARCHIVE},
+	{ &hud_pickUpInfo_style, "hud_pickUpInfo_style", "1", CVAR_ARCHIVE},
+	{ &hud_pickUpInfo_time, "hud_pickUpInfo_time", "3", CVAR_ARCHIVE},
+	{ &hud_pickUpInfo_scale, "hud_pickUpInfo_scale", "0.5", CVAR_ARCHIVE},
 
 	{ &hud_filterColors, "hud_filterColors", "0", CVAR_ARCHIVE},
 

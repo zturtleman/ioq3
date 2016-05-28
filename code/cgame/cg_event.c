@@ -549,22 +549,18 @@ A new item was picked up this frame
 ================
 */
 static void CG_ItemPickup( int itemNum ) {
+	cg.itemPickupPrev = cg.itemPickup;
 	cg.itemPickup = itemNum;
 	cg.itemPickupTime = cg.time;
 	cg.itemPickupBlendTime = cg.time;
-	// see if it should be the grabbed weapon
-	/*if ( bg_itemlist[itemNum].giType == IT_WEAPON ) {
-		// select it immediately
-		if ( cg_autoswitch.integer && bg_itemlist[itemNum].giTag != WP_MACHINEGUN ) {
-			cg.weaponSelectTime = cg.time;
-			cg.weaponSelect = bg_itemlist[itemNum].giTag;
-		}
-	}*/
 
-	// flash screen on item pickup
-	/*if ( bg_itemlist[itemNum].giType != IT_POWERUP ) {*/
-		cg.itemGetFlashTime = cg.time + ITEM_GET_FLASH;
-	/*}*/
+	if ( cg.itemPickupPrev == cg.itemPickup ) {
+		cg.itemPickupMultiCount++;
+	} else {
+		cg.itemPickupMultiCount = 0; // a value of zero will display as a value of one
+	}
+
+	cg.itemGetFlashTime = cg.time + ITEM_GET_FLASH;
 
 }
 
