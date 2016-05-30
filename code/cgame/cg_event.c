@@ -546,15 +546,25 @@ static void CG_UseItem( centity_t *cent ) {
 CG_ItemPickup
 
 A new item was picked up this frame
+
+FIXME: The powerup check workaround was added, due to a double pickup event with powerups.
+       This causes a "x2" to be displayed when picking up a powerup, as if you were picking up 2.
+       Still looking for the cause.
 ================
 */
 static void CG_ItemPickup( int itemNum ) {
+	gitem_t			*item;
+
+	item = &bg_itemlist[ itemNum ];
+
 	cg.itemPickupPrev = cg.itemPickup;
 	cg.itemPickup = itemNum;
 	cg.itemPickupTime = cg.time;
 	cg.itemPickupBlendTime = cg.time;
 
-	if ( cg.itemPickupPrev == cg.itemPickup ) {
+	CG_Printf( "^5DEBUG: ITEM GET %i\n", itemNum );
+
+	if ( cg.itemPickupPrev == itemNum && item->giType != IT_POWERUP ) {
 		cg.itemPickupMultiCount++;
 	} else {
 		cg.itemPickupMultiCount = 0; // a value of zero will display as a value of one
