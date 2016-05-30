@@ -562,7 +562,7 @@ static void CG_ItemPickup( int itemNum ) {
 	cg.itemPickupTime = cg.time;
 	cg.itemPickupBlendTime = cg.time;
 
-	CG_Printf( "^5DEBUG: ITEM GET %i\n", itemNum );
+	//CG_Printf( "^5DEBUG: ITEM GET %i\n", itemNum );
 
 	if ( cg.itemPickupPrev == itemNum && item->giType != IT_POWERUP ) {
 		cg.itemPickupMultiCount++;

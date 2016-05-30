@@ -37,8 +37,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 #define	RESPAWN_WEAPON			30
-#define	RESPAWN_ARMOR			20
-#define	RESPAWN_HEALTH			30 // is 35 in q3a
+#define	RESPAWN_ARMOR1			15
+#define	RESPAWN_ARMOR2			20 //
+#define	RESPAWN_ARMOR3			25
+#define	RESPAWN_HEALTH1			25
+#define	RESPAWN_HEALTH2			30 // is 35 in q3a
 #define	RESPAWN_AMMO			30 // is 40 in q3a
 #define	RESPAWN_AMMO_WEAPONSTAY	15 // is 40 in q3a
 #define	RESPAWN_HOLDABLE		120 // 2 minutes, is 60 seconds in q3a
@@ -421,12 +424,18 @@ int Pickup_Health (gentity_t *ent, gentity_t *other) {
 		/*return RESPAWN_MEGAHEALTH;*/
 	}
 
-	return RESPAWN_HEALTH;
+	if ( ent->item->quantity < 50 ) {
+		return RESPAWN_HEALTH1;
+	}
+
+	return RESPAWN_HEALTH2;
 }
 
 //======================================================================
 
 int Pickup_Armor( gentity_t *ent, gentity_t *other ) {
+
+	int		respawn;
 
 	/*other->client->ps.stats[STAT_ARMOR] += ent->item->quantity;
 	if ( other->client->ps.stats[STAT_ARMOR] > other->client->ps.stats[STAT_MAX_HEALTH] * 2 ) {
@@ -437,16 +446,19 @@ int Pickup_Armor( gentity_t *ent, gentity_t *other ) {
 	{
 		other->client->ps.stats[STAT_ARMOR] = AR_TIER3MAXPOINT;
 		other->client->ps.stats[STAT_ARMORTIER] = 3; // armor_body protection
+		respawn = RESPAWN_ARMOR3;
 	}
 	else if (ent->item->quantity == AR_TIER2MAXPOINT) // armor_combat
 	{
 		other->client->ps.stats[STAT_ARMOR] = AR_TIER2MAXPOINT;
 		other->client->ps.stats[STAT_ARMORTIER] = 2; // armor_combat protection
+		respawn = RESPAWN_ARMOR2;
 	}
 	else if (ent->item->quantity == AR_TIER1MAXPOINT) // armor_jacket
 	{
 		other->client->ps.stats[STAT_ARMOR] = AR_TIER1MAXPOINT;
 		other->client->ps.stats[STAT_ARMORTIER] = 1; // armor_jacket protection
+		respawn = RESPAWN_ARMOR1;
 	}
 	else // Shard
 	{
@@ -454,10 +466,7 @@ int Pickup_Armor( gentity_t *ent, gentity_t *other ) {
 		if (other->client->ps.stats[STAT_ARMOR] <= 0)
 			other->client->ps.stats[STAT_ARMORTIER] = 1; // armor_jacket protection
 		other->client->ps.stats[STAT_ARMOR] += 5;
-
-		// just so we can't go over 200 units
-		/*if (other->client->ps.stats[STAT_ARMOR] > 200)
-			other->client->ps.stats[STAT_ARMOR] = 200;*/
+		respawn = RESPAWN_ARMOR1;
 
 		switch( other->client->ps.stats[STAT_ARMORTIER] ) {
 			case 3:
@@ -477,7 +486,7 @@ int Pickup_Armor( gentity_t *ent, gentity_t *other ) {
 		}
 	}
 
-	return RESPAWN_ARMOR;
+	return respawn;
 }
 
 
@@ -759,6 +768,7 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 		break;
 	case IT_ARMOR:
 		respawn = Pickup_Armor(ent, other) + respawnTimeAdd;
+		//G_Printf ("^3DEBUG RESPAWN = '%i'\n", respawn); // debug
 		break;
 	case IT_HEALTH:
 		respawn = Pickup_Health(ent, other) + respawnTimeAdd;
