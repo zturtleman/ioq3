@@ -130,7 +130,7 @@ gitem_t	bg_itemlist[] =
 		"models/powerups/health/small_sphere.md3",
 		NULL, NULL },*/
 /* icon */		"icons/iconh_bit",
-/* pickup */	"5 Health",
+/* pickup */	"Canned Health",
 		5,
 		IT_HEALTH,
 		0,
@@ -150,7 +150,7 @@ gitem_t	bg_itemlist[] =
 		"models/powerups/health/medium_sphere.md3",
 		NULL, NULL },*/
 /* icon */		"icons/iconh_green",
-/* pickup */	"25 Health",
+/* pickup */	"Normal Health Kit",
 		25,
 		IT_HEALTH,
 		0,
@@ -170,7 +170,7 @@ gitem_t	bg_itemlist[] =
 		"models/powerups/health/large_sphere.md3",
 		NULL, NULL },*/
 /* icon */		"icons/iconh_yellow",
-/* pickup */	"50 Health",
+/* pickup */	"Large Health Kit",
 		50,
 		IT_HEALTH,
 		0,
@@ -189,7 +189,7 @@ gitem_t	bg_itemlist[] =
 		"models/powerups/health/mega_sphere.md3",
 		NULL, NULL },*/
 /* icon */		"icons/iconh_mega",
-/* pickup */	"Mega Health",
+/* pickup */	"Mega Health Kit",
 		100,
 		IT_HEALTH,
 		0,
@@ -1080,7 +1080,7 @@ Only in One Flag CTF games
 		{ "models/items/ammo_rocket_small.md3",
 		NULL, NULL, NULL},
 /* icon */		"icons/icona_rocketsm",
-/* pickup */	"Rocket",
+/* pickup */	"Small Rocket",
 		2,
 		IT_AMMO,
 		AT_ROCKETS,

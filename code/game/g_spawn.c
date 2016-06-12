@@ -489,7 +489,7 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 
 	// remove item that share a spawn spot with a gametype objective item
 /*	if ( g_gametype.integer >= GT_SKULLBALL ) {
-		G_SpawnInt( "nocenterobjective", "0", &i );
+		G_SpawnInt( "notcenterobjective", "0", &i );
 		if ( i ) {
 			ADJUST_AREAPORTAL();
 			G_FreeEntity( ent );

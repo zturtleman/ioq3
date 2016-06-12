@@ -970,9 +970,11 @@ void SP_func_door (gentity_t *ent) {
 	if (!ent->speed)
 		ent->speed = 400;
 
-	// default wait of 2 seconds
-	if (!ent->wait)
-		ent->wait = 2;
+	if (!ent->wait) {
+		ent->wait = 2; // default wait of 2 seconds
+	} else if (ent->wait < 0) {
+		ent->wait = 6660; // negative value shall result in a 111 minute wait
+	}
 	ent->wait *= 1000;
 
 	// allow multiple button requirements to open door

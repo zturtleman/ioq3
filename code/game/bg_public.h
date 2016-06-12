@@ -165,7 +165,7 @@ typedef enum {
 } weaponstate_t;
 
 // pmove->pm_flags
-#define	PMF_DUCKED		1
+#define	PMF_DUCKED			1
 #define	PMF_JUMP_HELD		2
 #define	PMF_BACKWARDS_JUMP	8		// go into backwards land
 #define	PMF_BACKWARDS_RUN	16		// coast down to backwards run
@@ -175,11 +175,11 @@ typedef enum {
 #define	PMF_RESPAWNED		512		// clear after attack and jump buttons come up
 #define	PMF_USE_ITEM_HELD	1024
 #define PMF_GRAPPLE_PULL	2048		// pull towards grapple location
-#define PMF_FOLLOW		4096		// spectate following another player
+#define PMF_FOLLOW			4096		// spectate following another player
 #define PMF_SCOREBOARD		8192		// spectate as a scoreboard
 #define PMF_INVULEXPAND		16384		// invulnerability sphere set to full size
 
-#define	PMF_ALL_TIMES	(PMF_TIME_WATERJUMP|PMF_TIME_LAND|PMF_TIME_KNOCKBACK)
+#define	PMF_ALL_TIMES		(PMF_TIME_WATERJUMP|PMF_TIME_LAND|PMF_TIME_KNOCKBACK)
 
 #define	MAXTOUCH	32
 typedef struct {
@@ -345,17 +345,16 @@ typedef enum {
 } persEnum_t;
 
 // define flags for PERS_MISC
-
 #define	PMSC_RESTRICTED_PHYSICS		0x0001
 #define	PMSC_PHYSICS_SELECTION		0x0002
-#define	PMSC_PHYSICS_DEPRESS		0x0004
+#define	PMSC_PHYSICS_DEPRESS		0x0004 // this disables the "special" button from being triggered again, until it's depressed
 #define	PMSC_ALWAYS_PICKUP_WEAPONS	0x0008
 #define	PMSC_NEVER_PICKUP_WEAPONS	0x0010
 #define	PMSC_NEVER_PICKUP_AMMO		0x0020
 #define	PMSC_NEVER_PICKUP_ANY_ITEM	0x0040
 #define	PMSC_250_HEALTH_CAP			0x0080	// might just do away with this flag
 #define	PMSC_SLOW_RELOAD			0x0100	// mainly for all against one gametype
-
+#define PMSC_PARKOUR_PHYSICS		0x0200
 
 // entityState_t->eFlags
 #define	EF_DEAD				0x00000001		// don't draw a foe marker over players with EF_DEAD
@@ -388,7 +387,7 @@ typedef enum {
 
 	PW_QUAD, // QUAD DAMAGE
 	PW_PENT, // PENTAGRAM OF PROTECTION
-	//PW_BATTLESUIT,
+
 	PW_HASTE, // to become ???
 	PW_INVIS, // to become RING_OF_SHADOWS
 	PW_REGEN, // to be removed

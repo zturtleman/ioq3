@@ -1693,8 +1693,9 @@ void ClientSpawn(gentity_t *ent) {
 				client->disallowItemPickUp = 1; // meant to delay pickup on items when spawning on them
 			} else if ( level.rs_matchMode == MM_ROCKET_MANIAX ) {
 				// rockets maniax arena
-				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_ROCKET_LAUNCHER );
+				client->ps.stats[STAT_WEAPONS] = ( 1 << WP_ROCKET_LAUNCHER ); // make sure to remove the blaster from inventory as well
 
+				client->ps.ammo[AT_INFINITY] = 0;
 				client->ps.ammo[AT_SHELLS] = 0;
 				client->ps.ammo[AT_ROCKETS] = -1;
 				client->ps.ammo[AT_CELLS] = 0;

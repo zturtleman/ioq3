@@ -1299,11 +1299,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 
 		if ( targ != attacker && OnSameTeam (targ, attacker)  ) {
 
-			// reduce team damage to make rockets mode more fun  :3
-			if ( level.rs_matchMode == MM_ROCKET_MANIAX ) {
-				damage *= 0.5; // reduce amount of damage on teammate
-			}
-
 			if ( !level.rs_friendlyFire /*!g_friendlyFire.integer*/ ) {
 				return;
 			} else {
@@ -1389,11 +1384,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 					break;
 				default:
 					damage *= 0.5;
-			}
-
-			// reduce self damage to make rockets mode more fun  :3
-			if ( level.rs_matchMode == MM_ROCKET_MANIAX ) {
-				damage *= 0.5;
 			}
 
 			// if in quad mode, reduce self damage more
