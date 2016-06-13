@@ -133,7 +133,7 @@ CG_ParseTeamInfo
 =================
 */
 
-#define		CG_PLAYERINFOSLOTSIZE	8 // was 6
+#define		CG_PLAYERINFOSLOTSIZE	11 // was 6
 static void CG_ParseTeamInfo( void ) {
 	int		i;
 	int		client;
@@ -160,11 +160,16 @@ static void CG_ParseTeamInfo( void ) {
 		cgs.clientinfo[ client ].location = atoi( CG_Argv( i * CG_PLAYERINFOSLOTSIZE + 3 ) );
 		cgs.clientinfo[ client ].health = atoi( CG_Argv( i * CG_PLAYERINFOSLOTSIZE + 4 ) );
 		cgs.clientinfo[ client ].armor = atoi( CG_Argv( i * CG_PLAYERINFOSLOTSIZE + 5 ) );
-		cgs.clientinfo[ client ].curWeapon = atoi( CG_Argv( i * CG_PLAYERINFOSLOTSIZE + 6 ) );
-		cgs.clientinfo[ client ].powerups = atoi( CG_Argv( i * CG_PLAYERINFOSLOTSIZE + 7 ) );
 
-		cgs.clientinfo[ client ].posXLoc = atoi( CG_Argv( i * CG_PLAYERINFOSLOTSIZE + 8 ) );
-		cgs.clientinfo[ client ].posYLoc = atoi( CG_Argv( i * CG_PLAYERINFOSLOTSIZE + 9 ) );
+		cgs.clientinfo[ client ].damageLvl = atoi( CG_Argv( i * CG_PLAYERINFOSLOTSIZE + 6 ) );
+		cgs.clientinfo[ client ].armorLvl = atoi( CG_Argv( i * CG_PLAYERINFOSLOTSIZE + 7 ) );
+		cgs.clientinfo[ client ].keycards = atoi( CG_Argv( i * CG_PLAYERINFOSLOTSIZE + 8 ) );
+
+		cgs.clientinfo[ client ].curWeapon = atoi( CG_Argv( i * CG_PLAYERINFOSLOTSIZE + 9 ) );
+		cgs.clientinfo[ client ].powerups = atoi( CG_Argv( i * CG_PLAYERINFOSLOTSIZE + 10 ) );
+
+		cgs.clientinfo[ client ].posXLoc = atoi( CG_Argv( i * CG_PLAYERINFOSLOTSIZE + 11 ) );
+		cgs.clientinfo[ client ].posYLoc = atoi( CG_Argv( i * CG_PLAYERINFOSLOTSIZE + 12 ) );
 	}
 }
 

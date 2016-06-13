@@ -389,6 +389,9 @@ typedef struct {
 	int				health;			// you only get this info about your teammates
 	int				armor;
 	int				curWeapon;
+	int				armorLvl;
+	int				damageLvl;
+	int				keycards;
 
 	// position of player for use with mini map
 	int				posXLoc;
@@ -1842,6 +1845,7 @@ extern	vmCvar_t		hud_voteStatus_yScale;
 extern	vmCvar_t		hud_teamOverlay_show;
 extern	vmCvar_t		hud_teamOverlay_xPos;
 extern	vmCvar_t		hud_teamOverlay_yPos;
+extern	vmCvar_t		hud_teamOverlay_scale;
 
 extern	vmCvar_t		hud_chatBoxRoute;
 extern	vmCvar_t		hud_teamChatBoxRoute;

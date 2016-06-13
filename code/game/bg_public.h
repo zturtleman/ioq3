@@ -241,10 +241,7 @@ typedef enum {
 	STAT_ARMORTIER,					// strength of armor
 	STAT_LEVEL,						// player's level
 
-	// attn sponge: follow the following index to display a player's key/mouse input,
-	//              which is what some quakelive players are requesting.
 	STAT_CTRL,						// displays key presses
-
 	STAT_INVENTORY					// item inventory (such as keycards)
 } statIndex_t;
 

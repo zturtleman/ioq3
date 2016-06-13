@@ -2616,23 +2616,37 @@ static void HUD_DrawLagometer( int x, int y, int w, int h, int align, vec4_t bgC
 
 /*
 =================
-HUD_MegaDrawTeamOverlayOld
+HUD_MegaDrawTeamOverlay
+
+TODO: allow element to be aligned and such
 =================
 */
 
-void HUD_MegaDrawTeamOverlayOld ( int xpos, int ypos, qboolean right, qboolean upper ) {
+#define	HUD_TEAM_OVERLAY_WIDTH			256
+#define	HUD_TEAM_OVERLAY_WIDTHADJ		254
+#define	HUD_TEAM_OVERLAY_MAXNAMEWIDTH	124
+#define	HUD_TEAM_OVERLAY_SLOTHEIGHT		16
+#define	HUD_TEAM_OVERLAY_HALFHEIGHT		8
+#define	HUD_TEAM_OVERLAY_HEALTH			192
+#define	HUD_TEAM_OVERLAY_DMGLVL			160
+#define	HUD_TEAM_OVERLAY_ARMOR			208
+#define	HUD_TEAM_OVERLAY_ARMORLVL		240
+#define	HUD_TEAM_OVERLAY_WEAPON			196
 
-	float y;
-	int x, w, h, xx;
-	int i, j, len;
-	const char *p;
+void HUD_MegaDrawTeamOverlay ( int xpos, int ypos, qboolean right, qboolean upper, float scale ) {
+
+	int			x, y, w, h, xx, yy, yset_hi, yset_lo;
+	int			i, j, num, len;
+	int			strXSize;
+	float		strXScale;
+	const char	*p;
 	vec4_t		hcolor;
-	int pwidth, lwidth;
-	int plyrs;
-	char st[16];
-	clientInfo_t *ci;
-	gitem_t	*item;
-	int ret_y, count;
+	int			pwidth, lwidth;
+	int			plyrs;
+	char		string[32];
+	clientInfo_t	*ci;
+	gitem_t		*item;
+	int			ret_y, count;
 
 	if ( !hud_teamOverlay_show.integer ) {
 		return;
@@ -2642,8 +2656,149 @@ void HUD_MegaDrawTeamOverlayOld ( int xpos, int ypos, qboolean right, qboolean u
 		return; // Not on any team
 	}
 
-	y = (float) ypos;// * cgs.screenYScale;
+	y = ypos;// * cgs.screenYScale;
 	plyrs = 0;
+
+	count = (numSortedTeamPlayers > 8) ? 8 : numSortedTeamPlayers;
+	for (i = 0; i < count; i++) {
+		ci = cgs.clientinfo + sortedTeamPlayers[i];
+		if ( ci->infoValid && ci->team == cg.snap->ps.persistant[PERS_TEAM]) {
+			plyrs++;
+		}
+	}
+
+	// if there are no players, don't bother
+	if (!plyrs) {
+		return;
+	}
+
+	w = HUD_TEAM_OVERLAY_WIDTH * scale;
+	x = xpos - w;
+	yy = HUD_TEAM_OVERLAY_SLOTHEIGHT * scale;
+	h = plyrs * yy;
+
+	if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_RED ) {
+		hcolor[0] = 1.0f;
+		hcolor[1] = 0.0f;
+		hcolor[2] = 0.0f;
+		hcolor[3] = 0.33f;
+	} else { // if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_BLUE )
+		hcolor[0] = 0.0f;
+		hcolor[1] = 0.0f;
+		hcolor[2] = 1.0f;
+		hcolor[3] = 0.33f;
+	}
+	trap_R_SetColor( hcolor );
+	CG_DrawPic( x, y, w, h, cgs.media.teamStatusBar );
+	trap_R_SetColor( NULL );
+
+	hcolor[0] = hcolor[1] = hcolor[2] = 1.0f;
+	hcolor[3] = 1.0f;
+
+	for (i = 0; i < count; i++) {
+		ci = cgs.clientinfo + sortedTeamPlayers[i];
+		if ( ci->infoValid && ci->team == cg.snap->ps.persistant[PERS_TEAM]) {
+
+			yset_hi = y + ( i * yy );
+			yset_lo = y + ( i * yy ) + ( HUD_TEAM_OVERLAY_HALFHEIGHT * scale );
+
+			// client name
+			Com_sprintf(string, sizeof(string), ci->name);
+			strXSize = UI_ReturnStringWidth (string, qfalse);
+			if ( strXSize > HUD_TEAM_OVERLAY_MAXNAMEWIDTH ) {
+				strXScale = ( HUD_TEAM_OVERLAY_MAXNAMEWIDTH / (float)strXSize);
+			} else {
+				strXScale = 1.0;
+			}
+			//Com_Printf( S_COLOR_CYAN "DEBUG: %i/%i %f\n", HUD_TEAM_OVERLAY_MAXNAMEWIDTH, strXSize, strXScale );
+			//UI_DrawCustomProportionalString( x, y, string, UI_DROPSHADOW, 0.5, hcolor, qfalse );
+			UI_DrawString( x + 2 * (int)scale, yset_hi, string, UI_DROPSHADOW, strXScale * scale, 1.0 * scale, hcolor, qfalse );
+
+			// client loc
+			p = CG_ConfigString(CS_LOCATIONS + ci->location);
+			if (!p || !*p) {
+				p = "Fucking around";
+			}
+
+			strXSize = UI_ReturnStringWidth (p, qfalse) * 0.5;
+			if ( strXSize > HUD_TEAM_OVERLAY_MAXNAMEWIDTH ) {
+				strXScale = ( HUD_TEAM_OVERLAY_MAXNAMEWIDTH / (float)strXSize) * 0.5;
+			} else {
+				strXScale = 0.5;
+			}
+			UI_DrawString( x + (int)((float)HUD_TEAM_OVERLAY_WIDTHADJ * scale), yset_hi, p, UI_DROPSHADOW | UI_RIGHT, strXScale * scale, 0.5 * scale, hcolor, qfalse );
+
+			// health, armor, etc.
+			Com_sprintf(string, sizeof(string), va("%i\x1E", ci->health));
+			UI_DrawString( x + (int)((float)HUD_TEAM_OVERLAY_HEALTH * scale), yset_lo, string, UI_DROPSHADOW | UI_RIGHT, 0.5 * scale, 0.5 * scale, hcolor, qfalse );
+
+			Com_sprintf(string, sizeof(string), va("LV%i", ci->damageLvl));
+			UI_DrawString( x + (int)((float)HUD_TEAM_OVERLAY_DMGLVL * scale), yset_lo, string, UI_DROPSHADOW | UI_RIGHT, 0.3 * scale, 0.3 * scale, hcolor, qfalse );
+
+			num = ci->armor;
+			Com_sprintf(string, sizeof(string), va("\x1F%i", ci->armor));
+			UI_DrawString( x + (int)((float)HUD_TEAM_OVERLAY_ARMOR * scale), yset_lo, string, UI_DROPSHADOW, 0.5 * scale, 0.5 * scale, hcolor, qfalse );
+
+			if (num) {
+				Com_sprintf(string, sizeof(string), va("LV%i", ci->armorLvl));
+				UI_DrawString( x + (int)((float)HUD_TEAM_OVERLAY_ARMORLVL * scale), yset_lo, string, UI_DROPSHADOW, 0.3 * scale, 0.3 * scale, hcolor, qfalse );
+			}
+
+			if ( cg_weapons[ci->curWeapon].weaponIcon ) {
+				CG_DrawPic(  x + (int)((float)HUD_TEAM_OVERLAY_WEAPON * scale), yset_lo, HUD_TEAM_OVERLAY_HALFHEIGHT * scale, HUD_TEAM_OVERLAY_HALFHEIGHT * scale,
+					cg_weapons[ci->curWeapon].weaponIcon );
+			} else {
+				CG_DrawPic(  x + (int)((float)HUD_TEAM_OVERLAY_WEAPON * scale), yset_lo, HUD_TEAM_OVERLAY_HALFHEIGHT * scale, HUD_TEAM_OVERLAY_HALFHEIGHT * scale,
+					cgs.media.deferShader );
+			}
+
+			// power ups
+			// TODO: perhaps a less cpu wasting way of displaying powerup icons
+			// TODO: maybe fit info about keycards
+			xx = x + (int)((float)128 * scale);
+
+			// if we have more than two, flash between the two...  if more, well, fuck it, just show two  :/
+			if ( cg.time & 256 ) {
+
+				for (j = 0; j <= PW_NUM_POWERUPS; j++) {
+					if (ci->powerups & (1 << j)) {
+						item = BG_FindItemForPowerup( j );
+
+						if (item) {
+							CG_DrawPic( xx, yset_lo, HUD_TEAM_OVERLAY_HALFHEIGHT * scale, HUD_TEAM_OVERLAY_HALFHEIGHT * scale,
+							trap_R_RegisterShader( item->icon ) );
+							//xx -= HUD_TEAM_OVERLAY_HALFHEIGHT * scale;
+							break;
+						}
+					}
+				}
+
+			} else {
+
+				for (j = PW_NUM_POWERUPS - 1; j >= 0; j--) {
+					if (ci->powerups & (1 << j)) {
+						item = BG_FindItemForPowerup( j );
+
+						if (item) {
+							CG_DrawPic( xx, yset_lo, HUD_TEAM_OVERLAY_HALFHEIGHT * scale, HUD_TEAM_OVERLAY_HALFHEIGHT * scale,
+							trap_R_RegisterShader( item->icon ) );
+							//xx -= HUD_TEAM_OVERLAY_HALFHEIGHT * scale;
+							break;
+						}
+					}
+				}
+
+			}
+
+
+		}
+
+	}
+
+
+	// reference
+	// =========
+	/*
 
 	// max player name width
 	pwidth = 0;
@@ -2680,20 +2835,9 @@ void HUD_MegaDrawTeamOverlayOld ( int xpos, int ypos, qboolean right, qboolean u
 
 	w = (pwidth + lwidth + 4 + 7) * TINYCHAR_WIDTH;
 
-	/*if ( right )
-		x = 640 - w;
-	else
-		x = 0;*/
 	x = xpos - w;
 
 	h = plyrs * TINYCHAR_HEIGHT;
-
-	/*if ( upper ) {
-		ret_y = y + h;
-	} else {
-		y -= h;
-		ret_y = y;
-	}*/
 
 	if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_RED ) {
 		hcolor[0] = 1.0f;
@@ -2726,12 +2870,7 @@ void HUD_MegaDrawTeamOverlayOld ( int xpos, int ypos, qboolean right, qboolean u
 				p = CG_ConfigString(CS_LOCATIONS + ci->location);
 				if (!p || !*p)
 					p = "unknown";
-//				len = CG_DrawStrlen(p);
-//				if (len > lwidth)
-//					len = lwidth;
 
-//				xx = x + TINYCHAR_WIDTH * 2 + TINYCHAR_WIDTH * pwidth +
-//					((lwidth/2 - len/2) * TINYCHAR_WIDTH);
 				xx = x + TINYCHAR_WIDTH * 2 + TINYCHAR_WIDTH * pwidth;
 				CG_DrawStringExt( xx, y,
 					p, hcolor, qfalse, qfalse, TINYCHAR_WIDTH, TINYCHAR_HEIGHT,
@@ -2786,6 +2925,8 @@ void HUD_MegaDrawTeamOverlayOld ( int xpos, int ypos, qboolean right, qboolean u
 			y += TINYCHAR_HEIGHT;
 		}
 	}
+
+	*/
 
 	return;
 //#endif
@@ -3794,21 +3935,6 @@ static void HUD_MegaDrawVote( int xpos, int xoff, int ypos, int posLock, int ali
 	//CG_DrawSmallString( 0, 58, s, 1.0F );
 	HUD_FuncPosLock( s, posLock, xpos, xoff, ypos, 16, style, scaleX, scaleY, color, qfalse );
 }
-
-/*
-=================
-HUD_MegaDrawTeamOverlay
-=================
-*/
-
-/*static float HUD_MegaDrawTeamOverlay( int xpos, int xoff, int ypos, int posLock, int align, int style,
-						float scaleX, float scaleY, const char* colorStr ) {
-
-
-
-
-}*/
-
 
 
 /*

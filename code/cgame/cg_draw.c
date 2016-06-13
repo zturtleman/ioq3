@@ -2866,8 +2866,7 @@ vvvvvvvvvvvvvvvvvvvvv
 							hud_ups_xScale.value, hud_ups_yScale.value,
 							hud_ups_color.string );
 
-				/*HUD_MegaDrawTeamOverlayOld ( hud_teamOverlay_xPos.integer, hud_teamOverlay_yPos.integer, qtrue, qfalse );*/
-				HUD_MegaDrawTeamOverlayOld ( posRight, hud_teamOverlay_yPos.integer, qtrue, qfalse );
+				HUD_MegaDrawTeamOverlay ( posRight, hud_teamOverlay_yPos.integer, qtrue, qfalse, hud_teamOverlay_scale.value );
 
 				//ypos += HUD_MegaDrawTimer(posRight - 2, ypos, UI_RIGHT | UI_DROPSHADOW, 1.00, colorMagenta);
 				/*ypos += HUD_MegaDrawDigitTimer(posRight - 2, ypos, UI_RIGHT | UI_DROPSHADOW, 1.00, colorMagenta);

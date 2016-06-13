@@ -1146,7 +1146,7 @@ void TeamplayInfoMessage( gentity_t *ent ) {
 	int		i, j;
 	gentity_t	*player;
 	int		cnt;
-	int		h, a;
+	int		h, a, dlvl, alvl, inv;
 	int		clients[TEAM_MAXOVERLAY];
 	int		team;
 	int		posX, posY;
@@ -1192,6 +1192,9 @@ void TeamplayInfoMessage( gentity_t *ent ) {
 
 			h = player->client->ps.stats[STAT_HEALTH];
 			a = player->client->ps.stats[STAT_ARMOR];
+			dlvl = floor ( player->client->ps.stats[STAT_LEVEL] / LV_SUBPOINT ) + 1; // do the math here
+			alvl = player->client->ps.stats[STAT_ARMORTIER];
+			inv = player->client->ps.stats[STAT_INVENTORY];
 			if (h < 0) h = 0;
 			if (a < 0) a = 0;
 
@@ -1199,9 +1202,10 @@ void TeamplayInfoMessage( gentity_t *ent ) {
 			posY = (float)player->r.currentOrigin[1];
 
 			Com_sprintf (entry, sizeof(entry),
-				" %i %i %i %i %i %i %i %i",
+				" %i %i %i %i %i %i %i %i %i %i %i",
 				/*level.sortedClients[i], player->client->pers.teamState.location, h, a, */
 				i, player->client->pers.teamState.location, h, a,
+				dlvl, alvl, inv,
 				player->client->ps.weapon, player->s.powerups,
 				posX, posY);
 			j = strlen(entry);

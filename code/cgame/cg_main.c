@@ -520,6 +520,7 @@ vmCvar_t	hud_voteStatus_yScale;
 vmCvar_t	hud_teamOverlay_show;
 vmCvar_t	hud_teamOverlay_xPos;
 vmCvar_t	hud_teamOverlay_yPos;
+vmCvar_t	hud_teamOverlay_scale;
 
 vmCvar_t	hud_chatBoxRoute;
 vmCvar_t	hud_teamChatBoxRoute;
@@ -1089,9 +1090,10 @@ static cvarTable_t cvarTable[] = {
 	{ &hud_voteStatus_xScale, "hud_voteStatus_xScale", "0.5", CVAR_ARCHIVE},
 	{ &hud_voteStatus_yScale, "hud_voteStatus_yScale", "0.75", CVAR_ARCHIVE},
 
-	{ &hud_teamOverlay_show, "hud_teamOverlay_show", "0", CVAR_ARCHIVE},
+	{ &hud_teamOverlay_show, "hud_teamOverlay_show", "1", CVAR_ARCHIVE},
 	{ &hud_teamOverlay_xPos, "hud_teamOverlay_xPos", "320", CVAR_ARCHIVE},
 	{ &hud_teamOverlay_yPos, "hud_teamOverlay_yPos", "240", CVAR_ARCHIVE},
+	{ &hud_teamOverlay_scale, "hud_teamOverlay_scale", "1.0", CVAR_ARCHIVE},
 
 	{ &hud_chatBoxRoute, "hud_chatBoxRoute", "0", 0},
 	{ &hud_teamChatBoxRoute, "hud_teamChatBoxRoute", "1", 0},
