@@ -518,7 +518,9 @@ vmCvar_t	hud_voteStatus_xScale;
 vmCvar_t	hud_voteStatus_yScale;
 
 vmCvar_t	hud_teamOverlay_show;
+vmCvar_t	hud_teamOverlay_align;
 vmCvar_t	hud_teamOverlay_xPos;
+vmCvar_t	hud_teamOverlay_xAlign;
 vmCvar_t	hud_teamOverlay_yPos;
 vmCvar_t	hud_teamOverlay_scale;
 
@@ -1091,7 +1093,9 @@ static cvarTable_t cvarTable[] = {
 	{ &hud_voteStatus_yScale, "hud_voteStatus_yScale", "0.75", CVAR_ARCHIVE},
 
 	{ &hud_teamOverlay_show, "hud_teamOverlay_show", "1", CVAR_ARCHIVE},
-	{ &hud_teamOverlay_xPos, "hud_teamOverlay_xPos", "320", CVAR_ARCHIVE},
+	{ &hud_teamOverlay_align, "hud_teamOverlay_align", "2", CVAR_ARCHIVE},
+	{ &hud_teamOverlay_xPos, "hud_teamOverlay_xPos", "0", CVAR_ARCHIVE},
+	{ &hud_teamOverlay_xAlign, "hud_teamOverlay_xAlign", "2", CVAR_ARCHIVE},
 	{ &hud_teamOverlay_yPos, "hud_teamOverlay_yPos", "240", CVAR_ARCHIVE},
 	{ &hud_teamOverlay_scale, "hud_teamOverlay_scale", "1.0", CVAR_ARCHIVE},
 
@@ -1824,6 +1828,9 @@ static void CG_RegisterGraphics( void ) {
 	// old film effect for intermission
 	cgs.media.oldFilm1 = trap_R_RegisterShaderNoMip( "gfx/hud/oldfilm1" );
 	cgs.media.oldFilm2 = trap_R_RegisterShaderNoMip( "gfx/hud/oldfilm2" );
+
+	// team overlay background
+	cgs.media.teamBG = trap_R_RegisterShaderNoMip( "gfx/hud/teamBG" );
 
 	// to be removed
 	cgs.media.gametypeIcon_dm = trap_R_RegisterShaderNoMip( "icons/gt_dm" );

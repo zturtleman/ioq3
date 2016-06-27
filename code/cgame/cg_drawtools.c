@@ -122,6 +122,19 @@ void CG_DrawPic( float x, float y, float width, float height, qhandle_t hShader 
 }
 
 
+/*
+================
+CG_DrawPicExt
+
+Coordinates are 640*480 virtual values
+=================
+*/
+void CG_DrawPicExt( float x, float y, float width, float height, float tx1, float ty1, float tx2, float ty2, qhandle_t hShader ) {
+	CG_AdjustFrom640( &x, &y, &width, &height );
+	trap_R_DrawStretchPic( x, y, width, height, tx1, ty1, tx2, ty2, hShader );
+}
+
+
 
 /*
 ===============

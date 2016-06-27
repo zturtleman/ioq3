@@ -2622,25 +2622,31 @@ TODO: allow element to be aligned and such
 =================
 */
 
-#define	HUD_TEAM_OVERLAY_WIDTH			256
-#define	HUD_TEAM_OVERLAY_WIDTHADJ		254
-#define	HUD_TEAM_OVERLAY_MAXNAMEWIDTH	124
+#define	HUD_TEAM_OVERLAY_WIDTH			232 // was 224
+#define	HUD_TEAM_OVERLAY_WIDTHADJ		222
+#define	HUD_TEAM_OVERLAY_GUTTER			4
+#define	HUD_TEAM_OVERLAY_NAMEYOFFSET	4
+#define	HUD_TEAM_OVERLAY_MAXNAMEWIDTH	92
+#define	HUD_TEAM_OVERLAY_MAXLOCWIDTH	124
 #define	HUD_TEAM_OVERLAY_SLOTHEIGHT		16
 #define	HUD_TEAM_OVERLAY_HALFHEIGHT		8
-#define	HUD_TEAM_OVERLAY_HEALTH			192
-#define	HUD_TEAM_OVERLAY_DMGLVL			160
-#define	HUD_TEAM_OVERLAY_ARMOR			208
-#define	HUD_TEAM_OVERLAY_ARMORLVL		240
-#define	HUD_TEAM_OVERLAY_WEAPON			196
+#define	HUD_TEAM_OVERLAY_HEALTH			160
+#define	HUD_TEAM_OVERLAY_DMGLVL			128
+#define	HUD_TEAM_OVERLAY_ARMOR			176
+#define	HUD_TEAM_OVERLAY_ARMORLVL		208
+#define	HUD_TEAM_OVERLAY_WEAPON			164
+#define HUD_TEAM_OVERLAY_POWERUP		96
 
-void HUD_MegaDrawTeamOverlay ( int xpos, int ypos, qboolean right, qboolean upper, float scale ) {
+void HUD_MegaDrawTeamOverlay ( int xpos, int xoff, int ypos, int align, float scale ) {
 
-	int			x, y, w, h, xx, yy, yset_hi, yset_lo;
+	int			x, y, /*w, */h, xx, yy, yset_name, yset_hi, yset_lo;
+	int			bgx1, bgx2, bgw1, bgw2, bgy, bgh;
 	int			i, j, num, len;
 	int			strXSize;
 	float		strXScale;
 	const char	*p;
 	vec4_t		hcolor;
+	vec4_t		bgcolor;
 	int			pwidth, lwidth;
 	int			plyrs;
 	char		string[32];
@@ -2654,6 +2660,21 @@ void HUD_MegaDrawTeamOverlay ( int xpos, int ypos, qboolean right, qboolean uppe
 
 	if ( cg.snap->ps.persistant[PERS_TEAM] != TEAM_RED && cg.snap->ps.persistant[PERS_TEAM] != TEAM_BLUE ) {
 		return; // Not on any team
+	}
+
+	switch(align) {
+		case 1:
+			// align center
+			x = xpos - (HUD_TEAM_OVERLAY_WIDTH / 2) * scale;
+			break;
+		case 2:
+			// align right
+			x = xpos - HUD_TEAM_OVERLAY_WIDTH * scale;
+			break;
+		default:
+			// align left
+			x = xpos;
+			break;
 	}
 
 	y = ypos;// * cgs.screenYScale;
@@ -2672,25 +2693,31 @@ void HUD_MegaDrawTeamOverlay ( int xpos, int ypos, qboolean right, qboolean uppe
 		return;
 	}
 
-	w = HUD_TEAM_OVERLAY_WIDTH * scale;
-	x = xpos - w;
+	//w = HUD_TEAM_OVERLAY_WIDTH * scale;
+	x += xoff + (HUD_TEAM_OVERLAY_GUTTER * scale);
 	yy = HUD_TEAM_OVERLAY_SLOTHEIGHT * scale;
 	h = plyrs * yy;
 
+	bgx1 = x;
+	bgw1 = 112 * scale;
+	bgx2 = x + bgw1;
+	bgw2 = 112 * scale;
+	bgh = 8 * scale;
+
 	if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_RED ) {
-		hcolor[0] = 1.0f;
-		hcolor[1] = 0.0f;
-		hcolor[2] = 0.0f;
-		hcolor[3] = 0.33f;
+		bgcolor[0] = 1.0f;
+		bgcolor[1] = 0.0f;
+		bgcolor[2] = 0.0f;
+		bgcolor[3] = 0.33f;
 	} else { // if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_BLUE )
-		hcolor[0] = 0.0f;
-		hcolor[1] = 0.0f;
-		hcolor[2] = 1.0f;
-		hcolor[3] = 0.33f;
+		bgcolor[0] = 0.0f;
+		bgcolor[1] = 0.0f;
+		bgcolor[2] = 1.0f;
+		bgcolor[3] = 0.33f;
 	}
-	trap_R_SetColor( hcolor );
+	/*trap_R_SetColor( hcolor );
 	CG_DrawPic( x, y, w, h, cgs.media.teamStatusBar );
-	trap_R_SetColor( NULL );
+	trap_R_SetColor( NULL );*/
 
 	hcolor[0] = hcolor[1] = hcolor[2] = 1.0f;
 	hcolor[3] = 1.0f;
@@ -2701,18 +2728,22 @@ void HUD_MegaDrawTeamOverlay ( int xpos, int ypos, qboolean right, qboolean uppe
 
 			yset_hi = y + ( i * yy );
 			yset_lo = y + ( i * yy ) + ( HUD_TEAM_OVERLAY_HALFHEIGHT * scale );
+			yset_name = y + ( i * yy ) + ( HUD_TEAM_OVERLAY_NAMEYOFFSET * scale );
+
+			trap_R_SetColor( bgcolor );
+			CG_DrawPicExt( bgx1, yset_lo, bgw1, bgh, 0, 0.25, 0.875, 0.5, cgs.media.teamBG );
+			CG_DrawPicExt( bgx2, yset_lo, bgw2, bgh, 0.125, 0.75, 1, 1, cgs.media.teamBG );
+			trap_R_SetColor( NULL );
 
 			// client name
 			Com_sprintf(string, sizeof(string), ci->name);
-			strXSize = UI_ReturnStringWidth (string, qfalse);
+			strXSize = UI_ReturnStringWidth (string, qfalse) * 0.5;
 			if ( strXSize > HUD_TEAM_OVERLAY_MAXNAMEWIDTH ) {
-				strXScale = ( HUD_TEAM_OVERLAY_MAXNAMEWIDTH / (float)strXSize);
+				strXScale = ( HUD_TEAM_OVERLAY_MAXNAMEWIDTH / (float)strXSize) * 0.5;
 			} else {
-				strXScale = 1.0;
+				strXScale = 0.5;
 			}
-			//Com_Printf( S_COLOR_CYAN "DEBUG: %i/%i %f\n", HUD_TEAM_OVERLAY_MAXNAMEWIDTH, strXSize, strXScale );
-			//UI_DrawCustomProportionalString( x, y, string, UI_DROPSHADOW, 0.5, hcolor, qfalse );
-			UI_DrawString( x + 2 * (int)scale, yset_hi, string, UI_DROPSHADOW, strXScale * scale, 1.0 * scale, hcolor, qfalse );
+			UI_DrawString( x + 2 * (int)scale, yset_name, string, UI_DROPSHADOW, strXScale * scale, 0.5 * scale, hcolor, qfalse );
 
 			// client loc
 			p = CG_ConfigString(CS_LOCATIONS + ci->location);
@@ -2721,8 +2752,8 @@ void HUD_MegaDrawTeamOverlay ( int xpos, int ypos, qboolean right, qboolean uppe
 			}
 
 			strXSize = UI_ReturnStringWidth (p, qfalse) * 0.5;
-			if ( strXSize > HUD_TEAM_OVERLAY_MAXNAMEWIDTH ) {
-				strXScale = ( HUD_TEAM_OVERLAY_MAXNAMEWIDTH / (float)strXSize) * 0.5;
+			if ( strXSize > HUD_TEAM_OVERLAY_MAXLOCWIDTH ) {
+				strXScale = ( HUD_TEAM_OVERLAY_MAXLOCWIDTH / (float)strXSize) * 0.5;
 			} else {
 				strXScale = 0.5;
 			}
@@ -2755,7 +2786,7 @@ void HUD_MegaDrawTeamOverlay ( int xpos, int ypos, qboolean right, qboolean uppe
 			// power ups
 			// TODO: perhaps a less cpu wasting way of displaying powerup icons
 			// TODO: maybe fit info about keycards
-			xx = x + (int)((float)128 * scale);
+			xx = x + (int)((float)HUD_TEAM_OVERLAY_POWERUP * scale);
 
 			// if we have more than two, flash between the two...  if more, well, fuck it, just show two  :/
 			if ( cg.time & 256 ) {

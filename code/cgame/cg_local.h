@@ -863,6 +863,8 @@ typedef struct {
 	qhandle_t	oldFilm1;
 	qhandle_t	oldFilm2;
 
+	qhandle_t	teamBG;
+
 	// scoreboard portrait
 	qhandle_t	hudDefaultPort;
 	qhandle_t	hudFixedPort[NUM_FIXED_PORTS];
@@ -1843,7 +1845,9 @@ extern	vmCvar_t		hud_voteStatus_xScale;
 extern	vmCvar_t		hud_voteStatus_yScale;
 
 extern	vmCvar_t		hud_teamOverlay_show;
+extern	vmCvar_t		hud_teamOverlay_align;
 extern	vmCvar_t		hud_teamOverlay_xPos;
+extern	vmCvar_t		hud_teamOverlay_xAlign;
 extern	vmCvar_t		hud_teamOverlay_yPos;
 extern	vmCvar_t		hud_teamOverlay_scale;
 
@@ -2001,6 +2005,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 void CG_AdjustFrom640( float *x, float *y, float *w, float *h );
 void CG_FillRect( float x, float y, float width, float height, const float *color );
 void CG_DrawPic( float x, float y, float width, float height, qhandle_t hShader );
+void CG_DrawPicExt( float x, float y, float width, float height, float tx1, float ty1, float tx2, float ty2, qhandle_t hShader );
 void CG_DrawString( float x, float y, const char *string,
 				   float charWidth, float charHeight, const float *modulate );
 
