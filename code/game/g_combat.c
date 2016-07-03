@@ -1246,8 +1246,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	}
 
 	knockback = damage;
-	if ( mod == MOD_SUPER_SHOTGUN ) {
-		// give extra push back from super shotgun
+	if ( mod == MOD_SUPER_SHOTGUN || mod == MOD_ROCKET ) {
+		// give extra push back from a super shotgun and a direct rocket
 		knockback *= 2;
 	} else
 	if ( mod == MOD_LIGHTNING ) {
