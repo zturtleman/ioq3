@@ -149,7 +149,8 @@ struct gentity_s {
 
 	char		*message;
 
-	int			timestamp;		// body queue sinking, etc
+	int			timestamp;			// body queue sinking, etc
+	int			timeExt;			// temp-use time function
 
 	char		*target;
 	char		*targetname;

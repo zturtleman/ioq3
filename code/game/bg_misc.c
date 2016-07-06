@@ -131,7 +131,7 @@ gitem_t	bg_itemlist[] =
 		NULL, NULL },*/
 /* icon */		"icons/iconh_bit",
 /* pickup */	"Canned Health",
-		5,
+		-5,
 		IT_HEALTH,
 		0,
 /* precache */ "",
@@ -190,7 +190,7 @@ gitem_t	bg_itemlist[] =
 		NULL, NULL },*/
 /* icon */		"icons/iconh_mega",
 /* pickup */	"Mega Health Kit",
-		100,
+		-100,
 		IT_HEALTH,
 		0,
 /* precache */ "",
@@ -1104,6 +1104,24 @@ Only in One Flag CTF games
 /* sounds */ ""
 	},
 
+
+
+/*QUAKED food_burger (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
+*/
+	{
+		"food_burger",
+		"sound/items/eat1.wav",
+		{ "models/items/food_burger.md3",
+		NULL, NULL, NULL},
+/* icon */		"icons/food_burger",
+/* pickup */	"Tasty Burger",
+		15,
+		IT_HEALTH,
+		0,
+/* precache */ "",
+/* sounds */ ""
+	},
+
 // --------------------------
 
 	// end of list marker
@@ -1226,7 +1244,27 @@ gitem_t	*BG_FindItemForBackpack( void ) {
 		}
 	}
 
-	Com_Error( ERR_DROP, "Couldn't find item for backpack, WTF?");
+	Com_Error( ERR_DROP, "Couldn't find item for backpack, WTF?"); // should we screw the game, and throw an error?
+	return NULL;
+}
+
+/*
+===============
+BG_FindItemForFood
+
+===============
+*/
+gitem_t	*BG_FindItemForFood( int type ) {
+	gitem_t	*it;
+
+	for ( it = bg_itemlist + 1 ; it->classname ; it++) {
+		if ( it->giType == IT_HEALTH ) {
+			if ( it->quantity == 15 ) {
+				return it;
+			}
+		}
+	}
+
 	return NULL;
 }
 
@@ -1296,6 +1334,7 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 #ifdef MISSIONPACK
 	int		upperBound;
 #endif
+	//int		q;
 
 	if ( ent->modelindex < 1 || ent->modelindex >= bg_numItems ) {
 		Com_Error( ERR_DROP, "BG_CanItemBeGrabbed: index out of range" );
@@ -1421,15 +1460,16 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 		}
 
 	case IT_HEALTH:
+		//q = abs(item->quantity);
 		// small and mega healths will go over the max, otherwise
 		// don't pick up if already at max
-		if ( item->quantity == 5 || item->quantity == 100 ) {
+		if ( item->quantity < 0 /*item->quantity == 5 || item->quantity == 100*/ ) {
 			if ( ps->persistant[PERS_MISC] & PMSC_NEVER_PICKUP_AMMO ) {
 				if ( ps->stats[STAT_HEALTH] >= ps->stats[STAT_MAX_HEALTH] * 2.5 ) {
 					return qfalse;
 				}
 			} else {
-				if ( ps->stats[STAT_HEALTH] >= 666 ) {
+				if ( ps->stats[STAT_HEALTH] >= MARK_OF_THE_DEVIL ) {
 					return qfalse;
 				}
 			}

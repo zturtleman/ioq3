@@ -31,7 +31,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	DEFAULT_GRAVITY		800 * GAME_SPEED_MULTIPLIER
 #define	GIB_HEALTH			-40
+#define	GIB_HEALTH_BONUS1	-15 // was -30
+#define	GIB_HEALTH_BONUS2	-60 // was -120
+#define	GIB_HEALTH_BONUS_TIMELIMIT	1000
+#define	GIB_HEALTH_BONUS_CHANCE		0.25
 #define	ARMOR_PROTECTION	0.66
+
+#define MARK_OF_THE_DEVIL	666
 
 #define	MAX_ITEMS			256
 
@@ -878,6 +884,7 @@ gitem_t	*BG_FindItem( const char *pickupName );
 gitem_t	*BG_FindItemForWeapon( weapon_t weapon );
 gitem_t	*BG_FindItemForKeycards( invIndex_t cardType );
 gitem_t	*BG_FindItemForBackpack( void );
+gitem_t	*BG_FindItemForFood( int type );
 gitem_t	*BG_FindItemForPowerup( powerup_t pw );
 gitem_t	*BG_FindItemForHoldable( holdable_t pw );
 #define	ITEM_INDEX(x) ((x)-bg_itemlist)

@@ -384,30 +384,29 @@ int Pickup_Health (gentity_t *ent, gentity_t *other) {
 	int			quantity;
 
 	// small and mega healths will go over the max
-	if ( ent->item->quantity != 5 && ent->item->quantity != 100 ) {
+	if ( ent->item->quantity >= 0 /*ent->item->quantity != 5 && ent->item->quantity != 100*/ ) {
 		max = other->client->ps.stats[STAT_MAX_HEALTH];
 	} else {
 		if ( level.rs_matchMode == MM_ALLWEAPONS_MAXAMMO ) {
 			max = other->client->ps.stats[STAT_MAX_HEALTH] * 2.5; // max health is 250
 		} else {
-			/*
-			max = other->client->ps.stats[STAT_MAX_HEALTH] * 2; // max health is 200
-			*/
-			max = 666; // cannot be more powerful than the devil
+			max = MARK_OF_THE_DEVIL; // cannot be more powerful than the devil
 		}
 		other->client->healthDecayTime = level.time + HEALTH_DECAY_TIME * 1000;
 
 		// increase health decay by the number of megas taken while over max health
-		if ( ent->item->quantity == 100 ) {
+		if ( ent->item->quantity <= -100 ) {
 			other->client->healthDecayRate++;
 		}
 	}
 
 	if ( ent->count ) {
-		quantity = ent->count;
+		quantity = abs(ent->count);
 	} else {
-		quantity = ent->item->quantity;
+		quantity = abs(ent->item->quantity);
 	}
+
+	//G_Printf ("^3DEBUG PICKUP = '%i' '%i'\n", ent->item->quantity, quantity ); // debug
 
 	other->health += quantity;
 
@@ -417,7 +416,7 @@ int Pickup_Health (gentity_t *ent, gentity_t *other) {
 	other->client->ps.stats[STAT_HEALTH] = other->health;
 
 	// mega health respawns slow
-	if ( ent->item->quantity == 100 ) {
+	if ( ent->item->quantity <= -100 ) {
 		ent->think = HealthDecay;
 		ent->activator = other;
 		return 1;
@@ -514,7 +513,7 @@ void Pickup_Backpack (gentity_t *ent, gentity_t *other) {
 			backpack[backpackSlot].gas < 0 )
 	{
 
-		max = 666; // cannot be more powerful than the devil
+		max = MARK_OF_THE_DEVIL; // cannot be more powerful than the devil
 		other->client->healthDecayTime = level.time + HEALTH_DECAY_TIME * 1000;
 
 		other->health += 10;
@@ -657,7 +656,7 @@ void RespawnItem( gentity_t *ent ) {
 	// determine what type of item spawn sound to play
 	if ( ent->item->giType == IT_POWERUP ||
 			( ent->item->giType == IT_ARMOR && ent->item->quantity == AR_TIER3MAXPOINT ) ||
-			( ent->item->giType == IT_HEALTH && ent->item->quantity >= 100 ) ) {
+			( ent->item->giType == IT_HEALTH && ent->item->quantity <= -100 ) ) {
 		// play the super respawn sound
 		G_AddEvent( ent, EV_ITEM_SUPERRESPAWN, 0 );
 	} else {
@@ -1271,6 +1270,9 @@ void ClearRegisteredItems( void ) {
 
 	// players always leave behind a backpack when fragged
 	RegisterItem( BG_FindItemForBackpack() );
+
+	// slaughtered players will leave some yummy food
+	RegisterItem( BG_FindItemForFood(0) );
 
 	// test weapon - mmp
 	//RegisterItem( BG_FindItemForWeapon( WP_SUPER_SHOTGUN ) );

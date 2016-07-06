@@ -188,7 +188,8 @@ void TossClientItems( gentity_t *self ) {
 	gitem_t		*item;
 	int			weapon;
 	float		angle;
-	int			i;
+	//int			i, h, b1, b2;
+	int			b1, b2;
 	gentity_t	*drop;
 	int			teamFlag;
 	//int			testValue;
@@ -254,6 +255,52 @@ void TossClientItems( gentity_t *self ) {
 				level.currentBackpackSlot = 0;
 			}
 		}
+
+		if ( random() < GIB_HEALTH_BONUS_CHANCE ) {
+
+			if ( level.rs_quadMode ) {
+				b1 = GIB_HEALTH_BONUS1 * 4;
+				b2 = GIB_HEALTH_BONUS2 * 4;
+			} else {
+				b1 = GIB_HEALTH_BONUS1;
+				b2 = GIB_HEALTH_BONUS2;
+			}
+
+			// drop 15 health bonus
+			if ( self->health <= (GIB_HEALTH + b1) ) {
+
+				// find item for food
+				item = BG_FindItemForFood( 0 );
+
+				if ( item ) {
+					angle += 45;
+					drop = Drop_Item( self, item, angle );
+				}
+
+			}
+
+		}
+
+		// this produced too much
+		/*if ( self->health < (GIB_HEALTH + b1) ) {
+
+			//G_Printf ("^3DEBUG = '%i'\n", self->health - GIB_HEALTH ); // debug
+
+			// per 30 damage below gib status, a bonus 15 health item will pop out
+			h = self->health - GIB_HEALTH;
+			do {
+
+				item = BG_FindItemForFood( 0 );
+
+				if ( item ) {
+					angle += 45;
+					drop = Drop_Item( self, item, angle );
+					h -= b1;
+				}
+
+			} while ( h <= b1 );
+
+		}*/
 
 	}
 
@@ -497,8 +544,8 @@ void GibEntity( gentity_t *self, int killer ) {
 				continue;
 			if (ent->activator != self)
 				continue;
-			if (strcmp(ent->classname, "kamikaze timer"))
-				continue;
+			/*if (strcmp(ent->classname, "kamikaze timer"))
+				continue;*/
 			G_FreeEntity(ent);
 			break;
 		}
@@ -515,12 +562,49 @@ body_die
 ==================
 */
 void body_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath ) {
+	gitem_t		*item;
+	float		angle;
+	gentity_t	*drop;
+	int			b1, b2;
+
 	if ( self->health > GIB_HEALTH ) {
 		return;
 	}
-	if ( !g_blood.integer ) {
+	/*if ( !g_blood.integer ) {
 		self->health = GIB_HEALTH+1;
 		return;
+	}*/
+
+	if ( random() < GIB_HEALTH_BONUS_CHANCE ) {
+
+		//G_Printf ("^3DEBUG = '%i' vs '%i'\n", level.time, self->timeExt ); // debug
+		if ( level.time < self->timeExt ) {
+
+			if ( level.rs_quadMode ) {
+				b1 = GIB_HEALTH_BONUS1 * 4;
+				b2 = GIB_HEALTH_BONUS2 * 4;
+			} else {
+				b1 = GIB_HEALTH_BONUS1;
+				b2 = GIB_HEALTH_BONUS2;
+			}
+
+			//G_Printf ("^3DEBUG = '%i'\n", self->health ); // debug
+
+			// drop 15 health bonus
+			if ( self->health <= (GIB_HEALTH + b1) ) {
+
+				// find item for food
+				item = BG_FindItemForFood( 0 );
+
+				if ( item ) {
+					angle = random() * 360;
+					drop = Drop_Item( self, item, angle );
+				}
+
+			}
+
+		}
+
 	}
 
 	GibEntity( self, 0 );
@@ -915,6 +999,8 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	}
 
 	self->takedamage = qtrue;	// can still be gibbed
+
+	self->timeExt = level.time + GIB_HEALTH_BONUS_TIMELIMIT;
 
 	self->s.weapon = WP_NONE;
 	self->s.powerups = 0;
