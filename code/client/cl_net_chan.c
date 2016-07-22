@@ -69,9 +69,7 @@ static void CL_Netchan_Encode( msg_t *msg ) {
 		// modify the key with the last received now acknowledged server command
 		if (!string[index])
 			index = 0;
-		// mmp - allows extended char set (scrapped)
-		if (string[index] > 127 /*(string[index] > 127 && string[index] < 160)*/ ||
-								string[index] == 14 || string[index] == '%') {
+		if (string[index] > 127 || string[index] == '%') {
 			key ^= '.' << (i & 1);
 		}
 		else {
@@ -117,9 +115,7 @@ static void CL_Netchan_Decode( msg_t *msg ) {
 		// modify the key with the last sent and with this message acknowledged client command
 		if (!string[index])
 			index = 0;
-		// mmp - allows extended char set (scrapped)
-		if (string[index] > 127 /*(string[index] > 127 && string[index] < 160)*/ ||
-								string[index] == 14 || string[index] == '%') {
+		if (string[index] > 127 || string[index] == '%') {
 			key ^= '.' << (i & 1);
 		}
 		else {

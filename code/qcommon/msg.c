@@ -322,10 +322,9 @@ void MSG_WriteString( msg_t *sb, const char *s ) {
 		}
 		Q_strncpyz( string, s, sizeof( string ) );
 
-		// get rid of chars 0x80-0x9F and '%' char, because old clients don't like them [?] mmp - why?
+		// get rid of 0x80+ and '%' chars, because old clients don't like them
 		for ( i = 0 ; i < l ; i++ ) {
-			// mmp edit
-			if ( ( ((byte *)string)[i] > 127 /*&& ((byte *)string)[i] < 160*/ ) || string[i] == '%' ) {
+			if ( ((byte *)string)[i] > 127 || string[i] == '%' ) {
 				string[i] = '.';
 			}
 		}
@@ -349,10 +348,9 @@ void MSG_WriteBigString( msg_t *sb, const char *s ) {
 		}
 		Q_strncpyz( string, s, sizeof( string ) );
 
-		// get rid of chars 0x80-0x9F and '%' char, because old clients don't like them [?] mmp - why?
+		// get rid of 0x80+ and '%' chars, because old clients don't like them
 		for ( i = 0 ; i < l ; i++ ) {
-			// mmp edit
-			if ( ( ((byte *)string)[i] > 127 /*&& ((byte *)string)[i] < 160*/ ) || string[i] == '%' ) {
+			if ( ((byte *)string)[i] > 127 || string[i] == '%' ) {
 				string[i] = '.';
 			}
 		}
@@ -457,8 +455,7 @@ char *MSG_ReadString( msg_t *msg ) {
 			c = '.';
 		}
 		// don't allow higher ascii values
-		// mmp edit
-		if ( c > 127 /*&& c < 160*/ ) {
+		if ( c > 127 ) {
 			c = '.';
 		}
 
@@ -486,8 +483,7 @@ char *MSG_ReadBigString( msg_t *msg ) {
 			c = '.';
 		}
 		// don't allow higher ascii values
-		// mmp edit
-		if ( c > 127 /*&& c < 160*/ ) {
+		if ( c > 127 ) {
 			c = '.';
 		}
 
@@ -515,8 +511,7 @@ char *MSG_ReadStringLine( msg_t *msg ) {
 			c = '.';
 		}
 		// don't allow higher ascii values
-		// mmp edit
-		if ( c > 127 /*&& c < 160*/ ) {
+		if ( c > 127 ) {
 			c = '.';
 		}
 

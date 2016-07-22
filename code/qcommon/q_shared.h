@@ -26,39 +26,48 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
-
-#define PRODUCT_NAME				"MFArena"
-#define BASEGAME					"basemf"
-#define CLIENT_WINDOW_TITLE     	"MFArena"
-#define CLIENT_WINDOW_MIN_TITLE 	"mfa"
-//#define HOMEPATH_NAME_UNIX			".mfa"
-#define HOMEPATH_NAME_UNIX			".config/mfarena"
-#define HOMEPATH_NAME_MACOSX		"MFArena"
-#define HOMEPATH_NAME_WIN			HOMEPATH_NAME_MACOSX
-//#define GAMENAME_FOR_MASTER		"MFArena"	// must NOT contain whitespace
-//#define GAMENAME_FOR_MASTER		"OpenArena"	// remove when done trolling
-#define GAMENAME_FOR_MASTER			"Quake3Arena"	// remove when done trolling
-
-/* FOR REFERENCE v v v
-#define PRODUCT_NAME				"ioq3"
-#define BASEGAME					"baseq3"
-#define CLIENT_WINDOW_TITLE     	"ioquake3"
-#define CLIENT_WINDOW_MIN_TITLE 	"ioq3"
-#define HOMEPATH_NAME_UNIX			".q3a"
-#define HOMEPATH_NAME_MACOSX		"Quake3"
-#define HOMEPATH_NAME_WIN			HOMEPATH_NAME_MACOSX
-#define GAMENAME_FOR_MASTER			"Quake3Arena"
-#define LEGACY_PROTOCOL
-*/
+#ifdef STANDALONE
+  #define PRODUCT_NAME				"MFArena"
+  #define BASEGAME					"basemf"
+  #define CLIENT_WINDOW_TITLE     	"MFArena"
+  #define CLIENT_WINDOW_MIN_TITLE 	"mfa"
+  #define HOMEPATH_NAME_UNIX		".config/mfarena"
+  #define HOMEPATH_NAME_WIN			"MFArena"
+  #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
+//  #define STEAMPATH_NAME			"MFArena"
+//  #define STEAMPATH_APPID         ""
+  #define GAMENAME_FOR_MASTER		"Quake3Arena"	// must NOT contain whitespace
+  #define CINEMATICS_LOGO			"mmplogo.roq"
+  #define CINEMATICS_INTRO			"intro.roq"
+//  #define LEGACY_PROTOCOL	// You probably don't need this for your standalone game
+#else
+  #define PRODUCT_NAME				"ioq3"
+  #define BASEGAME					"baseq3"
+  #define CLIENT_WINDOW_TITLE		"ioquake3"
+  #define CLIENT_WINDOW_MIN_TITLE	"ioq3"
+  #define HOMEPATH_NAME_UNIX		".q3a"
+  #define HOMEPATH_NAME_WIN			"Quake3"
+  #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
+  #define STEAMPATH_NAME			"Quake 3 Arena"
+  #define STEAMPATH_APPID			"2200"
+  #define GAMENAME_FOR_MASTER		"Quake3Arena"
+  #define CINEMATICS_LOGO			"idlogo.RoQ"
+  #define CINEMATICS_INTRO			"intro.RoQ"
+  #define LEGACY_PROTOCOL
+#endif
 
 // Heartbeat for dpmaster protocol. You shouldn't change this unless you know what you're doing
 #define HEARTBEAT_FOR_MASTER		"QuakeArena-1"
-//#define HEARTBEAT_FOR_MASTER		"DarkPlaces"
+
+// When com_gamename is LEGACY_MASTER_GAMENAME, use quake3 master protocol.
+// You shouldn't change this unless you know what you're doing
+#define LEGACY_MASTER_GAMENAME		"Quake3Arena"
+#define LEGACY_HEARTBEAT_FOR_MASTER	"QuakeArena-1"
 
 #define BASETA				"missionpack"
 
-#ifndef PRODUCT_VERSION
-#define PRODUCT_VERSION		"160000.h" //"1.36"
+#ifndef PRODUCT_VERSION //  FIXME: get this working via makefile, for some reason, the set variable is not making it here
+  #define PRODUCT_VERSION	"160800.h"
 #endif
 
 #define SVINFO_VERSION_YR	16
@@ -336,6 +345,7 @@ typedef enum {
 #define	NF_STREAKS		128 // messages on a player who's on a streak
 #define	NF_NAMECHANGES	256 // player's name change
 #define	NF_SPAM			512 // server spam
+
 
 // types of records for stats from clients
 typedef enum {
@@ -717,7 +727,7 @@ typedef struct {
 #define Byte4Copy(a,b)			((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2],(b)[3]=(a)[3])
 
 #define	SnapVector(v) {v[0]=((int)(v[0]));v[1]=((int)(v[1]));v[2]=((int)(v[2]));}
-// just in case you do't want to use the macros
+// just in case you don't want to use the macros
 vec_t _DotProduct( const vec3_t v1, const vec3_t v2 );
 void _VectorSubtract( const vec3_t veca, const vec3_t vecb, vec3_t out );
 void _VectorAdd( const vec3_t veca, const vec3_t vecb, vec3_t out );
@@ -1041,17 +1051,17 @@ default values.
 #define	CVAR_USERINFO		0x0002	// sent to server on connect or change
 #define	CVAR_SERVERINFO		0x0004	// sent in response to front end requests
 #define	CVAR_SYSTEMINFO		0x0008	// these cvars will be duplicated on all clients
-#define	CVAR_INIT		0x0010	// don't allow change from console at all,
+#define	CVAR_INIT			0x0010	// don't allow change from console at all,
 					// but can be set from the command line
-#define	CVAR_LATCH		0x0020	// will only change when C code next does
+#define	CVAR_LATCH			0x0020	// will only change when C code next does
 					// a Cvar_Get(), so it can't be changed
 					// without proper initialization.  modified
 					// will be set, even though the value hasn't
 					// changed yet
-#define	CVAR_ROM		0x0040	// display only, cannot be set by user at all
+#define	CVAR_ROM			0x0040	// display only, cannot be set by user at all
 #define	CVAR_USER_CREATED	0x0080	// created by a set command
-#define	CVAR_TEMP		0x0100	// can be set even when cheats are disabled, but is not archived
-#define CVAR_CHEAT		0x0200	// can not be changed if cheats are disabled
+#define	CVAR_TEMP			0x0100	// can be set even when cheats are disabled, but is not archived
+#define CVAR_CHEAT			0x0200	// can not be changed if cheats are disabled
 #define CVAR_NORESTART		0x0400	// do not clear when a cvar_restart is issued
 
 #define CVAR_SERVER_CREATED	0x0800	// cvar was created by a server the client connected to.
@@ -1282,7 +1292,7 @@ typedef struct {
 // nothing outside of pmove should modify these, or some degree of prediction error
 // will occur
 
-// you can't add anything to this without modifying the code in /qcommon/msg.c
+// you can't add anything to this without modifying the code in msg.c
 
 // playerState_t is a full superset of entityState_t as it is used by players,
 // so if a playerState_t is transmitted, the entityState_t can be fully derived
@@ -1381,13 +1391,13 @@ typedef struct playerState_s {
 #define BUTTON_PATROL		512
 #define BUTTON_FOLLOWME		1024
 
-#define	BUTTON_ANY		2048				// any key whatsoever
+#define	BUTTON_ANY			2048			// any key whatsoever
 
 //mmp
 #define BUTTON_PHYSICS		4096			// physics select (button 12)
 
-#define	MOVE_RUN		120			// if forwardmove or rightmove are >= MOVE_RUN,
-							// then BUTTON_WALKING should be set
+#define	MOVE_RUN			120			// if forwardmove or rightmove are >= MOVE_RUN,
+										// then BUTTON_WALKING should be set
 
 // usercmd_t is sent to the server each client frame
 typedef struct usercmd_s {
@@ -1537,7 +1547,7 @@ typedef struct qtime_s {
 #define AS_LOCAL			0
 #define AS_MPLAYER			1
 #define AS_GLOBAL			2
-#define AS_FAVORITES			3
+#define AS_FAVORITES		3
 
 
 // cinematic states
@@ -1564,7 +1574,7 @@ typedef enum _flag_status {
 #define	MAX_GLOBAL_SERVERS				4096
 #define	MAX_OTHER_SERVERS				128
 #define MAX_PINGREQUESTS				32
-#define MAX_SERVERSTATUSREQUESTS			16
+#define MAX_SERVERSTATUSREQUESTS		16
 
 #define SAY_ALL		0
 #define SAY_TEAM	1

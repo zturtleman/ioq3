@@ -116,7 +116,7 @@ typedef struct md3Tag_s {
 ** XyzNormals		sizeof( md3XyzNormal_t ) * numVerts * numFrames
 */
 typedef struct {
-	int		ident;				// 
+	int		ident;				//
 
 	char	name[MAX_QPATH];	// polyset name
 
@@ -163,7 +163,7 @@ typedef struct {
 	int			flags;
 
 	int			numFrames;
-	int			numTags;			
+	int			numTags;
 	int			numSurfaces;
 
 	int			numSkins;
@@ -197,10 +197,6 @@ MDR file format
  *
  * - Thilo Schulz (arny@ats.s.bawue.de)
  */
-
-#define RAVENMD4 // Raven's .mdr / md4 format
-
-#ifdef RAVENMD4
 
 #define MDR_IDENT	(('5'<<24)+('M'<<16)+('D'<<8)+'R')
 #define MDR_VERSION	2
@@ -304,7 +300,6 @@ typedef struct {
 	int			ofsEnd;				// end of file
 } mdrHeader_t;
 
-#endif
 
 /*
 ==============================================================================
@@ -319,7 +314,6 @@ typedef struct {
 		// little-endian "IBSP"
 
 #define BSP_VERSION			69
-#define BSP_OLD_VERSION			46
 
 
 // there shouldn't be any problem with increasing these values at the
@@ -337,7 +331,7 @@ typedef struct {
 #define	MAX_MAP_BRUSHSIDES	0x20000
 #define	MAX_MAP_LEAFS		0x20000
 #define	MAX_MAP_LEAFFACES	0x20000
-#define	MAX_MAP_LEAFBRUSHES	0x40000
+#define	MAX_MAP_LEAFBRUSHES 0x40000
 #define	MAX_MAP_PORTALS		0x20000
 #define	MAX_MAP_LIGHTING	0x800000
 #define	MAX_MAP_LIGHTGRID	0x800000

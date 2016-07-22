@@ -706,7 +706,7 @@ int PC_ExpandBuiltinDefine(source_t *source, token_t *deftoken, define_t *define
 {
 	token_t *token;
 	time_t t;
-
+	
 	char *curtime;
 
 	token = PC_CopyToken(deftoken);
@@ -995,8 +995,6 @@ int PC_Directive_include(source_t *source)
 		script = LoadScriptFile(token.string);
 		if (!script)
 		{
-			/*strcpy(path, source->includepath);
-			strcat(path, token.string);*/
 			Q_strncpyz(path, source->includepath, sizeof(path));
 			Q_strcat(path, sizeof(path), token.string);
 			script = LoadScriptFile(path);
@@ -1004,7 +1002,6 @@ int PC_Directive_include(source_t *source)
 	} //end if
 	else if (token.type == TT_PUNCTUATION && *token.string == '<')
 	{
-		/*strcpy(path, source->includepath);*/
 		Q_strncpyz(path, source->includepath, sizeof(path));
 		while(PC_ReadSourceToken(source, &token))
 		{
@@ -1014,7 +1011,6 @@ int PC_Directive_include(source_t *source)
 				break;
 			} //end if
 			if (token.type == TT_PUNCTUATION && *token.string == '>') break;
-			/*strncat(path, token.string, MAX_PATH - 1);*/
 			Q_strcat(path, sizeof(path), token.string);
 		} //end while
 		if (*token.string != '>')
@@ -1071,7 +1067,7 @@ int PC_ReadLine(source_t *source, token_t *token)
 	do
 	{
 		if (!PC_ReadSourceToken(source, token)) return qfalse;
-
+		
 		if (token->linescrossed > crossline)
 		{
 			PC_UnreadSourceToken(source, token);
@@ -1739,7 +1735,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, signed long int *intval
 				AllocValue(v);
 #if DEFINEHASHING
 				if (PC_FindHashedDefine(source->definehash, t->string))
-#else
+#else			
 				if (PC_FindDefine(source->defines, t->string))
 #endif //DEFINEHASHING
 				{
@@ -1867,7 +1863,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, signed long int *intval
 							break;
 						} //end if
 					} //end case
-
+					
 					case P_MUL:
 					case P_DIV:
 					case P_MOD:
@@ -2090,11 +2086,6 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, signed long int *intval
 			//remove the second value if not question mark operator
 			if (o->operator != P_QUESTIONMARK) v = v->next;
 			//
-			/*
-			if (v->prev) v->prev->next = v->next;
-			else firstvalue = v->next;
-			if (v->next) v->next->prev = v->prev;
-			*/
 			if (v)
 			{
 				if (v->prev) v->prev->next = v->next;
@@ -2843,7 +2834,7 @@ int PC_ExpectTokenType(source_t *source, int type, int subtype, token_t *token)
 	{
 		if ((token->subtype & subtype) != subtype)
 		{
-			strcpy(str, ""); // IOQ3 - added
+			strcpy(str, "");
 			if (subtype & TT_DECIMAL) strcpy(str, "decimal");
 			if (subtype & TT_HEX) strcpy(str, "hex");
 			if (subtype & TT_OCTAL) strcpy(str, "octal");
@@ -2969,14 +2960,12 @@ void PC_SetIncludePath(source_t *source, char *path)
 {
 	size_t len;
 
-	/*strncpy(source->includepath, path, MAX_PATH);*/
 	Q_strncpyz(source->includepath, path, MAX_PATH-1);
+
 	len = strlen(source->includepath);
 	//add trailing path seperator
-	/*if (source->includepath[strlen(source->includepath)-1] != '\\' &&
-		source->includepath[strlen(source->includepath)-1] != '/')*/
 	if (len > 0 && source->includepath[len-1] != '\\' &&
-			source->includepath[len-1] != '/')
+		source->includepath[len-1] != '/')
 	{
 		strcat(source->includepath, PATHSEPERATOR_STR);
 	} //end if

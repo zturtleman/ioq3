@@ -172,10 +172,9 @@ qboolean	CL_GetSnapshot( int snapshotNumber, snapshot_t *snapshot ) {
 CL_SetUserCmdValue
 =====================
 */
-void CL_SetUserCmdValue( int userCmdValue, float sensitivityScale, int flags ) {
+void CL_SetUserCmdValue( int userCmdValue, float sensitivityScale ) {
 	cl.cgameUserCmdValue = userCmdValue;
 	cl.cgameSensitivity = sensitivityScale;
-	cl.cgameMiscFlags = flags; // mmp - for future use
 }
 
 /*
@@ -185,15 +184,6 @@ CL_AddCgameCommand
 */
 void CL_AddCgameCommand( const char *cmdName ) {
 	Cmd_AddCommand( cmdName, NULL );
-}
-
-/*
-=====================
-CL_CgameError
-=====================
-*/
-void CL_CgameError( const char *string ) {
-	Com_Error( ERR_DROP, "%s", string );
 }
 
 
@@ -211,7 +201,6 @@ void CL_ConfigstringModified( void ) {
 
 	index = atoi( Cmd_Argv(1) );
 	if ( index < 0 || index >= MAX_CONFIGSTRINGS ) {
-		/*Com_Error( ERR_DROP, "configstring > MAX_CONFIGSTRINGS" );*/
 		Com_Error( ERR_DROP, "CL_ConfigstringModified: bad index %i", index );
 	}
 	// get everything after "cs <num>"
@@ -605,19 +594,19 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	case CG_GETUSERCMD:
 		return CL_GetUserCmd( args[1], VMA(2) );
 	case CG_SETUSERCMDVALUE:
-		CL_SetUserCmdValue( args[1], VMF(2), args[3] );
+		CL_SetUserCmdValue( args[1], VMF(2) );
 		return 0;
 	case CG_MEMORY_REMAINING:
 		return Hunk_MemoryRemaining();
-	case CG_KEY_ISDOWN:
+  case CG_KEY_ISDOWN:
 		return Key_IsDown( args[1] );
-	case CG_KEY_GETCATCHER:
+  case CG_KEY_GETCATCHER:
 		return Key_GetCatcher();
-	case CG_KEY_SETCATCHER:
+  case CG_KEY_SETCATCHER:
 		// Don't allow the cgame module to close the console
 		Key_SetCatcher( args[1] | ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) );
-		return 0;
-	case CG_KEY_GETKEY:
+    return 0;
+  case CG_KEY_GETKEY:
 		return Key_GetKey( VMA(1) );
 
 
@@ -916,37 +905,27 @@ void CL_FirstSnapshot( void ) {
 #endif
 
 #ifdef USE_VOIP
-	if (!clc.speexInitialized) {
+	if (!clc.voipCodecInitialized) {
 		int i;
-		speex_bits_init(&clc.speexEncoderBits);
-		speex_bits_reset(&clc.speexEncoderBits);
+		int error;
 
-		clc.speexEncoder = speex_encoder_init(&speex_nb_mode);
+		clc.opusEncoder = opus_encoder_create(48000, 1, OPUS_APPLICATION_VOIP, &error);
 
-		speex_encoder_ctl(clc.speexEncoder, SPEEX_GET_FRAME_SIZE,
-		                  &clc.speexFrameSize);
-		speex_encoder_ctl(clc.speexEncoder, SPEEX_GET_SAMPLING_RATE,
-		                  &clc.speexSampleRate);
-
-		clc.speexPreprocessor = speex_preprocess_state_init(clc.speexFrameSize,
-		                                                  clc.speexSampleRate);
-
-		i = 1;
-		speex_preprocess_ctl(clc.speexPreprocessor,
-		                     SPEEX_PREPROCESS_SET_DENOISE, &i);
-
-		i = 1;
-		speex_preprocess_ctl(clc.speexPreprocessor,
-		                     SPEEX_PREPROCESS_SET_AGC, &i);
+		if ( error ) {
+			Com_DPrintf("VoIP: Error opus_encoder_create %d\n", error);
+			return;
+		}
 
 		for (i = 0; i < MAX_CLIENTS; i++) {
-			speex_bits_init(&clc.speexDecoderBits[i]);
-			speex_bits_reset(&clc.speexDecoderBits[i]);
-			clc.speexDecoder[i] = speex_decoder_init(&speex_nb_mode);
+			clc.opusDecoder[i] = opus_decoder_create(48000, 1, &error);
+			if ( error ) {
+				Com_DPrintf("VoIP: Error opus_decoder_create(%d) %d\n", i, error);
+				return;
+			}
 			clc.voipIgnore[i] = qfalse;
 			clc.voipGain[i] = 1.0f;
 		}
-		clc.speexInitialized = qtrue;
+		clc.voipCodecInitialized = qtrue;
 		clc.voipMuteAll = qfalse;
 		Cmd_AddCommand ("voip", CL_Voip_f);
 		Cvar_Set("cl_voipSendTarget", "spatial");

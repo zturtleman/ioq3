@@ -582,7 +582,7 @@ typedef struct src_s
 	qboolean	local;			// Is this local (relative to the cam)
 } src_t;
 
-#ifdef MACOS_X
+#ifdef __APPLE__
 	#define MAX_SRC 64
 #else
 	#define MAX_SRC 128
@@ -841,7 +841,7 @@ static void S_AL_SrcSetup(srcHandle_t src, sfxHandle_t sfx, alSrcPriority_t prio
 
 /*
 =================
-S_AL_NewLoopMaster
+S_AL_SaveLoopPos
 Remove given source as loop master if it is the master and hand off master status to another source in this case.
 =================
 */
@@ -2116,7 +2116,6 @@ void S_AL_StartBackgroundTrack( const char *intro, const char *loop )
 
 	// Copy the loop over
 	Q_strncpyz( s_backgroundLoop, loop, sizeof( s_backgroundLoop ) );
-	/*strncpy( s_backgroundLoop, loop, sizeof( s_backgroundLoop ) );*/
 
 	if(!issame)
 	{
@@ -2209,7 +2208,7 @@ static cvar_t *s_alCapture;
 
 #ifdef _WIN32
 #define ALDRIVER_DEFAULT "OpenAL32.dll"
-#elif defined(MACOS_X)
+#elif defined(__APPLE__)
 #define ALDRIVER_DEFAULT "/System/Library/Frameworks/OpenAL.framework/OpenAL"
 #elif defined(__OpenBSD__)
 #define ALDRIVER_DEFAULT "libopenal.so"
@@ -2310,7 +2309,6 @@ void S_AL_Update( void )
 	}
 	if(s_alDopplerSpeed->modified)
 	{
-		qalDopplerVelocity(s_alDopplerSpeed->value); // old - mmp
 		qalSpeedOfSound(s_alDopplerSpeed->value);
 		s_alDopplerSpeed->modified = qfalse;
 	}
@@ -2508,7 +2506,7 @@ qboolean S_AL_Init( soundInterface_t *si )
 	s_alGain = Cvar_Get( "s_alGain", "1.0", CVAR_ARCHIVE );
 	s_alSources = Cvar_Get( "s_alSources", "96", CVAR_ARCHIVE );
 	s_alDopplerFactor = Cvar_Get( "s_alDopplerFactor", "1.0", CVAR_ARCHIVE );
-	s_alDopplerSpeed = Cvar_Get( "s_alDopplerSpeed", "13512", CVAR_ARCHIVE );
+	s_alDopplerSpeed = Cvar_Get( "s_alDopplerSpeed", "9000", CVAR_ARCHIVE );
 	s_alMinDistance = Cvar_Get( "s_alMinDistance", "120", CVAR_CHEAT );
 	s_alMaxDistance = Cvar_Get("s_alMaxDistance", "1024", CVAR_CHEAT);
 	s_alRolloff = Cvar_Get( "s_alRolloff", "2", CVAR_CHEAT);
@@ -2523,7 +2521,6 @@ qboolean S_AL_Init( soundInterface_t *si )
 	if( !QAL_Init( s_alDriver->string ) )
 	{
 		Com_Printf( "Failed to load library: \"%s\".\n", s_alDriver->string );
-		//return qfalse;
 		if( !Q_stricmp( s_alDriver->string, ALDRIVER_DEFAULT ) || !QAL_Init( ALDRIVER_DEFAULT ) ) {
 			return qfalse;
 		}
@@ -2626,7 +2623,6 @@ qboolean S_AL_Init( soundInterface_t *si )
 	// Set up OpenAL parameters (doppler, etc)
 	qalDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
 	qalDopplerFactor( s_alDopplerFactor->value );
-	qalDopplerVelocity( s_alDopplerSpeed->value ); // old
 	qalSpeedOfSound( s_alDopplerSpeed->value );
 
 #ifdef USE_VOIP
@@ -2646,7 +2642,7 @@ qboolean S_AL_Init( soundInterface_t *si )
 #endif
 	else
 	{
-#ifdef MACOS_X
+#ifdef __APPLE__
 		// !!! FIXME: Apple has a 1.1-compliant OpenAL, which includes
 		// !!! FIXME:  capture support, but they don't list it in the
 		// !!! FIXME:  extension string. We need to check the version string,
@@ -2685,16 +2681,12 @@ qboolean S_AL_Init( soundInterface_t *si )
 
 			s_alAvailableInputDevices = Cvar_Get("s_alAvailableInputDevices", inputdevicenames, CVAR_ROM | CVAR_NORESTART);
 
-			// !!! FIXME: 8000Hz is what Speex narrowband mode needs, but we
-			// !!! FIXME:  should probably open the capture device after
-			// !!! FIXME:  initializing Speex so we can change to wideband
-			// !!! FIXME:  if we like.
 			Com_Printf("OpenAL default capture device is '%s'\n", defaultinputdevice ? defaultinputdevice : "none");
-			alCaptureDevice = qalcCaptureOpenDevice(inputdevice, 8000, AL_FORMAT_MONO16, 4096);
+			alCaptureDevice = qalcCaptureOpenDevice(inputdevice, 48000, AL_FORMAT_MONO16, VOIP_MAX_PACKET_SAMPLES*4);
 			if( !alCaptureDevice && inputdevice )
 			{
 				Com_Printf( "Failed to open OpenAL Input device '%s', trying default.\n", inputdevice );
-				alCaptureDevice = qalcCaptureOpenDevice(NULL, 8000, AL_FORMAT_MONO16, 4096);
+				alCaptureDevice = qalcCaptureOpenDevice(NULL, 48000, AL_FORMAT_MONO16, VOIP_MAX_PACKET_SAMPLES*4);
 			}
 			Com_Printf( "OpenAL capture device %s.\n",
 				    (alCaptureDevice == NULL) ? "failed to open" : "opened");

@@ -82,7 +82,7 @@ void SV_UpdateConfigstrings(client_t *client)
 {
 	int index;
 
-	for( index = 0; index /*<=*/ < MAX_CONFIGSTRINGS; index++ ) {
+	for( index = 0; index < MAX_CONFIGSTRINGS; index++ ) {
 		// if the CS hasn't changed since we went to CS_PRIMED, ignore
 		if(!client->csUpdated[index])
 			continue;
@@ -139,7 +139,7 @@ void SV_SetConfigstring (int index, const char *val) {
 			if ( index == CS_SERVERINFO && client->gentity && (client->gentity->r.svFlags & SVF_NOSERVERINFO) ) {
 				continue;
 			}
-		
+
 			SV_SendConfigstring(client, index);
 		}
 	}
@@ -216,7 +216,7 @@ baseline will be transmitted
 */
 static void SV_CreateBaseline( void ) {
 	sharedEntity_t *svent;
-	int				entnum;	
+	int				entnum;
 
 	for ( entnum = 1; entnum < sv.num_entities ; entnum++ ) {
 		svent = SV_GentityNum(entnum);
@@ -284,7 +284,7 @@ static void SV_Startup( void ) {
 	}
 
 	Cvar_Set( "sv_running", "1" );
-	
+
 	// Join the ipv6 multicast group now that a map is running so clients can scan for us on the local network.
 	NET_JoinMulticast6();
 }
@@ -346,7 +346,7 @@ void SV_ChangeMaxClients( void ) {
 
 	// free the old clients on the hunk
 	Hunk_FreeTempMemory( oldClients );
-	
+
 	// allocate new snapshot entities
 	if ( com_dedicated->integer ) {
 		svs.numSnapshotEntities = sv_maxclients->integer * PACKET_BACKUP * MAX_SNAPSHOT_ENTITIES;
@@ -422,17 +422,10 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 	// clear the whole hunk because we're (re)loading the server
 	Hunk_Clear();
 
-/*
-#ifndef DEDICATED
-	// Restart renderer
-	CL_StartHunkUsers( qtrue );
-#endif
-*/
-
 	// clear collision map data
 	CM_ClearMap();
 
-	// init client structures and svs.numSnapshotEntities 
+	// init client structures and svs.numSnapshotEntities
 	if ( !Cvar_VariableValue("sv_running") ) {
 		SV_Startup();
 	} else {
@@ -493,7 +486,7 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 
 	// clear physics interaction links
 	SV_ClearWorld ();
-	
+
 	// media configstring setting should be done during
 	// the loading stage, so connected clients don't have
 	// to load during actual gameplay
@@ -562,7 +555,7 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 				}
 			}
 		}
-	}	
+	}
 
 	// run another frame to allow things to look at all the players
 	VM_Call (gvm, GAME_RUN_FRAME, sv.time);
@@ -642,31 +635,30 @@ void SV_Init (void)
 
 	// serverinfo vars
 	Cvar_Get ("dmflags", "0", 0); // this will be removed
-	Cvar_Get ("scorelimit", "35", /*CVAR_SERVERINFO*/ 0); // replaced fraglimit, and was 20
-	Cvar_Get ("timelimit", "10", /*CVAR_SERVERINFO*/ 0); // was 0
+	Cvar_Get ("scorelimit", "35", 0); // replaced fraglimit, and was 20
+	Cvar_Get ("timelimit", "10", 0); // was 0
 	sv_gametype = Cvar_Get ("g_gametype", "0", CVAR_SERVERINFO | CVAR_LATCH );
 	Cvar_Get ("sv_keywords", "", CVAR_SERVERINFO);
 	sv_mapname = Cvar_Get ("mapname", "nomap", CVAR_SERVERINFO | CVAR_ROM);
 	sv_privateClients = Cvar_Get ("sv_privateClients", "0", CVAR_SERVERINFO);
-	sv_hostname = Cvar_Get ("sv_hostname", "UnnamedServer", CVAR_SERVERINFO | CVAR_ARCHIVE ); // was "noname"
-	sv_maxclients = Cvar_Get ("sv_maxclients", "16", CVAR_SERVERINFO | CVAR_LATCH); // was 8
-	/*sv_realHumanPlayers = Cvar_Get ("sv_realHumanPlayers", "0", CVAR_SYSTEMINFO | CVAR_ROM );*/
+	sv_hostname = Cvar_Get ("sv_hostname", "UnnamedServer", CVAR_SERVERINFO | CVAR_ARCHIVE );
+	sv_maxclients = Cvar_Get ("sv_maxclients", "16", CVAR_SERVERINFO | CVAR_LATCH);
 
-	// mmp - bugfix-131119: forgot to comment out | CVAR_SERVERINFO, which left a blank cvar with a value of 0 in the info string
-	sv_minRate = Cvar_Get (/*"sv_minRate"*/"", "0", CVAR_ARCHIVE /*| CVAR_SERVERINFO*/ );
-	sv_maxRate = Cvar_Get (/*"sv_maxRate"*/"", "0", CVAR_ARCHIVE /*| CVAR_SERVERINFO*/ );
-	sv_dlRate = Cvar_Get("sv_dlRate""", "100", CVAR_ARCHIVE | CVAR_SERVERINFO);
-	sv_minPing = Cvar_Get (/*"sv_minPing"*/"", "0", CVAR_ARCHIVE /*| CVAR_SERVERINFO*/ );
-	sv_maxPing = Cvar_Get (/*"sv_maxPing"*/"", "0", CVAR_ARCHIVE /*| CVAR_SERVERINFO*/ );
-	sv_floodProtect = Cvar_Get ("sv_floodProtect", "1", CVAR_ARCHIVE /*| CVAR_SERVERINFO*/ );
+	sv_minRate = Cvar_Get ("", "0", 0 ); // this will be removed
+	sv_maxRate = Cvar_Get ("", "0", 0 ); // this will be removed
+	sv_dlRate = Cvar_Get("sv_dlRate", "100", CVAR_ARCHIVE | CVAR_SERVERINFO);
+	sv_minPing = Cvar_Get ("", "0", 0 ); // this will be removed
+	sv_maxPing = Cvar_Get ("", "0", 0 ); // this will be removed
+	sv_floodProtect = Cvar_Get ("sv_floodProtect", "1", CVAR_ARCHIVE | CVAR_SERVERINFO );
 
 	// systeminfo
 	Cvar_Get ("sv_cheats", "1", CVAR_SYSTEMINFO | CVAR_ROM );
 	sv_serverid = Cvar_Get ("sv_serverid", "0", CVAR_SYSTEMINFO | CVAR_ROM );
 	sv_pure = Cvar_Get ("sv_pure", "1", CVAR_SYSTEMINFO );
 #ifdef USE_VOIP
-	sv_voip = Cvar_Get("sv_voip", "1", CVAR_SYSTEMINFO | CVAR_LATCH);
+	sv_voip = Cvar_Get("sv_voip", "1", CVAR_LATCH);
 	Cvar_CheckRange(sv_voip, 0, 1, qtrue);
+	sv_voipProtocol = Cvar_Get("sv_voipProtocol", sv_voip->integer ? "opus" : "", CVAR_SYSTEMINFO | CVAR_ROM );
 #endif
 	Cvar_Get ("sv_paks", "", CVAR_SYSTEMINFO | CVAR_ROM );
 	Cvar_Get ("sv_pakNames", "", CVAR_SYSTEMINFO | CVAR_ROM );
@@ -683,16 +675,12 @@ void SV_Init (void)
 
 	sv_allowDownload = Cvar_Get ("sv_allowDownload", "0", CVAR_SERVERINFO);
 	Cvar_Get ("sv_dlURL", "", CVAR_SERVERINFO | CVAR_ARCHIVE);
-	
+
 	sv_master[0] = Cvar_Get("sv_master1", MASTER_SERVER_NAME, 0);
 	for(index = 1; index < MAX_MASTER_SERVERS; index++)
 		sv_master[index] = Cvar_Get(va("sv_master%d", index + 1), "", CVAR_ARCHIVE);
-	// mmp
-	/*sv_master[1] = Cvar_Get("sv_master2", TROLL_MASTER_SERVER_NAME, 0);
-	for(index = 2; index < MAX_MASTER_SERVERS; index++)
-		sv_master[index] = Cvar_Get(va("sv_master%d", index + 1), "", CVAR_ARCHIVE);*/
 
-	sv_reconnectlimit = Cvar_Get ("sv_reconnectlimit", "7", 0); // was 3
+	sv_reconnectlimit = Cvar_Get ("sv_reconnectlimit", "7", 0);
 	sv_showloss = Cvar_Get ("sv_showloss", "0", 0);
 	sv_padPackets = Cvar_Get ("sv_padPackets", "0", 0);
 	sv_killserver = Cvar_Get ("sv_killserver", "0", 0);
@@ -706,20 +694,12 @@ void SV_Init (void)
 	// mmp - privacy feature(s)
 	sv_hideClientInfo = Cvar_Get ("sv_hideClientInfo", "0", 0); // "1" hide ping and score of players, or "2" show nothing
 
-	// mmp - display test
-	sv_spoofHP = Cvar_Get ("sv_spoofHP", "-1", CVAR_CHEAT); // lie about the amount of human players (test use only)
-	sv_spoofList = Cvar_Get ("sv_spoofList", "0", CVAR_CHEAT); // falsely display player names in server info (test use only)
-	sv_spoofNames = Cvar_Get ("sv_spoofNames", "", CVAR_CHEAT); // name list for the cvar above (test use only)
-	sv_spoofNamesOffset = Cvar_Get ("sv_spoofNamesOffset", "0", CVAR_CHEAT); // skip a number of names of name list above
-	sv_useVQ3Protocol = Cvar_Get ("sv_useVQ3Protocol", "0", CVAR_CHEAT);
-	sv_gameMismatchError = Cvar_Get ("sv_gameMismatchError", "", CVAR_CHEAT); // specifies an error message on a game-mismatched client
-
 	// initialize bot cvars so they are listed and can be set before loading the botlib
 	SV_BotInitCvars();
 
 	// init the botlib here because we need the pre-compiler in the UI
 	SV_BotInitBotLib();
-	
+
 	// Load saved bans
 	Cbuf_AddText("rehashbans\n");
 }
@@ -738,7 +718,7 @@ to totally exit after returning from this function.
 void SV_FinalMessage( char *message ) {
 	int			i, j;
 	client_t	*cl;
-	
+
 	// send it twice, ignoring rate
 	for ( j = 0 ; j < 2 ; j++ ) {
 		for (i=0, cl = svs.clients ; i < sv_maxclients->integer ; i++, cl++) {
@@ -789,10 +769,10 @@ void SV_Shutdown( char *finalmsg ) {
 	if(svs.clients)
 	{
 		int index;
-		
+
 		for(index = 0; index < sv_maxclients->integer; index++)
 			SV_FreeClient(&svs.clients[index]);
-		
+
 		Z_Free(svs.clients);
 	}
 	Com_Memset( &svs, 0, sizeof( svs ) );

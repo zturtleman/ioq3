@@ -24,8 +24,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "q_shared.h"
 #include "qcommon.h"
 
+#define	MAX_CMD_BUFFER  128*1024
 #define	MAX_CMD_LINE	1024
-#define	MAX_CMD_BUFFER	128*MAX_CMD_LINE
 
 typedef struct {
 	byte	*data;
@@ -89,7 +89,7 @@ Adds command text at the end of the buffer, does NOT add a final \n
 */
 void Cbuf_AddText( const char *text ) {
 	int		l;
-
+	
 	l = strlen (text);
 
 	if (cmd_text.cursize + l >= cmd_text.maxsize)
@@ -226,10 +226,10 @@ void Cbuf_Execute (void)
 		if( i >= (MAX_CMD_LINE - 1)) {
 			i = MAX_CMD_LINE - 1;
 		}
-
+				
 		Com_Memcpy (line, text, i);
 		line[i] = 0;
-
+		
 // delete the text from the command buffer and move remaining commands down
 // this is necessary because commands (exec) can insert data at the
 // beginning of the text buffer
@@ -245,7 +245,7 @@ void Cbuf_Execute (void)
 
 // execute the command line
 
-		Cmd_ExecuteString (line);
+		Cmd_ExecuteString (line);		
 	}
 }
 
@@ -289,7 +289,7 @@ void Cmd_Exec_f( void ) {
 	}
 	if (!quiet)
 		Com_Printf ("execing %s\n", filename);
-
+	
 	Cbuf_InsertText (f.c);
 
 	FS_FreeFile (f.v);
@@ -371,7 +371,7 @@ char	*Cmd_Argv( int arg ) {
 	if ( (unsigned)arg >= cmd_argc ) {
 		return "";
 	}
-	return cmd_argv[arg];
+	return cmd_argv[arg];	
 }
 
 /*
@@ -473,10 +473,10 @@ void Cmd_Args_Sanitize(void)
 	for(i = 1; i < cmd_argc; i++)
 	{
 		char *c = cmd_argv[i];
-
+		
 		if(strlen(c) > MAX_CVAR_VALUE_STRING - 1)
 			c[MAX_CVAR_VALUE_STRING - 1] = '\0';
-
+		
 		while ((c = strpbrk(c, "\n\r;"))) {
 			*c = ' ';
 			++c;
@@ -511,7 +511,7 @@ static void Cmd_TokenizeString2( const char *text_in, qboolean ignoreQuotes ) {
 	if ( !text_in ) {
 		return;
 	}
-
+	
 	Q_strncpyz( cmd_cmd, text_in, sizeof(cmd_cmd) );
 
 	text = text_in;
@@ -551,7 +551,7 @@ static void Cmd_TokenizeString2( const char *text_in, qboolean ignoreQuotes ) {
 		}
 
 		// handle quoted strings
-		// NOTE TTimo this doesn't handle \" escaping
+    // NOTE TTimo this doesn't handle \" escaping
 		if ( !ignoreQuotes && *text == '"' ) {
 			cmd_argv[cmd_argc] = textOut;
 			cmd_argc++;
@@ -595,7 +595,7 @@ static void Cmd_TokenizeString2( const char *text_in, qboolean ignoreQuotes ) {
 			return;		// all tokens parsed
 		}
 	}
-
+	
 }
 
 /*
@@ -637,7 +637,7 @@ Cmd_AddCommand
 */
 void	Cmd_AddCommand( const char *cmd_name, xcommand_t function ) {
 	cmd_function_t	*cmd;
-
+	
 	// fail if the command already exists
 	if( Cmd_FindCommand( cmd_name ) )
 	{
@@ -729,7 +729,7 @@ Cmd_CommandCompletion
 */
 void	Cmd_CommandCompletion( void(*callback)(const char *s) ) {
 	cmd_function_t	*cmd;
-
+	
 	for (cmd=cmd_functions ; cmd ; cmd=cmd->next) {
 		callback( cmd->name );
 	}
@@ -761,16 +761,16 @@ Cmd_ExecuteString
 A complete command line has been parsed, so try to execute it
 ============
 */
-void	Cmd_ExecuteString( const char *text ) {
+void	Cmd_ExecuteString( const char *text ) {	
 	cmd_function_t	*cmd, **prev;
 
 	// execute the command line
-	Cmd_TokenizeString( text );
+	Cmd_TokenizeString( text );		
 	if ( !Cmd_Argc() ) {
 		return;		// no tokens
 	}
 
-	// check registered command functions
+	// check registered command functions	
 	for ( prev = &cmd_functions ; *prev ; prev = &cmd->next ) {
 		cmd = *prev;
 		if ( !Q_stricmp( cmd_argv[0],cmd->name ) ) {
@@ -790,7 +790,7 @@ void	Cmd_ExecuteString( const char *text ) {
 			return;
 		}
 	}
-
+	
 	// check cvars
 	if ( Cvar_Command() ) {
 		return;

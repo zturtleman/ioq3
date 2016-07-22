@@ -76,8 +76,12 @@ COM_StripExtension
 void COM_StripExtension( const char *in, char *out, int destsize )
 {
 	const char *dot = strrchr(in, '.'), *slash;
+
 	if (dot && (!(slash = strrchr(in, '/')) || slash < dot))
-		Q_strncpyz(out, in, (destsize < dot-in+1 ? destsize : dot-in+1));
+		destsize = (destsize < dot-in+1 ? destsize : dot-in+1);
+
+	if ( in == out && destsize > 1 )
+		out[destsize-1] = '\0';
 	else
 		Q_strncpyz(out, in, destsize);
 }
@@ -286,15 +290,22 @@ PARSING
 static	char	com_token[MAX_TOKEN_CHARS];
 static	char	com_parsename[MAX_TOKEN_CHARS];
 static	int		com_lines;
+static	int		com_tokenline;
 
 void COM_BeginParseSession( const char *name )
 {
-	com_lines = 0;
+	com_lines = 1;
+	com_tokenline = 0;
 	Com_sprintf(com_parsename, sizeof(com_parsename), "%s", name);
 }
 
 int COM_GetCurrentParseLine( void )
 {
+	if ( com_tokenline )
+	{
+		return com_tokenline;
+	}
+
 	return com_lines;
 }
 
@@ -312,7 +323,7 @@ void COM_ParseError( char *format, ... )
 	Q_vsnprintf (string, sizeof(string), format, argptr);
 	va_end (argptr);
 
-	Com_Printf("ERROR: %s, line %d: %s\n", com_parsename, com_lines, string);
+	Com_Printf("ERROR: %s, line %d: %s\n", com_parsename, COM_GetCurrentParseLine(), string);
 }
 
 void COM_ParseWarning( char *format, ... )
@@ -324,7 +335,7 @@ void COM_ParseWarning( char *format, ... )
 	Q_vsnprintf (string, sizeof(string), format, argptr);
 	va_end (argptr);
 
-	Com_Printf("WARNING: %s, line %d: %s\n", com_parsename, com_lines, string);
+	Com_Printf("WARNING: %s, line %d: %s\n", com_parsename, COM_GetCurrentParseLine(), string);
 }
 
 /*
@@ -434,6 +445,7 @@ char *COM_ParseExt( char **data_p, qboolean allowLineBreaks )
 	data = *data_p;
 	len = 0;
 	com_token[0] = 0;
+	com_tokenline = 0;
 
 	// make sure incoming data is valid
 	if ( !data )
@@ -473,6 +485,10 @@ char *COM_ParseExt( char **data_p, qboolean allowLineBreaks )
 			data += 2;
 			while ( *data && ( *data != '*' || data[1] != '/' ) )
 			{
+				if ( *data == '\n' )
+				{
+					com_lines++;
+				}
 				data++;
 			}
 			if ( *data )
@@ -486,6 +502,9 @@ char *COM_ParseExt( char **data_p, qboolean allowLineBreaks )
 		}
 	}
 
+	// token starts on this line
+	com_tokenline = com_lines;
+
 	// handle quoted strings
 	if (c == '\"')
 	{
@@ -498,6 +517,10 @@ char *COM_ParseExt( char **data_p, qboolean allowLineBreaks )
 				com_token[len] = 0;
 				*data_p = ( char * ) data;
 				return com_token;
+			}
+			if ( c == '\n' )
+			{
+				com_lines++;
 			}
 			if (len < MAX_TOKEN_CHARS - 1)
 			{
@@ -517,8 +540,6 @@ char *COM_ParseExt( char **data_p, qboolean allowLineBreaks )
 		}
 		data++;
 		c = *data;
-		if ( c == '\n' )
-			com_lines++;
 	} while (c>32);
 
 	com_token[len] = 0;
@@ -546,8 +567,7 @@ void COM_MatchToken( char **buf_p, char *match ) {
 =================
 SkipBracedSection
 
-The next token should be an open brace or
-set depth to 1 if already parsed it.
+The next token should be an open brace or set depth to 1 if already parsed it.
 Skips until a matching close brace is found.
 Internal brace depths are properly skipped.
 =================
@@ -581,9 +601,8 @@ void SkipRestOfLine ( char **data ) {
 
 	p = *data;
 
-	if ( !*p ) {
+	if ( !*p )
 		return;
-	}
 
 	while ( (c = *p++) != 0 ) {
 		if ( c == '\n' ) {
@@ -672,7 +691,6 @@ int Com_HexStrToInt( const char *str )
 
 	return -1;
 }
-
 
 // mmp -----
 /*
@@ -845,9 +863,9 @@ Safe strncpy that ensures a trailing zero
 =============
 */
 void Q_strncpyz( char *dest, const char *src, int destsize ) {
-	if ( !dest ) {
-		Com_Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
-	}
+  if ( !dest ) {
+    Com_Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
+  }
 	if ( !src ) {
 		Com_Error( ERR_FATAL, "Q_strncpyz: NULL src" );
 	}
@@ -856,7 +874,7 @@ void Q_strncpyz( char *dest, const char *src, int destsize ) {
 	}
 
 	strncpy( dest, src, destsize-1 );
-	dest[destsize-1] = 0;
+  dest[destsize-1] = 0;
 }
 
 /*
@@ -967,14 +985,14 @@ int Q_stricmpf(const char *s1, const char *s2, int n) { // mmp
 int Q_stricmpn (const char *s1, const char *s2, int n) {
 	int		c1, c2;
 
-	if ( s1 == NULL ) {
-		if ( s2 == NULL )
-			return 0;
-		else
-			return -1;
-	}
-	else if ( s2==NULL )
-		return 1;
+        if ( s1 == NULL ) {
+           if ( s2 == NULL )
+             return 0;
+           else
+             return -1;
+        }
+        else if ( s2==NULL )
+          return 1;
 
 
 
@@ -1065,31 +1083,31 @@ void Q_strcat( char *dest, int size, const char *src ) {
 */
 const char *Q_stristr( const char *s, const char *find)
 {
-	char c, sc;
-	size_t len;
+  char c, sc;
+  size_t len;
 
-	if ((c = *find++) != 0)
-	{
-		if (c >= 'a' && c <= 'z')
-		{
-			c -= ('a' - 'A');
-		}
-		len = strlen(find);
-		do
-		{
-			do
-			{
-				if ((sc = *s++) == 0)
-					return NULL;
-				if (sc >= 'a' && sc <= 'z')
-				{
-					sc -= ('a' - 'A');
-				}
-			} while (sc != c);
-		} while (Q_stricmpn(s, find, len) != 0);
-		s--;
-	}
-	return s;
+  if ((c = *find++) != 0)
+  {
+    if (c >= 'a' && c <= 'z')
+    {
+      c -= ('a' - 'A');
+    }
+    len = strlen(find);
+    do
+    {
+      do
+      {
+        if ((sc = *s++) == 0)
+          return NULL;
+        if (sc >= 'a' && sc <= 'z')
+        {
+          sc -= ('a' - 'A');
+        }
+      } while (sc != c);
+    } while (Q_stricmpn(s, find, len) != 0);
+    s--;
+  }
+  return s;
 }
 
 
@@ -1438,8 +1456,6 @@ Info_Validate
 
 Some characters are illegal in info strings because they
 can mess up the server's parsing
-
-TODO: rename this Com_Validate, since it's now used other than checking client info
 ==================
 */
 qboolean Info_Validate( const char *s ) {
@@ -1602,73 +1618,3 @@ char *Com_SkipTokens( char *s, int numTokens, char *sep )
 	else
 		return s;
 }
-
-//====================================================================
-
-char *Com_GetSingleValue ( const char *s, int n ) {
-	static		char out[BIG_INFO_VALUE];	// return value
-	int			l = 0;
-	char		*o;
-
-	if ( n < 0 ) {
-		return "";
-	}
-	if ( *s != '\\' ) {
-		return "";
-	}
-
-	while ( l < n) {
-		s++;
-		while (*s != '\\') {
-			if (!*s) {
-				return "";
-			}
-			s++;
-		}
-
-		l++;
-	}
-
-	s++;
-
-	o = out;
-	while (*s != '\\' && *s)
-	{
-		*o++ = *s++;
-	}
-	*o = 0;
-
-	return out;
-
-}
-
-//====================================================================
-
-int Com_GetSingleCount ( const char *s ) {
-	int			l;
-
-	if ( *s != '\\' ) {
-		return 0;
-	}
-
-	l = 0;
-
-	while (1) {
-		s++;
-		while (*s != '\\') {
-			if (!*s) {
-				return l;
-			}
-			s++;
-		}
-
-		l++;
-	}
-
-	return l; // it'll never come here, but simply put here just to keep the compiler quiet
-
-}
-
-
-
-

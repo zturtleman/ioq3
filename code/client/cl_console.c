@@ -53,8 +53,6 @@ typedef struct {
 	vec4_t	color;
 } console_t;
 
-/*extern	console_t	con;*/
-
 console_t	con;
 
 cvar_t		*con_conspeed;
@@ -167,7 +165,7 @@ void Con_Clear_f (void) {
 	Con_Bottom();		// go to end
 }
 
-						
+
 /*
 ================
 Con_Dump_f
@@ -175,13 +173,14 @@ Con_Dump_f
 Save the console contents out to a file
 ================
 */
-// mmp - reverted 'Con_Dump_f' changes back to a working version (IOQ-SVN2318), since the updated version doesn't seem to work
 void Con_Dump_f (void)
 {
 	int		l, x, i;
 	short	*line;
 	fileHandle_t	f;
-	char	buffer[1024];
+	int		bufferlen;
+	char	*buffer;
+	char	filename[MAX_QPATH];
 
 	if (Cmd_Argc() != 2)
 	{
@@ -189,14 +188,17 @@ void Con_Dump_f (void)
 		return;
 	}
 
-	Com_Printf ("Dumped console text to %s.\n", Cmd_Argv(1) );
+	Q_strncpyz( filename, Cmd_Argv( 1 ), sizeof( filename ) );
+	COM_DefaultExtension( filename, sizeof( filename ), ".txt" );
 
-	f = FS_FOpenFileWrite( Cmd_Argv( 1 ) );
+	f = FS_FOpenFileWrite( filename );
 	if (!f)
 	{
-		Com_Printf ("ERROR: couldn't open.\n");
+		Com_Printf ("ERROR: couldn't open %s.\n", filename);
 		return;
 	}
+
+	Com_Printf ("Dumped console text to %s.\n", filename );
 
 	// skip empty lines
 	for (l = con.current - con.totallines + 1 ; l <= con.current ; l++)
@@ -209,8 +211,16 @@ void Con_Dump_f (void)
 			break;
 	}
 
+#ifdef _WIN32
+	bufferlen = con.linewidth + 3 * sizeof ( char );
+#else
+	bufferlen = con.linewidth + 2 * sizeof ( char );
+#endif
+
+	buffer = Hunk_AllocateTempMemory( bufferlen );
+
 	// write the remaining lines
-	buffer[con.linewidth] = 0;
+	buffer[bufferlen-1] = 0;
 	for ( ; l <= con.current ; l++)
 	{
 		line = con.text + (l%con.totallines)*con.linewidth;
@@ -223,12 +233,18 @@ void Con_Dump_f (void)
 			else
 				break;
 		}
-		strcat( buffer, "\n" );
+#ifdef _WIN32
+		Q_strcat(buffer, bufferlen, "\r\n");
+#else
+		Q_strcat(buffer, bufferlen, "\n");
+#endif
 		FS_Write(buffer, strlen(buffer), f);
 	}
 
+	Hunk_FreeTempMemory( buffer );
 	FS_FCloseFile( f );
 }
+
 
 /*
 ================
@@ -237,13 +253,13 @@ Con_ClearNotify
 */
 void Con_ClearNotify( void ) {
 	int		i;
-	
+
 	for ( i = 0 ; i < NUM_CON_TIMES ; i++ ) {
 		con.times[i] = 0;
 	}
 }
 
-						
+
 
 /*
 ================
@@ -283,7 +299,7 @@ void Con_CheckResize (void)
 			numlines = con.totallines;
 
 		numchars = oldwidth;
-	
+
 		if (con.linewidth < numchars)
 			numchars = con.linewidth;
 
@@ -417,15 +433,15 @@ void CL_ConsolePrint( char *txt ) {
 		skipnotify = qtrue;
 		txt += 12;
 	}
-	
+
 	// for some demos we don't want to ever show anything on the console
 	if ( cl_noprint && cl_noprint->integer ) {
 		return;
 	}
-	
+
 	if (!con.initialized) {
-		con.color[0] = 
-		con.color[1] = 
+		con.color[0] =
+		con.color[1] =
 		con.color[2] =
 		con.color[3] = 1.0f;
 		con.linewidth = -1;
@@ -571,10 +587,6 @@ void Con_DrawNotify (void)
 				currentColor = (text[x]>>8) % MAX_CCODES;
 				re.SetColor( g_color_table[currentColor] );
 			}
-			/*if ( ( (text[x]>>8)&7 ) != currentColor ) {
-				currentColor = (text[x]>>8)&7;
-				re.SetColor( g_color_table[currentColor] );
-			}*/
 			SCR_DrawSmallChar( cl_conXOffset->integer + con.xadjust + (x+1)*SMALLCHAR_WIDTH, v, text[x] & 0xff );
 		}
 
@@ -592,22 +604,17 @@ void Con_DrawNotify (void)
 	{
 		if (chat_team)
 		{
-			SCR_DrawBigString (8, SCREEN_HEIGHT - BIGCHAR_WIDTH /*v*/, "say_team:", 1.0f, qfalse );
+			SCR_DrawBigString (8, SCREEN_HEIGHT - BIGCHAR_WIDTH, "say_team:", 1.0f, qfalse );
 			skip = 10;
 		}
 		else
 		{
-			SCR_DrawBigString (8, SCREEN_HEIGHT - BIGCHAR_WIDTH /*v*/, "say:", 1.0f, qfalse );
+			SCR_DrawBigString (8, SCREEN_HEIGHT - BIGCHAR_WIDTH, "say:", 1.0f, qfalse );
 			skip = 5;
 		}
 
 		Field_BigDraw( &chatField, skip * BIGCHAR_WIDTH, SCREEN_HEIGHT - BIGCHAR_WIDTH,
 			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue, qtrue );
-
-		/*Field_BigDraw( &chatField, skip * BIGCHAR_WIDTH, v,
-			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue, qtrue );
-
-		v += BIGCHAR_HEIGHT;*/
 	}
 
 }
@@ -670,7 +677,7 @@ void Con_DrawSolidConsole( float frac ) {
 
 	// draw the text
 	con.vislines = lines;
-	rows = (lines-SMALLCHAR_WIDTH)/SMALLCHAR_WIDTH;		// rows of text to draw
+	rows = (lines-SMALLCHAR_HEIGHT)/SMALLCHAR_HEIGHT;		// rows of text to draw
 
 	y = lines - (SMALLCHAR_HEIGHT*3);
 
@@ -684,7 +691,7 @@ void Con_DrawSolidConsole( float frac ) {
 		y -= SMALLCHAR_HEIGHT;
 		rows--;
 	}
-	
+
 	row = con.display;
 
 	if ( con.x == 0 ) {
@@ -700,7 +707,7 @@ void Con_DrawSolidConsole( float frac ) {
 			break;
 		if (con.current - row >= con.totallines) {
 			// past scrollback wrap point
-			continue;	
+			continue;
 		}
 
 		text = con.text + (row % con.totallines)*con.linewidth;
@@ -714,11 +721,6 @@ void Con_DrawSolidConsole( float frac ) {
 				currentColor = (text[x]>>8) % MAX_CCODES;
 				re.SetColor( g_color_table[currentColor] );
 			}
-
-			/*if ( ( (text[x]>>8)&7 ) != currentColor ) {
-				currentColor = (text[x]>>8)&7;
-				re.SetColor( g_color_table[currentColor] );
-			}*/
 			SCR_DrawSmallChar(  con.xadjust + (x+1)*SMALLCHAR_WIDTH, y, text[x] & 0xff );
 		}
 	}
@@ -773,7 +775,7 @@ void Con_RunConsole (void) {
 		con.finalFrac = 0.5;		// half screen
 	else
 		con.finalFrac = 0;				// none visible
-	
+
 	// scroll towards the destination height
 	if (con.finalFrac < con.displayFrac)
 	{

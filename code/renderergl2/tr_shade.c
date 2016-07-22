@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // tr_shade.c
 
 #include "tr_local.h" 
-#if idppc_altivec && !defined(MACOS_X)
+#if idppc_altivec && !defined(__APPLE__)
 #include <altivec.h>
 #endif
 
@@ -101,11 +101,9 @@ static void R_BindAnimatedImageToTMU( textureBundle_t *bundle, int tmu ) {
 	int		index;
 
 	if ( bundle->isVideoMap ) {
-		int oldtmu = glState.currenttmu;
-		GL_SelectTexture(tmu);
 		ri.CIN_RunCinematic(bundle->videoMapHandle);
 		ri.CIN_UploadCinematic(bundle->videoMapHandle);
-		GL_SelectTexture(oldtmu);
+		GL_BindToTMU(tr.scratchImage[bundle->videoMapHandle], tmu);
 		return;
 	}
 
@@ -136,7 +134,7 @@ Draws triangle outlines for debugging
 ================
 */
 static void DrawTris (shaderCommands_t *input) {
-	GL_Bind( tr.whiteImage );
+	GL_BindToTMU( tr.whiteImage, TB_COLORMAP );
 
 	GL_State( GLS_POLYMODE_LINE | GLS_DEPTHMASK_TRUE );
 	qglDepthRange( 0, 0 );
@@ -414,7 +412,7 @@ static void ProjectDlightTexture( void ) {
 		vector[3] = scale;
 		GLSL_SetUniformVec4(sp, UNIFORM_DLIGHTINFO, vector);
 	  
-		GL_Bind( tr.dlightImage );
+		GL_BindToTMU( tr.dlightImage, TB_COLORMAP );
 
 		// include GLS_DEPTHFUNC_EQUAL so alpha tested surfaces don't add light
 		// where they aren't rendered
@@ -448,11 +446,12 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 		|| ((blend & GLS_SRCBLEND_BITS) == GLS_SRCBLEND_ONE_MINUS_DST_COLOR)
 		|| ((blend & GLS_DSTBLEND_BITS) == GLS_DSTBLEND_SRC_COLOR)
 		|| ((blend & GLS_DSTBLEND_BITS) == GLS_DSTBLEND_ONE_MINUS_SRC_COLOR);
+	qboolean isWorldDraw = !(backEnd.refdef.rdflags & RDF_NOWORLDMODEL);
+	float scale = 1.0f;
 
 #if defined(USE_OVERBRIGHT)
 	float exactLight = 1.0f;
 #else
-	qboolean isWorldDraw = !(backEnd.refdef.rdflags & RDF_NOWORLDMODEL);
 	float exactLight = (isBlend || !isWorldDraw) ? 1.0f : (float)(1 << r_mapOverBrightBits->integer);
 #endif
 
@@ -612,17 +611,16 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 			break;
 	}
 
-	// multiply color by overbrightbits if this isn't a blend
 	if (tr.overbrightBits && !isBlend)
-	{
-		float scale = 1 << tr.overbrightBits;
+		scale *= 1 << tr.overbrightBits;
 
-		baseColor[0] *= scale;
-		baseColor[1] *= scale;
-		baseColor[2] *= scale;
-		vertColor[0] *= scale;
-		vertColor[1] *= scale;
-		vertColor[2] *= scale;
+	if ((backEnd.refdef.colorScale != 1.0f) && !isBlend && isWorldDraw)
+		scale *= backEnd.refdef.colorScale;
+
+	if (scale != 1.0f)
+	{
+		VectorScale(baseColor, scale, baseColor);
+		VectorScale(vertColor, scale, vertColor);
 	}
 
 	// FIXME: find some way to implement this.
@@ -862,11 +860,7 @@ static void ForwardDlight( void ) {
 		}
 
 		if (r_dlightMode->integer >= 2)
-		{
-			GL_SelectTexture(TB_SHADOWMAP);
-			GL_Bind(tr.shadowCubemaps[l]);
-			GL_SelectTexture(0);
-		}
+			GL_BindToTMU(tr.shadowCubemaps[l], TB_SHADOWMAP);
 
 		ComputeTexMods( pStage, TB_DIFFUSEMAP, texMatrix, texOffTurb );
 		GLSL_SetUniformVec4(sp, UNIFORM_DIFFUSETEXMATRIX, texMatrix);
@@ -1077,6 +1071,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 	int deformGen;
 	vec5_t deformParams;
 
+	qboolean renderToCubemap = tr.renderCubeFbo && glState.currentFBO == tr.renderCubeFbo;
+
 	ComputeDeformValues(&deformGen, deformParams);
 
 	ComputeFogValues(fogDistanceVector, fogDepthVector, &eyeT);
@@ -1147,9 +1143,9 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 				index |= LIGHTDEF_USE_SHADOWMAP;
 			}
 
-			if (r_lightmap->integer && index & LIGHTDEF_USE_LIGHTMAP)
+			if (r_lightmap->integer && ((index & LIGHTDEF_LIGHTTYPE_MASK) == LIGHTDEF_USE_LIGHTMAP))
 			{
-				index = LIGHTDEF_USE_LIGHTMAP;
+				index = LIGHTDEF_USE_TCGEN_AND_TCMOD;
 			}
 
 			sp = &pStage->glslShaderGroup[index];
@@ -1192,13 +1188,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 
 			ComputeShaderColors(pStage, baseColor, vertColor, pStage->stateBits);
 
-			if ((backEnd.refdef.colorScale != 1.0f) && !(backEnd.refdef.rdflags & RDF_NOWORLDMODEL))
-			{
-				// use VectorScale to only scale first three values, not alpha
-				VectorScale(baseColor, backEnd.refdef.colorScale, baseColor);
-				VectorScale(vertColor, backEnd.refdef.colorScale, vertColor);
-			}
-
 			GLSL_SetUniformVec4(sp, UNIFORM_BASECOLOR, baseColor);
 			GLSL_SetUniformVec4(sp, UNIFORM_VERTCOLOR, vertColor);
 		}
@@ -1238,25 +1227,51 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			GLSL_SetUniformVec4(sp, UNIFORM_FOGCOLORMASK, fogColorMask);
 		}
 
-		ComputeTexMods( pStage, TB_DIFFUSEMAP, texMatrix, texOffTurb );
-		GLSL_SetUniformVec4(sp, UNIFORM_DIFFUSETEXMATRIX, texMatrix);
-		GLSL_SetUniformVec4(sp, UNIFORM_DIFFUSETEXOFFTURB, texOffTurb);
-
-		GLSL_SetUniformInt(sp, UNIFORM_TCGEN0, pStage->bundle[0].tcGen);
-		if (pStage->bundle[0].tcGen == TCGEN_VECTOR)
+		if (r_lightmap->integer)
 		{
-			vec3_t vec;
+			vec4_t v;
+			VectorSet4(v, 1.0f, 0.0f, 0.0f, 1.0f);
+			GLSL_SetUniformVec4(sp, UNIFORM_DIFFUSETEXMATRIX, v);
+			VectorSet4(v, 0.0f, 0.0f, 0.0f, 0.0f);
+			GLSL_SetUniformVec4(sp, UNIFORM_DIFFUSETEXOFFTURB, v);
 
-			VectorCopy(pStage->bundle[0].tcGenVectors[0], vec);
-			GLSL_SetUniformVec3(sp, UNIFORM_TCGEN0VECTOR0, vec);
-			VectorCopy(pStage->bundle[0].tcGenVectors[1], vec);
-			GLSL_SetUniformVec3(sp, UNIFORM_TCGEN0VECTOR1, vec);
+			GLSL_SetUniformInt(sp, UNIFORM_TCGEN0, TCGEN_LIGHTMAP);
+		}
+		else
+		{
+			ComputeTexMods(pStage, TB_DIFFUSEMAP, texMatrix, texOffTurb);
+			GLSL_SetUniformVec4(sp, UNIFORM_DIFFUSETEXMATRIX, texMatrix);
+			GLSL_SetUniformVec4(sp, UNIFORM_DIFFUSETEXOFFTURB, texOffTurb);
+
+			GLSL_SetUniformInt(sp, UNIFORM_TCGEN0, pStage->bundle[0].tcGen);
+			if (pStage->bundle[0].tcGen == TCGEN_VECTOR)
+			{
+				vec3_t vec;
+
+				VectorCopy(pStage->bundle[0].tcGenVectors[0], vec);
+				GLSL_SetUniformVec3(sp, UNIFORM_TCGEN0VECTOR0, vec);
+				VectorCopy(pStage->bundle[0].tcGenVectors[1], vec);
+				GLSL_SetUniformVec3(sp, UNIFORM_TCGEN0VECTOR1, vec);
+			}
 		}
 
 		GLSL_SetUniformMat4(sp, UNIFORM_MODELMATRIX, backEnd.or.transformMatrix);
 
 		GLSL_SetUniformVec4(sp, UNIFORM_NORMALSCALE, pStage->normalScale);
-		GLSL_SetUniformVec4(sp, UNIFORM_SPECULARSCALE, pStage->specularScale);
+
+		{
+			vec4_t specularScale;
+			Vector4Copy(pStage->specularScale, specularScale);
+
+			if (renderToCubemap)
+			{
+				// force specular to nonmetal if rendering cubemaps
+				if (r_pbr->integer)
+					specularScale[1] = 0.0f;
+			}
+
+			GLSL_SetUniformVec4(sp, UNIFORM_SPECULARSCALE, specularScale);
+		}
 
 		//GLSL_SetUniformFloat(sp, UNIFORM_MAPLIGHTSCALE, backEnd.refdef.mapLightScale);
 
@@ -1266,7 +1281,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 		if ( backEnd.depthFill )
 		{
 			if (!(pStage->stateBits & GLS_ATEST_BITS))
-				GL_BindToTMU( tr.whiteImage, 0 );
+				GL_BindToTMU( tr.whiteImage, TB_COLORMAP );
 			else if ( pStage->bundle[TB_COLORMAP].image[0] != 0 )
 				R_BindAnimatedImageToTMU( &pStage->bundle[TB_COLORMAP], TB_COLORMAP );
 		}
@@ -1279,7 +1294,19 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			{
 				GL_BindToTMU(tr.screenShadowImage, TB_SHADOWMAP);
 				GLSL_SetUniformVec3(sp, UNIFORM_PRIMARYLIGHTAMBIENT, backEnd.refdef.sunAmbCol);
-				GLSL_SetUniformVec3(sp, UNIFORM_PRIMARYLIGHTCOLOR,   backEnd.refdef.sunCol);
+				if (r_pbr->integer)
+				{
+					vec3_t color;
+
+					color[0] = backEnd.refdef.sunCol[0] * backEnd.refdef.sunCol[0];
+					color[1] = backEnd.refdef.sunCol[1] * backEnd.refdef.sunCol[1];
+					color[2] = backEnd.refdef.sunCol[2] * backEnd.refdef.sunCol[2];
+					GLSL_SetUniformVec3(sp, UNIFORM_PRIMARYLIGHTCOLOR, color);
+				}
+				else
+				{
+					GLSL_SetUniformVec3(sp, UNIFORM_PRIMARYLIGHTCOLOR, backEnd.refdef.sunCol);
+				}
 				GLSL_SetUniformVec4(sp, UNIFORM_PRIMARYLIGHTORIGIN,  backEnd.refdef.sunDir);
 			}
 
@@ -1288,7 +1315,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			{
 				for (i = 0; i < NUM_TEXTURE_BUNDLES; i++)
 				{
-					if (i == TB_LIGHTMAP)
+					if (i == TB_COLORMAP)
 						R_BindAnimatedImageToTMU( &pStage->bundle[TB_LIGHTMAP], i);
 					else
 						GL_BindToTMU( tr.whiteImage, i );
@@ -1298,7 +1325,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			{
 				for (i = 0; i < NUM_TEXTURE_BUNDLES; i++)
 				{
-					if (i == TB_LIGHTMAP)
+					if (i == TB_COLORMAP)
 						R_BindAnimatedImageToTMU( &pStage->bundle[TB_DELUXEMAP], i);
 					else
 						GL_BindToTMU( tr.whiteImage, i );

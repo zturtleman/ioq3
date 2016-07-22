@@ -44,14 +44,14 @@ typedef struct voipServerPacket_s
 	int len;
 	int sender;
 	int flags;
-	byte data[1024];
+	byte data[4000];
 } voipServerPacket_t;
 #endif
 
 typedef struct svEntity_s {
 	struct worldSector_s *worldSector;
 	struct svEntity_s *nextEntityInWorldSector;
-	
+
 	entityState_t	baseline;		// for delta compression of initial sighting
 	int			numClusters;		// if -1, use headnode instead
 	int			clusternums[MAX_ENT_CLUSTERS];
@@ -74,11 +74,10 @@ typedef struct {
 	int				checksumFeed;		// the feed key that we use to compute the pure checksum strings
 	// https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=475
 	// the serverId associated with the current checksumFeed (always <= serverId)
-	int       checksumFeedServerId;	
+	int       checksumFeedServerId;
 	int				snapshotCounter;	// incremented for each snapshot built
 	int				timeResidual;		// <= 1000 / sv_frame->value
 	int				nextFrameTime;		// when time > nextFrameTime, process world
-	struct cmodel_s	*models[MAX_MODELS];
 	char			*configstrings[MAX_CONFIGSTRINGS];
 	svEntity_t		svEntities[MAX_GENTITIES];
 
@@ -196,9 +195,8 @@ typedef struct client_s {
 #endif
 
 	int				oldServerTime;
-	/*qboolean		csUpdated[MAX_CONFIGSTRINGS+1];	*/
-	qboolean		csUpdated[MAX_CONFIGSTRINGS];	
-	
+	qboolean		csUpdated[MAX_CONFIGSTRINGS];
+
 #ifdef LEGACY_PROTOCOL
 	qboolean		compat;
 #endif
@@ -255,7 +253,7 @@ typedef struct
 	netadr_t ip;
 	// For a CIDR-Notation type suffix
 	int subnet;
-	
+
 	qboolean isexception;
 } serverBan_t;
 
@@ -272,7 +270,6 @@ extern	cvar_t	*sv_rconPassword;
 extern	cvar_t	*sv_privatePassword;
 extern	cvar_t	*sv_allowDownload;
 extern	cvar_t	*sv_maxclients;
-/*extern	cvar_t	*sv_realHumanPlayers;*/
 
 extern	cvar_t	*sv_privateClients;
 extern	cvar_t	*sv_hostname;
@@ -297,20 +294,15 @@ extern	cvar_t	*sv_lanForceRate;
 extern	cvar_t	*sv_strictAuth;
 #endif
 extern	cvar_t	*sv_banFile;
-// mmp
-extern	cvar_t	*sv_spoofHP;
-extern	cvar_t	*sv_spoofList;
-extern	cvar_t	*sv_spoofNames;
-extern	cvar_t	*sv_spoofNamesOffset;
-extern	cvar_t	*sv_useVQ3Protocol;
+
 extern	cvar_t	*sv_hideClientInfo;
-extern	cvar_t	*sv_gameMismatchError;
 
 extern	serverBan_t serverBans[SERVER_MAXBANS];
 extern	int serverBansCount;
 
 #ifdef USE_VOIP
 extern	cvar_t	*sv_voip;
+extern	cvar_t	*sv_voipProtocol;
 #endif
 
 
@@ -319,6 +311,28 @@ extern	cvar_t	*sv_voip;
 //
 // sv_main.c
 //
+typedef struct leakyBucket_s leakyBucket_t;
+struct leakyBucket_s {
+	netadrtype_t	type;
+
+	union {
+		byte	_4[4];
+		byte	_6[16];
+	} ipv;
+
+	int						lastTime;
+	signed char		burst;
+
+	long					hash;
+
+	leakyBucket_t *prev, *next;
+};
+
+extern leakyBucket_t outboundLeakyBucket;
+
+qboolean SVC_RateLimit( leakyBucket_t *bucket, int burst, int period );
+qboolean SVC_RateLimitAddress( netadr_t from, int burst, int period );
+
 void SV_FinalMessage (char *message);
 void QDECL SV_SendServerCommand( client_t *cl, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
 

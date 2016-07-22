@@ -29,12 +29,13 @@ char *svc_strings[256] = {
 	"svc_nop",
 	"svc_gamestate",
 	"svc_configstring",
-	"svc_baseline",
+	"svc_baseline",	
 	"svc_serverCommand",
 	"svc_download",
 	"svc_snapshot",
 	"svc_EOF",
-	"svc_voip",
+	"svc_voipSpeex",
+	"svc_voipOpus",
 };
 
 void SHOWNET( msg_t *msg, char *s) {
@@ -60,7 +61,7 @@ Parses deltas from the given base and adds the resulting entity
 to the current frame
 ==================
 */
-void CL_DeltaEntity (msg_t *msg, clSnapshot_t *frame, int newnum, entityState_t *old,
+void CL_DeltaEntity (msg_t *msg, clSnapshot_t *frame, int newnum, entityState_t *old, 
 					 qboolean unchanged) {
 	entityState_t	*state;
 
@@ -128,7 +129,7 @@ void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *n
 				Com_Printf ("%3i:  unchanged: %i\n", msg->readcount, oldnum);
 			}
 			CL_DeltaEntity( msg, newframe, oldnum, oldstate, qtrue );
-
+			
 			oldindex++;
 
 			if ( oldindex >= oldframe->numEntities ) {
@@ -176,7 +177,7 @@ void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *n
 			Com_Printf ("%3i:  unchanged: %i\n", msg->readcount, oldnum);
 		}
 		CL_DeltaEntity( msg, newframe, oldnum, oldstate, qtrue );
-
+		
 		oldindex++;
 
 		if ( oldindex >= oldframe->numEntities ) {
@@ -238,7 +239,7 @@ void CL_ParseSnapshot( msg_t *msg ) {
 	// If the frame is delta compressed from data that we
 	// no longer have available, we must suck up the rest of
 	// the frame, but not use it, then ask for a non-compressed
-	// message
+	// message 
 	if ( newSnap.deltaNum <= 0 ) {
 		newSnap.valid = qtrue;		// uncompressed frame
 		old = NULL;
@@ -261,13 +262,13 @@ void CL_ParseSnapshot( msg_t *msg ) {
 
 	// read areamask
 	len = MSG_ReadByte( msg );
-
+	
 	if(len > sizeof(newSnap.areamask))
 	{
 		Com_Error (ERR_DROP,"CL_ParseSnapshot: Invalid size %d for areamask", len);
 		return;
 	}
-
+	
 	MSG_ReadData( msg, &newSnap.areamask, len);
 
 	// read playerinfo
@@ -359,8 +360,8 @@ void CL_SystemInfoChanged( void ) {
 	else
 #endif
 	{
-		s = Info_ValueForKey( systemInfo, "sv_voip" );
-		clc.voipEnabled = atoi(s);
+		s = Info_ValueForKey( systemInfo, "sv_voipProtocol" );
+		clc.voipEnabled = !Q_stricmp(s, "opus");
 	}
 #endif
 
@@ -389,12 +390,12 @@ void CL_SystemInfoChanged( void ) {
 	s = systemInfo;
 	while ( s ) {
 		int cvar_flags;
-
+		
 		Info_NextPair( &s, key, value );
 		if ( !key[0] ) {
 			break;
 		}
-
+		
 		// ehw!
 		if (!Q_stricmp(key, "fs_game"))
 		{
@@ -403,7 +404,7 @@ void CL_SystemInfoChanged( void ) {
 				Com_Printf(S_COLOR_YELLOW "WARNING: Server sent invalid fs_game value %s\n", value);
 				continue;
 			}
-
+				
 			gameSet = qtrue;
 		}
 
@@ -485,7 +486,7 @@ void CL_ParseGamestate( msg_t *msg ) {
 		if ( cmd == svc_EOF ) {
 			break;
 		}
-
+		
 		if ( cmd == svc_configstring ) {
 			int		len;
 
@@ -533,7 +534,7 @@ void CL_ParseGamestate( msg_t *msg ) {
 	// stop recording now so the demo won't have an unnecessary level load at the end.
 	if(cl_autoRecordDemo->integer && clc.demorecording)
 		CL_StopRecord_f();
-
+	
 	// reinitialize the filesystem if the game directory has changed
 	if(!cl_oldGameSet && (Cvar_Flags("fs_game") & CVAR_MODIFIED))
 	{
@@ -595,7 +596,7 @@ void CL_ParseDownload ( msg_t *msg ) {
 		Com_Error(ERR_DROP, "CL_ParseDownload: Invalid size %d for download chunk", size);
 		return;
 	}
-
+	
 	MSG_ReadData(msg, data, size);
 
 	if((clc.downloadBlock & 0xFFFF) != block)
@@ -680,13 +681,13 @@ static void CL_PlayVoip(int sender, int samplecnt, const byte *data, int flags)
 {
 	if(flags & VOIP_DIRECT)
 	{
-		S_RawSamples(sender + 1, samplecnt, clc.speexSampleRate, 2, 1,
+		S_RawSamples(sender + 1, samplecnt, 48000, 2, 1,
 	             data, clc.voipGain[sender], -1);
 	}
 
 	if(flags & VOIP_SPATIAL)
 	{
-		S_RawSamples(sender + MAX_CLIENTS + 1, samplecnt, clc.speexSampleRate, 2, 1,
+		S_RawSamples(sender + MAX_CLIENTS + 1, samplecnt, 48000, 2, 1,
 	             data, 1.0f, sender);
 	}
 }
@@ -699,8 +700,8 @@ A VoIP message has been received from the server
 =====================
 */
 static
-void CL_ParseVoip ( msg_t *msg ) {
-	static short decoded[4096];  // !!! FIXME: don't hardcode.
+void CL_ParseVoip ( msg_t *msg, qboolean ignoreData ) {
+	static short decoded[VOIP_MAX_PACKET_SAMPLES*4]; // !!! FIXME: don't hard code
 
 	const int sender = MSG_ReadShort(msg);
 	const int generation = MSG_ReadByte(msg);
@@ -708,7 +709,8 @@ void CL_ParseVoip ( msg_t *msg ) {
 	const int frames = MSG_ReadByte(msg);
 	const int packetsize = MSG_ReadShort(msg);
 	const int flags = MSG_ReadBits(msg, VOIP_FLAGCNT);
-	char encoded[1024];
+	unsigned char encoded[4000];
+	int	numSamples;
 	int seqdiff;
 	int written = 0;
 	int i;
@@ -738,14 +740,15 @@ void CL_ParseVoip ( msg_t *msg ) {
 		return;   // overlarge packet, bail.
 	}
 
-	if (!clc.speexInitialized) {
-		MSG_ReadData(msg, encoded, packetsize);  // skip payload.
-		return;   // can't handle VoIP without libspeex!
+	MSG_ReadData(msg, encoded, packetsize);
+
+	if (ignoreData) {
+		return; // just ignore legacy speex voip data
+	} else if (!clc.voipCodecInitialized) {
+		return;   // can't handle VoIP without libopus!
 	} else if (sender >= MAX_CLIENTS) {
-		MSG_ReadData(msg, encoded, packetsize);  // skip payload.
 		return;   // bogus sender.
 	} else if (CL_ShouldIgnoreVoipSender(sender)) {
-		MSG_ReadData(msg, encoded, packetsize);  // skip payload.
 		return;   // Channel is muted, bail.
 	}
 
@@ -758,70 +761,59 @@ void CL_ParseVoip ( msg_t *msg ) {
 	// This is a new "generation" ... a new recording started, reset the bits.
 	if (generation != clc.voipIncomingGeneration[sender]) {
 		Com_DPrintf("VoIP: new generation %d!\n", generation);
-		speex_bits_reset(&clc.speexDecoderBits[sender]);
+		opus_decoder_ctl(clc.opusDecoder[sender], OPUS_RESET_STATE);
 		clc.voipIncomingGeneration[sender] = generation;
 		seqdiff = 0;
 	} else if (seqdiff < 0) {   // we're ahead of the sequence?!
 		// This shouldn't happen unless the packet is corrupted or something.
 		Com_DPrintf("VoIP: misordered sequence! %d < %d!\n",
 		            sequence, clc.voipIncomingSequence[sender]);
-		// reset the bits just in case.
-		speex_bits_reset(&clc.speexDecoderBits[sender]);
+		// reset the decoder just in case.
+		opus_decoder_ctl(clc.opusDecoder[sender], OPUS_RESET_STATE);
 		seqdiff = 0;
-	} else if (seqdiff * clc.speexFrameSize * 2 >= sizeof (decoded)) { // dropped more than we can handle?
+	} else if (seqdiff * VOIP_MAX_PACKET_SAMPLES*2 >= sizeof (decoded)) { // dropped more than we can handle?
 		// just start over.
 		Com_DPrintf("VoIP: Dropped way too many (%d) frames from client #%d\n",
 		            seqdiff, sender);
-		speex_bits_reset(&clc.speexDecoderBits[sender]);
+		opus_decoder_ctl(clc.opusDecoder[sender], OPUS_RESET_STATE);
 		seqdiff = 0;
 	}
 
 	if (seqdiff != 0) {
 		Com_DPrintf("VoIP: Dropped %d frames from client #%d\n",
 		            seqdiff, sender);
-		// tell speex that we're missing frames...
+		// tell opus that we're missing frames...
 		for (i = 0; i < seqdiff; i++) {
-			assert((written + clc.speexFrameSize) * 2 < sizeof (decoded));
-			speex_decode_int(clc.speexDecoder[sender], NULL, decoded + written);
-			written += clc.speexFrameSize;
+			assert((written + VOIP_MAX_PACKET_SAMPLES) * 2 < sizeof (decoded));
+			numSamples = opus_decode(clc.opusDecoder[sender], NULL, 0, decoded + written, VOIP_MAX_PACKET_SAMPLES, 0);
+			if ( numSamples <= 0 ) {
+				Com_DPrintf("VoIP: Error decoding frame %d from client #%d\n", i, sender);
+				continue;
+			}
+			written += numSamples;
 		}
 	}
 
-	for (i = 0; i < frames; i++) {
-		const int len = MSG_ReadByte(msg);
-		if (len < 0) {
-			Com_DPrintf("VoIP: Short packet!\n");
-			break;
-		}
-		MSG_ReadData(msg, encoded, len);
+	numSamples = opus_decode(clc.opusDecoder[sender], encoded, packetsize, decoded + written, ARRAY_LEN(decoded) - written, 0);
 
-		// shouldn't happen, but just in case...
-		if ((written + clc.speexFrameSize) * 2 > sizeof (decoded)) {
-			Com_DPrintf("VoIP: playback %d bytes, %d samples, %d frames\n",
-			            written * 2, written, i);
-
-			CL_PlayVoip(sender, written, (const byte *) decoded, flags);
-			written = 0;
-		}
-
-		speex_bits_read_from(&clc.speexDecoderBits[sender], encoded, len);
-		speex_decode_int(clc.speexDecoder[sender],
-		                 &clc.speexDecoderBits[sender], decoded + written);
-
-		#if 0
-		static FILE *encio = NULL;
-		if (encio == NULL) encio = fopen("voip-incoming-encoded.bin", "wb");
-		if (encio != NULL) { fwrite(encoded, len, 1, encio); fflush(encio); }
-		static FILE *decio = NULL;
-		if (decio == NULL) decio = fopen("voip-incoming-decoded.bin", "wb");
-		if (decio != NULL) { fwrite(decoded+written, clc.speexFrameSize*2, 1, decio); fflush(decio); }
-		#endif
-
-		written += clc.speexFrameSize;
+	if ( numSamples <= 0 ) {
+		Com_DPrintf("VoIP: Error decoding voip data from client #%d\n", sender);
+		numSamples = 0;
 	}
+
+	#if 0
+	static FILE *encio = NULL;
+	if (encio == NULL) encio = fopen("voip-incoming-encoded.bin", "wb");
+	if (encio != NULL) { fwrite(encoded, len, 1, encio); fflush(encio); }
+	static FILE *decio = NULL;
+	if (decio == NULL) decio = fopen("voip-incoming-decoded.bin", "wb");
+	if (decio != NULL) { fwrite(decoded+written, clc.speexFrameSize*2, 1, decio); fflush(decio); }
+	#endif
+
+	written += numSamples;
 
 	Com_DPrintf("VoIP: playback %d bytes, %d samples, %d frames\n",
-	            written * 2, written, i);
+	            written * 2, written, frames);
 
 	if(written > 0)
 		CL_PlayVoip(sender, written, (const byte *) decoded, flags);
@@ -876,7 +868,7 @@ void CL_ParseServerMessage( msg_t *msg ) {
 
 	// get the reliable sequence acknowledge number
 	clc.reliableAcknowledge = MSG_ReadLong( msg );
-	//
+	// 
 	if ( clc.reliableAcknowledge < clc.reliableSequence - MAX_RELIABLE_COMMANDS ) {
 		clc.reliableAcknowledge = clc.reliableSequence;
 	}
@@ -904,12 +896,12 @@ void CL_ParseServerMessage( msg_t *msg ) {
 				SHOWNET( msg, svc_strings[cmd] );
 			}
 		}
-
+	
 	// other commands
 		switch ( cmd ) {
 		default:
 			Com_Error (ERR_DROP,"CL_ParseServerMessage: Illegible server message");
-			break;
+			break;			
 		case svc_nop:
 			break;
 		case svc_serverCommand:
@@ -924,9 +916,14 @@ void CL_ParseServerMessage( msg_t *msg ) {
 		case svc_download:
 			CL_ParseDownload( msg );
 			break;
-		case svc_voip:
+		case svc_voipSpeex:
 #ifdef USE_VOIP
-			CL_ParseVoip( msg );
+			CL_ParseVoip( msg, qtrue );
+#endif
+			break;
+		case svc_voipOpus:
+#ifdef USE_VOIP
+			CL_ParseVoip( msg, !clc.voipEnabled );
 #endif
 			break;
 		}

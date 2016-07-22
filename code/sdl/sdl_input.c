@@ -247,7 +247,7 @@ static keyNum_t IN_TranslateSDLToQ3Key( SDL_Keysym *keysym, qboolean down )
 			case SDLK_LCTRL:
 			case SDLK_RCTRL:        key = K_CTRL;          break;
 
-#ifdef MACOS_X
+#ifdef __APPLE__
 			case SDLK_RGUI:
 			case SDLK_LGUI:         key = K_COMMAND;       break;
 #else
@@ -467,7 +467,7 @@ static void IN_InitJoystick( void )
 	if( in_joystickNo->integer < 0 || in_joystickNo->integer >= total )
 		Cvar_Set( "in_joystickNo", "0" );
 
-	in_joystickUseAnalog = Cvar_Get( "in_joystickUseAnalog", "1", CVAR_ARCHIVE ); // mmp - let's support modern joypads
+	in_joystickUseAnalog = Cvar_Get( "in_joystickUseAnalog", "0", CVAR_ARCHIVE );
 
 	stick = SDL_JoystickOpen( in_joystickNo->integer );
 
@@ -666,7 +666,7 @@ static void IN_JoyMove( void )
 			{
 				Sint16 axis = SDL_JoystickGetAxis(stick, i);
 				float f = ( (float) abs(axis) ) / 32767.0f;
-
+				
 				if( f < in_joystickThreshold->value ) axis = 0;
 
 				if ( axis != stick_state.oldaaxes[i] )
@@ -923,10 +923,7 @@ void IN_Frame( void )
 	if( ( vidRestartTime != 0 ) && ( vidRestartTime < Sys_Milliseconds( ) ) )
 	{
 		vidRestartTime = 0;
-		// mmp - prevents auto vidrestart if unset
-		if( Cvar_VariableIntegerValue("r_autoVidRestart") ) {
-			Cbuf_AddText( "vid_restart\n" );
-		}
+		Cbuf_AddText( "vid_restart\n" );
 	}
 }
 

@@ -67,6 +67,20 @@ void SV_GetChallenge(netadr_t from)
 		return;
 	}
 
+	// Prevent using getchallenge as an amplifier
+	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
+		Com_DPrintf( "SV_GetChallenge: rate limit from %s exceeded, dropping request\n",
+			NET_AdrToString( from ) );
+		return;
+	}
+
+	// Allow getchallenge to be DoSed relatively easily, but prevent
+	// excess outbound bandwidth usage when being flooded inbound
+	if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
+		Com_DPrintf( "SV_GetChallenge: rate limit exceeded, dropping request\n" );
+		return;
+	}
+
 	gameName = Cmd_Argv(2);
 
 #ifdef LEGACY_PROTOCOL
@@ -75,23 +89,12 @@ void SV_GetChallenge(netadr_t from)
 		gameMismatch = qfalse;
 	else
 #endif
-	/*if (strcmp(com_gamename->string, "MFArena") == 0) // remove this when we're done trolling
-		gameMismatch = qfalse;
-	else*/
 		gameMismatch = !*gameName || strcmp(gameName, com_gamename->string) != 0;
 
 	// reject client if the gamename string sent by the client doesn't match ours
 	if (gameMismatch)
 	{
-		if ( strlen( sv_gameMismatchError->string ) ) {
-			NET_OutOfBandPrint(NS_SERVER, from, "print\nGame mismatch: %s\n", sv_gameMismatchError->string);
-		} else {
-			NET_OutOfBandPrint(NS_SERVER, from, "print\nGame mismatch: Sorry, this is a MFArena server\n");
-		}
-		/*NET_OutOfBandPrint(NS_SERVER, from, "print\nGame mismatch: Sorry, you're not cool enough to play here\n");*/ // remove when done trolling
-		/*NET_OutOfBandPrint(NS_SERVER, from, "print\nGame mismatch: Sorry, this is a MFArena server\n");*/ // remove when done trolling
-		/*NET_OutOfBandPrint(NS_SERVER, from, "print\nGame mismatch: This is a %s server\n",
-			com_gamename->string);*/
+		NET_OutOfBandPrint(NS_SERVER, from, "print\nGame mismatch: This is a MFArena server\n");
 		return;
 	}
 
@@ -342,7 +345,6 @@ void SV_DirectConnect( netadr_t from ) {
 	if(SV_IsBanned(&from, qfalse))
 	{
 		NET_OutOfBandPrint(NS_SERVER, from, "print\nYour current IP address is blacklisted on this server, sorry.\n");
-		/*NET_OutOfBandPrint(NS_SERVER, from, "print\nYou are banned from this server.\n");*/
 		return;
 	}
 
@@ -430,7 +432,7 @@ void SV_DirectConnect( netadr_t from ) {
 		ping = svs.time - challengeptr->pingTime;
 
 		// never reject a LAN client based on ping
-		if ( !Sys_IsLANAddress( from ) ) {
+		/*if ( !Sys_IsLANAddress( from ) ) {
 			if ( sv_minPing->value && ping < sv_minPing->value ) {
 				NET_OutOfBandPrint( NS_SERVER, from, "print\nServer is for high pings only\n" );
 				Com_DPrintf ("Client %i rejected on a too low ping\n", i);
@@ -443,7 +445,7 @@ void SV_DirectConnect( netadr_t from ) {
 				challengeptr->wasrefused = qtrue;
 				return;
 			}
-		}
+		}*/
 
 		Com_Printf("Client %i connecting with %i challenge ping\n", i, ping);
 		challengeptr->connected = qtrue;
@@ -660,7 +662,6 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 
 	// tell everyone why they got dropped
 	SV_SendServerCommand( NULL, "notify %i\\\"%s" S_COLOR_WHITE " %s\n\"", NF_CONNECTION, drop->name, reason );
-	/*SV_SendServerCommand( NULL, "print \"%s" S_COLOR_WHITE " %s\n\"", drop->name, reason );*/
 
 	// call the prog function for removing a client
 	// this will remove the body, among other things
@@ -976,7 +977,7 @@ int SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 						missionPack = FS_idPak(pakbuf, BASETA, NUM_TA_PAKS);
 						idPack = missionPack;
 #endif
-						idPack = idPack || FS_idPak(pakbuf, BASEGAME, NUM_MFA_PAKS);
+						idPack = idPack || FS_idPak(pakbuf, BASEGAME, NUM_ID_PAKS);
 
 						break;
 					}
@@ -998,8 +999,7 @@ int SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 				Com_sprintf(errorMessage, sizeof(errorMessage), "File \"%s\" is not referenced and cannot be downloaded.", cl->downloadName);
 			}
 			else if (idPack) {
-				/*Com_Printf("clientDownload: %d : \"%s\" cannot download id pk3 files\n", (int) (cl - svs.clients), cl->downloadName);*/
-				Com_Printf("clientDownload: %d : \"%s\" cannot download \"basemf\" pk3 files\n", (int) (cl - svs.clients), cl->downloadName);
+				Com_Printf("clientDownload: %d : \"%s\" cannot download base pk3 files\n", (int) (cl - svs.clients), cl->downloadName);
 #ifndef STANDALONE
 				if(missionPack)
 				{
@@ -1009,7 +1009,7 @@ int SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 				else
 #endif
 				{
-					Com_sprintf(errorMessage, sizeof(errorMessage), "Cannot autodownload id pk3 file \"%s\"", cl->downloadName);
+					Com_sprintf(errorMessage, sizeof(errorMessage), "Cannot autodownload base pk3 file \"%s\"", cl->downloadName);
 				}
 			}
 			else if ( !(sv_allowDownload->integer & DLF_ENABLE) ||
@@ -1022,9 +1022,9 @@ int SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 										"can connect to this pure server.\n", cl->downloadName);
 				} else {
 					Com_sprintf(errorMessage, sizeof(errorMessage), "Could not download \"%s\" because autodownloading is disabled on the server.\n\n"
-                    "The server you are connecting to is not a pure server, "
-                    "set autodownload to No in your settings and you might be "
-                    "able to join the game anyway.\n", cl->downloadName);
+					"The server you are connecting to is not a pure server, "
+					"set autodownload to No in your settings and you might be "
+					"able to join the game anyway.\n", cl->downloadName);
 				}
 			} else {
 				// NOTE TTimo this is NOT supposed to happen unless bug in our filesystem scheme?
@@ -1042,7 +1042,6 @@ int SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 			if(cl->download)
 				FS_FCloseFile(cl->download);
 
-			/*return 0;*/
 			return 1;
 		}
 
@@ -1208,9 +1207,7 @@ The client is going to disconnect, so remove the connection immediately  FIXME: 
 =================
 */
 static void SV_Disconnect_f( client_t *cl ) {
-	/*SV_DropClient( cl, "disconnected" );*/
 	SV_DropClient( cl, "dropped" );
-	//SV_SendServerCommand( NULL, "dinfo %i %i\n\"", cl, reason ); // WIP
 }
 
 /*
@@ -1226,9 +1223,9 @@ This routine would be a bit simpler with a goto but i abstained
 
 =================
 */
-//#define		SV_ERRTYPE_BADCSUM = 1
 
 typedef enum {
+	SV_ERRTYPE_DEFAULT,
 	SV_ERRTYPE_BADCSUM,	// bad checksum
 	SV_ERRTYPE_MISSING	// missing paks
 } vpak_t;
@@ -1337,8 +1334,6 @@ static void SV_VerifyPaks_f( client_t *cl ) {
 			nServerPaks = Cmd_Argc();
 			if (nServerPaks > 1024)
 				nServerPaks = 1024;
-				// ATTN ADMINS: in otherwords, don't bloat the server with silly paks
-				// i will keep this limitation, as i simply don't like bloated servers
 
 			for (i = 0; i < nServerPaks; i++) {
 				nServerChkSum[i] = atoi(Cmd_Argv(i));
@@ -1357,7 +1352,6 @@ static void SV_VerifyPaks_f( client_t *cl ) {
 				}
 			}
 			if ( bGood == qfalse ) {
-				errType = SV_ERRTYPE_MISSING; // missing paks
 				break;
 			}
 
@@ -1369,7 +1363,6 @@ static void SV_VerifyPaks_f( client_t *cl ) {
 			nChkSum1 ^= nClientPaks;
 			if (nChkSum1 != nClientChkSum[nClientPaks]) {
 				bGood = qfalse;
-				errType = SV_ERRTYPE_BADCSUM; // bad checksum
 				break;
 			}
 
@@ -1383,12 +1376,11 @@ static void SV_VerifyPaks_f( client_t *cl ) {
 			cl->pureAuthentic = 1;
 		}
 		else {
-			// we've got an unpure client, kick 'em
 			cl->pureAuthentic = 0;
 			cl->lastSnapshotTime = 0;
 			cl->state = CS_ACTIVE;
 			SV_SendClientSnapshot( cl );
-//			SV_DropClient( cl, "Unpure client detected. Invalid .PK3 files referenced!" );
+			//SV_DropClient( cl, "Unpure client detected. Invalid .PK3 files referenced!" );
 
 			// MMP: added a better and a more understandable error message
 			// 	the word 'sorry' must be added, to reduce remorse
@@ -1455,9 +1447,6 @@ void SV_UserinfoChanged( client_t *cl ) {
 	val = Info_ValueForKey (cl->userinfo, "handicap");
 	if (strlen(val)) {
 		i = atoi(val);
-		/*if (i<=0 || i>100 || strlen(val) > 4) {
-			Info_SetValueForKey( cl->userinfo, "handicap", "100" );
-		}*/
 		if ( i < 0 || strlen(val) < 1) {
 			Info_SetValueForKey( cl->userinfo, "handicap", "0" );
 		} else if ( i > 666 || strlen(val) > 3 ) {
@@ -1496,8 +1485,8 @@ void SV_UserinfoChanged( client_t *cl ) {
 	else
 #endif
 	{
-		val = Info_ValueForKey(cl->userinfo, "cl_voip");
-		cl->hasVoip = atoi(val);
+		val = Info_ValueForKey(cl->userinfo, "cl_voipProtocol");
+		cl->hasVoip = !Q_stricmp( val, "opus" );
 	}
 #endif
 
@@ -1616,7 +1605,6 @@ void SV_ExecuteClientCommand( client_t *cl, const char *s, qboolean clientOK ) {
 	if (clientOK) {
 		// pass unknown strings to the game
 		if (!u->name && sv.state == SS_GAME && (cl->state == CS_ACTIVE || cl->state == CS_PRIMED)) {
-			//Cmd_Args_Sanitize();
 			if(strcmp(Cmd_Argv(0), "say") && strcmp(Cmd_Argv(0), "say_team") )
  				Cmd_Args_Sanitize(); //remove \n, \r and ';' from string. We don't do that for say-commands because it makes people mad (understandebly)
 			VM_Call( gvm, GAME_CLIENT_COMMAND, cl - svs.clients );
@@ -1661,21 +1649,6 @@ static qboolean SV_ClientCommand( client_t *cl, msg_t *msg ) {
 	// but not other people
 	// We don't do this when the client hasn't been active yet since it's
 	// normal to spam a lot of commands when downloading
-	/*
-	if ( !com_cl_running->integer &&
-		cl->state >= CS_ACTIVE &&
-		sv_floodProtect->integer &&
-		svs.time < cl->nextReliableTime ) {
-		// ignore any other text messages from this client but let them keep playing
-		// TTimo - moved the ignored verbose to the actual processing in SV_ExecuteClientCommand, only printing if the core doesn't intercept
-		clientOk = qfalse;
-	}
-
-	// don't allow another command for one second
-	cl->nextReliableTime = svs.time + 1000;
-	*/
-
-	//Com_Printf("DEBUG: command call\n"); // remove when done testing
 
 	// mmp:
 	// the old flood protection was too strict, and caused too many issues.
@@ -1684,9 +1657,6 @@ static qboolean SV_ClientCommand( client_t *cl, msg_t *msg ) {
 	// when the client reaches 4 demerits, no futher commands will be processed.
 	// only after one second, when the client makes another command, their command
 	// will then be processed, and a demerit will be removed.
-	/*Com_Printf("DEBUG: com_cl_running=%i, cl->state=%i, sv_floodProtect=%i\n",
-		com_cl_running->integer, cl->state, sv_floodProtect->integer); // remove when done testing
-	*/
 	if ( !com_cl_running->integer &&
 		cl->state >= CS_ACTIVE &&
 		sv_floodProtect->integer ) {
@@ -1875,7 +1845,7 @@ static qboolean SV_ShouldIgnoreVoipSender(const client_t *cl)
 }
 
 static
-void SV_UserVoip(client_t *cl, msg_t *msg)
+void SV_UserVoip(client_t *cl, msg_t *msg, qboolean ignoreData)
 {
 	int sender, generation, sequence, frames, packetsize;
 	uint8_t recips[(MAX_CLIENTS + 7) / 8];
@@ -1910,12 +1880,12 @@ void SV_UserVoip(client_t *cl, msg_t *msg)
 
 	MSG_ReadData(msg, encoded, packetsize);
 
-	if (SV_ShouldIgnoreVoipSender(cl))
+	if (ignoreData || SV_ShouldIgnoreVoipSender(cl))
 		return;   // Blacklisted, disabled, etc.
 
 	// !!! FIXME: see if we read past end of msg...
 
-	// !!! FIXME: reject if not speex narrowband codec.
+	// !!! FIXME: reject if not opus data.
 	// !!! FIXME: decide if this is bogus data?
 
 	// decide who needs this VoIP packet sent to them...
@@ -2064,10 +2034,18 @@ void SV_ExecuteClientMessage( client_t *cl, msg_t *msg ) {
 		}
 	} while ( 1 );
 
-	// read optional voip data
-	if ( c == clc_voip ) {
+	// skip legacy speex voip data
+	if ( c == clc_voipSpeex ) {
 #ifdef USE_VOIP
-		SV_UserVoip( cl, msg );
+		SV_UserVoip( cl, msg, qtrue );
+		c = MSG_ReadByte( msg );
+#endif
+	}
+
+	// read optional voip data
+	if ( c == clc_voipOpus ) {
+#ifdef USE_VOIP
+		SV_UserVoip( cl, msg, qfalse );
 		c = MSG_ReadByte( msg );
 #endif
 	}
