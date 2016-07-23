@@ -26,35 +26,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
-#ifdef STANDALONE
-  #define PRODUCT_NAME				"MFArena"
-  #define BASEGAME					"basemf"
-  #define CLIENT_WINDOW_TITLE     	"MFArena"
-  #define CLIENT_WINDOW_MIN_TITLE 	"mfa"
-  #define HOMEPATH_NAME_UNIX		".config/mfarena"
-  #define HOMEPATH_NAME_WIN			"MFArena"
-  #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
+#define PRODUCT_NAME				"MFArena"
+#define BASEGAME					"basemf"
+#define CLIENT_WINDOW_TITLE     	"MFArena"
+#define CLIENT_WINDOW_MIN_TITLE 	"mfa"
+#define HOMEPATH_NAME_UNIX			".config/mfarena"
+#define HOMEPATH_NAME_WIN			"MFArena"
+#define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
 //  #define STEAMPATH_NAME			"MFArena"
 //  #define STEAMPATH_APPID         ""
-  #define GAMENAME_FOR_MASTER		"Quake3Arena"	// must NOT contain whitespace
-  #define CINEMATICS_LOGO			"mmplogo.roq"
-  #define CINEMATICS_INTRO			"intro.roq"
+#define GAMENAME_FOR_MASTER			"Quake3Arena"	// must NOT contain whitespace
+#define CINEMATICS_LOGO				"mmplogo.roq"
+#define CINEMATICS_INTRO			"intro.roq"
 //  #define LEGACY_PROTOCOL	// You probably don't need this for your standalone game
-#else
-  #define PRODUCT_NAME				"ioq3"
-  #define BASEGAME					"baseq3"
-  #define CLIENT_WINDOW_TITLE		"ioquake3"
-  #define CLIENT_WINDOW_MIN_TITLE	"ioq3"
-  #define HOMEPATH_NAME_UNIX		".q3a"
-  #define HOMEPATH_NAME_WIN			"Quake3"
-  #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
-  #define STEAMPATH_NAME			"Quake 3 Arena"
-  #define STEAMPATH_APPID			"2200"
-  #define GAMENAME_FOR_MASTER		"Quake3Arena"
-  #define CINEMATICS_LOGO			"idlogo.RoQ"
-  #define CINEMATICS_INTRO			"intro.RoQ"
-  #define LEGACY_PROTOCOL
-#endif
 
 // Heartbeat for dpmaster protocol. You shouldn't change this unless you know what you're doing
 #define HEARTBEAT_FOR_MASTER		"QuakeArena-1"

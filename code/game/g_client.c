@@ -1186,15 +1186,8 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		}
 	}
 
-	// get and distribute relevent paramters
-	/*G_LogPrintf( "ClientConnect: %i\n", clientNum );*/
-	/*if (isBot) {
-		G_LogPrintf("ClientConnect: No.%i - %s\n", clientNum, client->pers.netname );
-	} else {
-		G_LogPrintf("ClientConnect: No.%i - (%s) \"%s\"\n", clientNum, ipadd, client->pers.netname );
-	}*/
 	if (isBot) {
-		G_LogPrintf("ClientConnect: No. %i\n", clientNum );
+		G_LogPrintf("ClientConnect: No. %i - (BOT)\n", clientNum );
 	} else {
 		G_LogPrintf("ClientConnect: No. %i - (%s)\n", clientNum, ipadd );
 	}

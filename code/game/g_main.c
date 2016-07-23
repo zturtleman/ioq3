@@ -232,7 +232,7 @@ static cvarTable_t		gameCvarTable[] = {
 //	{ &g_doWarmup, "", "0", CVAR_ARCHIVE | CVAR_LATCH, 0, qtrue  }, // mmp - to be fased out
 	{ &g_logfile, "g_log", "games.log", CVAR_ARCHIVE, 0, qfalse  },
 	{ &g_logfileSync, "g_logsync", "0", CVAR_ARCHIVE, 0, qfalse  },
-	{ &g_verboseLog, "g_verboseLog", "2", CVAR_ARCHIVE, 0, qfalse  },
+	{ &g_verboseLog, "g_verboseLog", "1", CVAR_ARCHIVE, 0, qfalse  },
 
 	{ &g_password, "g_password", "", CVAR_USERINFO, 0, qfalse  },
 
@@ -341,7 +341,7 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_currentDay, "currentDay", "-1", CVAR_ROM, 0, qfalse }, // keep track of day
 
 // empty server maintenance
-	{ &g_serviceOnEmptyTime, "g_serviceOnEmptyTime", "0", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_serviceOnEmptyTime, "g_serviceOnEmptyTime", "5", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_serviceOnEmptyExec, "g_serviceOnEmptyExec", "map_restart", CVAR_ARCHIVE, 0, qfalse },
 
 // mmp - cvar add end
@@ -4602,11 +4602,15 @@ void CheckTeamVote( int team ) {
 /*
 ==================
 CheckServerEmpty
+
+Checks to see if there are no players left on the server
+If empty, server will execute a command via cvar 'g_serviceOnEmptyExec'
 ==================
 */
 static void CheckServerEmpty( void ) {
 
-	if ( g_serviceOnEmptyTime.integer > 0 ) {
+	// value less than zero disables this function
+	if ( g_serviceOnEmptyTime.integer < 0 ) {
 		return;
 	}
 
@@ -4615,6 +4619,7 @@ static void CheckServerEmpty( void ) {
 	} else if (level.lastActiveTime > 0) {
 		if ( level.lastActiveTime + g_serviceOnEmptyTime.integer * 1000 < level.time ) {
 			level.lastActiveTime = 0;
+			G_LogPrintf("CheckServerEmpty: Last client left, executing command '%s'\n", g_serviceOnEmptyExec.string );
 			trap_SendConsoleCommand( EXEC_APPEND, va("%s\n",g_serviceOnEmptyExec.string) );
 		}
 	}
