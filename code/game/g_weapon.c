@@ -392,9 +392,16 @@ void ShotgunPattern( vec3_t origin, vec3_t origin2, int seed, gentity_t *ent ) {
 
 	// generate the "random" spread pattern
 	damage = DEFAULT_SHOTGUN_DAMAGE * s_quadFactor * GetDamageLevel( ent );
-	for ( i = 0 ; i < DEFAULT_SHOTGUN_COUNT ; i++ ) {
-		r = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD * 16;
-		u = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD * 16;
+	for ( i = 0 ; i < DEFAULT_SHOTGUN_COUNT ; i++ ) { // TODO: code this better
+		if (i) {
+			r = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD * 16;
+			u = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD * 16;
+		} else {
+			// one pelet will always shoot straight
+			r = 0;
+			u = 0;
+		}
+
 		VectorMA( origin, 8192 * 16, forward, end);
 		VectorMA (end, r, right, end);
 		VectorMA (end, u, up, end);
@@ -453,7 +460,7 @@ void SuperShotgunPattern( vec3_t origin, vec3_t origin2, int seed, gentity_t *en
 
 	// generate the "random" spread pattern
 	damage = DEFAULT_SHOTGUN_DAMAGE_HI * s_quadFactor * GetDamageLevel( ent );
-	for ( i = 0 ; i < DEFAULT_SHOTGUN_COUNT ; i++ ) {
+	for ( i = 0 ; i < DEFAULT_SHOTGUN_COUNT ; i++ ) { // TODO: code this better
 		if (i) {
 			r = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;
 			u = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;
@@ -851,7 +858,7 @@ void Weapon_LightningFire( gentity_t *ent ) {
 	gentity_t	*traceEnt, *tent;
 	int			damage, i, passent;
 
-	damage = 8 * s_quadFactor * GetDamageLevel( ent );// is 8 in vq3
+	damage = 10 * s_quadFactor * GetDamageLevel( ent );// is 8 in vq3
 
 	passent = ent->s.number;
 	// TODO - remove the loop, since we're not using the invulnerability sphere

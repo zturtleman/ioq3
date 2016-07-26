@@ -580,13 +580,22 @@ void RespawnItem( gentity_t *ent ) {
 		}
 	}
 
-	// if game type is not ctf, don't spawn ctf flags
 	if ( ent->item->giType == IT_TEAM ) {
+
+		// if game type is not ctf, don't respawn ctf flags
 		if ( ent->item->giTag == PW_REDFLAG || ent->item->giTag == PW_BLUEFLAG ) {
 			if ( g_gametype.integer != GT_CTF ) {
 				return;
 			}
 		}
+
+		// if game type is not bomb, don't respawn the bomb
+		if ( ent->item->giTag == PW_BOMB ) {
+			if ( g_gametype.integer != GT_BOMB ) {
+				return;
+			}
+		}
+
 	}
 
 	/*if(ent->item->giType == IT_POWERUP && ent->item->giTag == PW_QUAD && g_quadfactor.value <= 1.0) {
@@ -1366,13 +1375,22 @@ void G_SpawnItem (gentity_t *ent, gitem_t *item) {
 		}
 	}
 
-	// if game type is not ctf, don't spawn ctf flags
 	if ( item->giType == IT_TEAM ) {
+
+		// if game type is not ctf, don't spawn ctf flags
 		if ( item->giTag == PW_REDFLAG || item->giTag == PW_BLUEFLAG ) {
 			if ( g_gametype.integer != GT_CTF ) {
 				return;
 			}
 		}
+
+		// if game type is not bomb, don't spawn the bomb
+		if ( item->giTag == PW_BOMB ) {
+			if ( g_gametype.integer != GT_BOMB ) {
+				return;
+			}
+		}
+
 	}
 
 	if ( level.rs_matchMode >= MM_ALLWEAPONS_MAXAMMO ) {

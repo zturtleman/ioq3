@@ -33,7 +33,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	GIB_HEALTH			-40
 #define	GIB_HEALTH_BONUS1	-15 // was -30
 #define	GIB_HEALTH_BONUS2	-60 // was -120
-#define	GIB_HEALTH_BONUS_TIMELIMIT	1000
+#define	GIB_HEALTH_BONUS_TIMELIMIT	5000 // was 1000
 #define	GIB_HEALTH_BONUS_CHANCE		0.25
 #define	ARMOR_PROTECTION	0.66
 
@@ -132,10 +132,12 @@ typedef enum {
 	GT_TEAM,			// team deathmatch
 	GT_CTF,				// capture the flag
 	GT_AA1,				// all against one
+	GT_MAX_GAME_TYPE,
+	GT_BOMB,
+	GT_SKULLBALL,
 	GT_OBELISK,
 	GT_HARVESTER,
-	GT_1FCTF,
-	GT_MAX_GAME_TYPE
+	GT_1FCTF
 } gametype_t;
 
 typedef enum { GENDER_MALE, GENDER_FEMALE, GENDER_NEUTER } gender_t;
