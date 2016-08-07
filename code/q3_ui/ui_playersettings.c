@@ -75,30 +75,52 @@ static int gamecodetoui[] = {4,2,3,0,5,1,6};
 static int uitogamecode[] = {4,6,2,3,1,5,7};
 
 static const char *handicap_items[] = {
-	"None",
-	"95",
-	"90",
-	"85",
-	"80",
-	"75",
-	"70",
-	"65",
-	"60",
-	"55",
-	"50",
-	"45",
-	"40",
-	"35",
-	"30",
-	"25",
-	"20",
-	"15",
-	"10",
-	"5",
+	"OFF",
+	"+666%",
+	"+300%",
+	"+275%",
+	"+250%",
+	"+225%",
+	"+200%",
+	"+175%",
+	"+150%",
+	"+125%",
+	"+100%",
+	"+90%",
+	"+80%",
+	"+70%",
+	"+60%",
+	"+50%",
+	"+40%",
+	"+30%",
+	"+20%",
+	"+10%",
 	NULL
 };
 
-
+static int handicap_values[] = {
+	0,
+	666,
+	300,
+	275,
+	250,
+	225,
+	200,
+	175,
+	150,
+	125,
+	100,
+	90,
+	80,
+	70,
+	60,
+	50,
+	40,
+	30,
+	20,
+	10,
+	0
+};
 /*
 =================
 PlayerSettings_DrawName
@@ -261,7 +283,12 @@ static void PlayerSettings_SaveChanges( void ) {
 	trap_Cvar_Set( "name", s_playersettings.name.field.buffer );
 
 	// handicap
-	trap_Cvar_SetValue( "handicap", 100 - s_playersettings.handicap.curvalue * 5 );
+	if ( s_playersettings.handicap.curvalue < 0 || s_playersettings.handicap.curvalue > 19 )
+		trap_Cvar_SetValue( "handicap", 0 );
+	else
+		trap_Cvar_SetValue( "handicap", handicap_values[s_playersettings.handicap.curvalue] );
+
+	//trap_Cvar_SetValue( "handicap", 100 - s_playersettings.handicap.curvalue * 5 );
 
 	// effects color
 	trap_Cvar_SetValue( "color1", uitogamecode[s_playersettings.effects.curvalue] );
@@ -303,7 +330,7 @@ static void PlayerSettings_SetMenuItems( void ) {
 
 	// model/skin
 	memset( &s_playersettings.playerinfo, 0, sizeof(playerInfo_t) );
-	
+
 	viewangles[YAW]   = 180 - 30;
 	viewangles[PITCH] = 0;
 	viewangles[ROLL]  = 0;
@@ -312,8 +339,9 @@ static void PlayerSettings_SetMenuItems( void ) {
 	UI_PlayerInfo_SetInfo( &s_playersettings.playerinfo, LEGS_IDLE, TORSO_STAND, viewangles, vec3_origin, WP_SHOTGUN, qfalse );
 
 	// handicap
-	h = Com_Clamp( 5, 100, trap_Cvar_VariableValue("handicap") );
-	s_playersettings.handicap.curvalue = 20 - h / 5;
+	/*h = Com_Clamp( 0, 666, trap_Cvar_VariableValue("handicap") );
+	s_playersettings.handicap.curvalue = 20 - h / 5;*/
+	s_playersettings.handicap.curvalue = 0;
 }
 
 
@@ -329,7 +357,12 @@ static void PlayerSettings_MenuEvent( void* ptr, int event ) {
 
 	switch( ((menucommon_s*)ptr)->id ) {
 	case ID_HANDICAP:
-		trap_Cvar_Set( "handicap", va( "%i", 100 - 25 * s_playersettings.handicap.curvalue ) );
+		if ( s_playersettings.handicap.curvalue < 0 || s_playersettings.handicap.curvalue > 19 )
+			trap_Cvar_Set( "handicap", "0" );
+		else
+			trap_Cvar_Set( "handicap", va( "%i", handicap_values[s_playersettings.handicap.curvalue] ) );
+
+		//trap_Cvar_Set( "handicap", va( "%i", 100 - 25 * s_playersettings.handicap.curvalue ) );
 		break;
 
 	case ID_MODEL:

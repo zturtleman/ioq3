@@ -267,7 +267,7 @@ void TossClientItems( gentity_t *self ) {
 			}
 
 			// drop 15 health bonus
-			if ( self->health <= (GIB_HEALTH + b1) ) {
+			if ( self->health <= (GIB_HEALTH/* + b1*/) ) {
 
 				// find item for food
 				item = BG_FindItemForFood( 0 );
@@ -591,7 +591,7 @@ void body_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int d
 			//G_Printf ("^3DEBUG = '%i'\n", self->health ); // debug
 
 			// drop 15 health bonus
-			if ( self->health <= (GIB_HEALTH + b1) ) {
+			if ( self->health <= (GIB_HEALTH/* + b1*/) ) {
 
 				// find item for food
 				item = BG_FindItemForFood( 0 );

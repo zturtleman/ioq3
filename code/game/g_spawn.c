@@ -460,6 +460,14 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 			G_FreeEntity( ent );
 			return;
 		}
+	} else {
+		// remove entity if meant for single player
+		G_SpawnInt( "onlysingle", "0", &i );
+		if ( i ) {
+			ADJUST_AREAPORTAL();
+			G_FreeEntity( ent );
+			return;
+		}
 	}
 	// check for "notteam" flag (GT_FFA, GT_TOURNAMENT, GT_SINGLE_PLAYER)
 	if ( g_gametype.integer >= GT_TEAM ) {
