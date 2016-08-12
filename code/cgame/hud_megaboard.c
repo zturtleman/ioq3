@@ -333,7 +333,7 @@ static void HUD_MegaDrawClientScore( int x, int y, score_t *score, int scRank, v
 	//UI_DrawCustomProportionalString( x + 56, y, string, UI_DROPSHADOW, 0.63, colorWht, filterColor );
 
 	// draw player port
-	CG_DrawPic( x + 39, y + 2, 16, 16, cgs.media.hudPlayerPort[score->client] );
+	//CG_DrawPic( x + 39, y + 2, 16, 16, cgs.media.hudPlayerPort[score->client] );
 	/*trap_R_DrawStretchPic( x + 34, y - 2, 16, 24,
 					0.0f, 0.0f, 1.0f, 0.75f, cgs.media.hudDefaultPort );*/
 
@@ -361,22 +361,24 @@ static void HUD_MegaDrawClientScore( int x, int y, score_t *score, int scRank, v
 			// draw the player's rank
 			switch (scRank) {
 				case 1:
-					HUD_FuncPosLock( "1st", 0, x + 20, 0, y + 9, 0,
-							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );
-					/*UI_DrawCustomProportionalString( x + 20, y+8, va("%ist", scRank),
-							UI_DROPSHADOW | UI_CENTER, 0.75, colorWht, qfalse );*/
+					UI_DrawBigNumString( x + 20, y + 6, 16, "1s", colorWht, UI_CENTER );
+					/*HUD_FuncPosLock( "1st", 0, x + 20, 0, y + 9, 0,
+							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );*/
 					break;
 				case 2:
-					HUD_FuncPosLock( "2nd", 0, x + 20, 0, y + 9, 0,
-							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );
+					UI_DrawBigNumString( x + 20, y + 6, 16, "2n", colorWht, UI_CENTER );
+					/*HUD_FuncPosLock( "2nd", 0, x + 20, 0, y + 9, 0,
+							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );*/
 					break;
 				case 3:
-					HUD_FuncPosLock( "3rd", 0, x + 20, 0, y + 9, 0,
-							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );
+					UI_DrawBigNumString( x + 20, y + 6, 16, "3r", colorWht, UI_CENTER );
+					/*HUD_FuncPosLock( "3rd", 0, x + 20, 0, y + 9, 0,
+							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );*/
 					break;
 				default:
-					HUD_FuncPosLock( va("%ith", scRank), 0, x + 20, 0, y + 9, 0,
-							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );
+					UI_DrawBigNumString( x + 20, y + 6, 16, va("%it", scRank), colorWht, UI_CENTER );
+					/*HUD_FuncPosLock( va("%ith", scRank), 0, x + 20, 0, y + 9, 0,
+							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );*/
 					break;
 			}
 		}
@@ -661,9 +663,9 @@ void HUD_MegaDrawSpectator ( int x, int y ) {
 HUD_MegaDrawScoreBoard
 =================
 */
-qboolean HUD_MegaDrawScoreBoard( int posCenter ) {
+qboolean HUD_MegaDrawScoreBoard( int posCenter, int ty ) {
 
-	int			x, y, y2, w, h, i, n1, n2;
+	int			x, y, y2, w, h, i, n1, n2, xoff;
 	float		xf, yf, wf, hf, sxf, syf;
 	char		*s;
 	int			maxClients;
@@ -676,11 +678,11 @@ qboolean HUD_MegaDrawScoreBoard( int posCenter ) {
 
 	team_t		team;
 	vec4_t		colorWht, colorYel, colorBlk, colorCus;
-	int		cnt1, cnt2;
+	int			cnt1, cnt2;
 
-	int		prevScore = 99999;
-	int		curRank = 0;
-	int		intRank = 0;
+	int			prevScore = 99999;
+	int			curRank = 0;
+	int			intRank = 0;
 
 	qhandle_t	hShader, hShader2;
 
@@ -735,15 +737,18 @@ qboolean HUD_MegaDrawScoreBoard( int posCenter ) {
 
 	// current rank
 	if ( cgs.gametype < GT_TEAM) {
-		if (cg.snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR ) {
+		/*if (cg.snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR ) {
 			s = va("%s place with %i",
 				CG_PlaceString( cg.snap->ps.persistant[PERS_RANK] + 1 ),
 				cg.snap->ps.persistant[PERS_SCORE] );
 			y = 60;
 			UI_DrawCustomProportionalString( posCenter, y, s, UI_DROPSHADOW | UI_CENTER, 1.0, colorWht, qfalse );
-		}
+		}*/
+
+		y = 24;
+
 	} else {
-		if ( cg.teamScores[0] == cg.teamScores[1] ) {
+		/*if ( cg.teamScores[0] == cg.teamScores[1] ) {
 			s = va("Teams are tied at %i", cg.teamScores[0] );
 		} else if ( cg.teamScores[0] >= cg.teamScores[1] ) {
 			s = va("Red leads %i to %i",cg.teamScores[0], cg.teamScores[1] );
@@ -752,7 +757,100 @@ qboolean HUD_MegaDrawScoreBoard( int posCenter ) {
 		}
 
 		y = 60;
-		UI_DrawCustomProportionalString( posCenter, y, s, UI_DROPSHADOW | UI_CENTER, 1.0, colorWht, colorYel, qfalse );
+		UI_DrawCustomProportionalString( posCenter, y, s, UI_DROPSHADOW | UI_CENTER, 1.0, colorWht, colorYel, qfalse );*/
+
+		colorCus[0] = colorCus[1] = colorCus[2] = 0.5;
+		colorCus[3] = 1.0;
+
+		y = 8;
+
+		trap_R_DrawStretchPic( (float)(posCenter - 192) * cgs.screenXScale + cgs.screenXOffset,
+						(float)(y + 16) * cgs.screenYScale + cgs.screenYOffset,
+						(float)192.0 * cgs.screenXScale, (float)48.0 * cgs.screenYScale,
+						(float) 0.25, (float) 0.25,
+						(float) 1.0, (float) 1.0, cgs.media.hudTopScoreEfx );
+
+		trap_R_DrawStretchPic( (float)(posCenter) * cgs.screenXScale + cgs.screenXOffset,
+						(float)(y + 16) * cgs.screenYScale + cgs.screenYOffset,
+						(float)192.0 * cgs.screenXScale, (float)48.0 * cgs.screenYScale,
+						(float) 1.0, (float) 1.0,
+						(float) 0.25, (float) 0.25, cgs.media.hudTopScoreEfx );
+
+		// -----
+
+		trap_R_DrawStretchPic( (float)(posCenter - 64) * cgs.screenXScale + cgs.screenXOffset,
+						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+						(float)128.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+						(float) 0.25, (float) 0.0,
+						(float) 0.75, (float) 1.0, cgs.media.hudTopScore );
+
+		// -----
+
+		trap_R_DrawStretchPic( (float)(posCenter - 136) * cgs.screenXScale + cgs.screenXOffset,
+						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+						(float)72.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+						(float) 0.25, (float) 0.0,
+						(float) 0.27, (float) 1.0, cgs.media.hudTopScore );
+
+		trap_R_DrawStretchPic( (float)(posCenter - 168) * cgs.screenXScale + cgs.screenXOffset,
+						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+						(float)32.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+						(float) 0.125, (float) 0.0,
+						(float) 0.25, (float) 1.0, cgs.media.hudTopScore );
+
+		trap_R_DrawStretchPic( (float)(posCenter - 288) * cgs.screenXScale + cgs.screenXOffset,
+						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+						(float)120.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+						(float) 0.1, (float) 0.0,
+						(float) 0.125, (float) 1.0, cgs.media.hudTopScore );
+
+		trap_R_DrawStretchPic( (float)(posCenter - 320) * cgs.screenXScale + cgs.screenXOffset,
+						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+						(float)32.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+						(float) 0.0, (float) 0.0,
+						(float) 0.125, (float) 1.0, cgs.media.hudTopScore );
+
+		// -----
+
+		trap_R_DrawStretchPic( (float)(posCenter + 64) * cgs.screenXScale + cgs.screenXOffset,
+						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+						(float)72.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+						(float) 0.73, (float) 0.0,
+						(float) 0.75, (float) 1.0, cgs.media.hudTopScore );
+
+		trap_R_DrawStretchPic( (float)(posCenter + 136) * cgs.screenXScale + cgs.screenXOffset,
+						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+						(float)32.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+						(float) 0.75, (float) 0.0,
+						(float) 0.875, (float) 1.0, cgs.media.hudTopScore );
+
+		trap_R_DrawStretchPic( (float)(posCenter + 168) * cgs.screenXScale + cgs.screenXOffset,
+						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+						(float)120.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+						(float) 0.875, (float) 0.0,
+						(float) 0.9, (float) 1.0, cgs.media.hudTopScore );
+
+		trap_R_DrawStretchPic( (float)(posCenter + 288) * cgs.screenXScale + cgs.screenXOffset,
+						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+						(float)32.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+						(float) 0.875, (float) 0.0,
+						(float) 1.0, (float) 1.0, cgs.media.hudTopScore );
+
+		// -----
+
+		if ( ty == PM_INTERMISSION ) {
+			s = "FINAL";
+		} else {
+			s = "SCORE";
+		}
+		UI_DrawCustomProportionalString( posCenter, y + 8, s, UI_CENTER, 0.75, colorBlk, colorYel, qfalse );
+
+		s = va("%i",cg.teamScores[0]);
+		UI_DrawBigNumString( posCenter - 84, y + 27, 32, s, colorCus, UI_CENTER );
+
+		s = va("%i",cg.teamScores[1]);
+		UI_DrawBigNumString( posCenter + 84, y + 27, 32, s, colorCus, UI_CENTER );
+
 	}
 
 /*
@@ -817,10 +915,10 @@ Player score and stats
 						(float) 0/8, (float) 0/8,
 						(float) 1/8, (float) 4/8, hShader );
 		xf += 8 * cgs.screenXScale;
-		trap_R_DrawStretchPic( xf, yf, 128.0 * cgs.screenXScale, syf,
+		trap_R_DrawStretchPic( xf, yf, 76.0 * cgs.screenXScale, syf,
 						(float) 1/8, (float) 0/8,
 						(float) 3/16, (float) 4/8, hShader );
-		xf += 128 * cgs.screenXScale;
+		xf += 76 * cgs.screenXScale;
 		trap_R_DrawStretchPic( xf, yf, 40.0 * cgs.screenXScale, syf,
 						(float) 1/8, (float) 0/8,
 						(float) 6/8, (float) 4/8, hShader );
@@ -866,13 +964,30 @@ Player score and stats
 
 
 		// player amount
-		if ( cnt1 == 0 )
+		/*if ( cnt1 == 0 )
 			s = "No players";
 		else if ( cnt1 == 1 )
 			s = "1 player";
 		else
 			s = va("%i players", cnt1 );
-		UI_DrawCustomProportionalString( posLeft + 12, 87, s, UI_DROPSHADOW, 0.85, colorWht, qfalse );
+		UI_DrawCustomProportionalString( posLeft + 12, 87, s, UI_DROPSHADOW, 0.85, colorWht, qfalse );*/
+
+		// player amount
+		if ( cnt1 == 0 ) {
+			xoff = 0;
+			s = "EMPTY";
+		} else if ( cnt1 == 1 ) {
+			s = "1";
+			xoff = UI_ProportionalColorStringWidth( s );
+			UI_DrawCustomProportionalString( posLeft + 12, 87, s, UI_DROPSHADOW, 0.85, colorWht, qfalse );
+			s = "PLAYER";
+		} else {
+			s = va("%i", cnt1 );
+			xoff = UI_ProportionalColorStringWidth( s );
+			UI_DrawCustomProportionalString( posLeft + 12, 87, s, UI_DROPSHADOW, 0.85, colorWht, qfalse );
+			s = "PLAYERS";
+		}
+		UI_DrawCustomProportionalString( posLeft + 12 + xoff, 87 + 4, s, UI_DROPSHADOW, 0.5, colorWht, qfalse );
 
 	} else if ( cgs.gametype == GT_TOURNAMENT ) {
 
@@ -1014,10 +1129,10 @@ Player score and stats
 						(float) 0/8, (float) 0/8,
 						(float) 1/8, (float) 4/8, hShader );
 		xf += 8 * cgs.screenXScale;
-		trap_R_DrawStretchPic( xf, yf, 128.0 * cgs.screenXScale, syf,
+		trap_R_DrawStretchPic( xf, yf, 76.0 * cgs.screenXScale, syf,
 						(float) 1/8, (float) 0/8,
 						(float) 3/16, (float) 4/8, hShader );
-		xf += 128 * cgs.screenXScale;
+		xf += 76 * cgs.screenXScale;
 		trap_R_DrawStretchPic( xf, yf, 40.0 * cgs.screenXScale, syf,
 						(float) 1/8, (float) 0/8,
 						(float) 6/8, (float) 4/8, hShader );
@@ -1042,10 +1157,10 @@ Player score and stats
 						(float) 0/8, (float) 0/8,
 						(float) 1/8, (float) 4/8, hShader2 );
 		xf += 8 * cgs.screenXScale;
-		trap_R_DrawStretchPic( xf, yf, 128.0 * cgs.screenXScale, syf,
+		trap_R_DrawStretchPic( xf, yf, 76.0 * cgs.screenXScale, syf,
 						(float) 1/8, (float) 0/8,
 						(float) 3/16, (float) 4/8, hShader2 );
-		xf += 128 * cgs.screenXScale;
+		xf += 76 * cgs.screenXScale;
 		trap_R_DrawStretchPic( xf, yf, 40.0 * cgs.screenXScale, syf,
 						(float) 1/8, (float) 0/8,
 						(float) 6/8, (float) 4/8, hShader2 );
@@ -1115,21 +1230,37 @@ Player score and stats
 						(float) 8/8, (float) 6/8, hShader );
 
 		// player amount
-		if ( cnt1 == 0 )
-			s = "No players";
-		else if ( cnt1 == 1 )
-			s = "1 player";
-		else
-			s = va("%i players", cnt1 );
-		UI_DrawCustomProportionalString( posLeft + 12, 87, s, UI_DROPSHADOW, 0.85, colorWht, qfalse );
+		if ( cnt1 == 0 ) {
+			xoff = 0;
+			s = "EMPTY";
+		} else if ( cnt1 == 1 ) {
+			s = "1";
+			xoff = UI_ProportionalColorStringWidth( s );
+			UI_DrawCustomProportionalString( posLeft + 12, 87, s, UI_DROPSHADOW, 0.85, colorWht, qfalse );
+			s = "PLAYER";
+		} else {
+			s = va("%i", cnt1 );
+			xoff = UI_ProportionalColorStringWidth( s );
+			UI_DrawCustomProportionalString( posLeft + 12, 87, s, UI_DROPSHADOW, 0.85, colorWht, qfalse );
+			s = "PLAYERS";
+		}
+		UI_DrawCustomProportionalString( posLeft + 12 + xoff, 87 + 4, s, UI_DROPSHADOW, 0.5, colorWht, qfalse );
 
-		if ( cnt2 == 0 )
-			s = "No players";
-		else if ( cnt2 == 1 )
-			s = "1 player";
-		else
-			s = va("%i players", cnt2 );
-		UI_DrawCustomProportionalString( posCenter + 12, 87, s, UI_DROPSHADOW, 0.85, colorWht, qfalse );
+		if ( cnt2 == 0 ) {
+			xoff = 0;
+			s = "EMPTY";
+		} else if ( cnt2 == 1 ) {
+			s = "1";
+			xoff = UI_ProportionalColorStringWidth( s );
+			UI_DrawCustomProportionalString( posCenter + 12, 87, s, UI_DROPSHADOW, 0.85, colorWht, qfalse );
+			s = "PLAYER";
+		} else {
+			s = va("%i", cnt2 );
+			xoff = UI_ProportionalColorStringWidth( s );
+			UI_DrawCustomProportionalString( posCenter + 12, 87, s, UI_DROPSHADOW, 0.85, colorWht, qfalse );
+			s = "PLAYERS";
+		}
+		UI_DrawCustomProportionalString( posCenter + 12 + xoff, 87 + 4, s, UI_DROPSHADOW, 0.5, colorWht, qfalse );
 
 	}
 

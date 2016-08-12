@@ -1831,6 +1831,228 @@ void UI_DrawNumCharInteger( int x, int y, int size, int n, int c, qboolean leftA
 }
 
 
+/*
+=================
+UI_TestNum
+=================
+*/
+
+/*int UI_TestNum( void ) {
+
+	int		row, col;
+	int		o;
+	float	frow, fcol;
+	float	sizeFloat;
+	float	ax, ay, aw, ah;
+	vec4_t	color;
+
+	ax = 16;
+	ay = 16;
+	aw = 32;
+	ah = 32;
+	CG_AdjustFrom640( &ax, &ay, &aw, &ah );
+
+	row = 0 & 1;
+	col = 2 & 15;
+
+	frow = row*0.5;
+	fcol = col*0.125;
+
+	color[0] = 1.0f;
+	color[1] = 0.0f;
+	color[2] = 1.0f;
+	color[3] = 1.0f;
+
+	trap_R_SetColor( color );
+
+	trap_R_DrawStretchPic( ax, ay, aw, ah,
+					   fcol, frow,
+					   fcol + 0.125, frow + 0.5,
+					   cgs.media.charsetBigNumGrad ); // cgs.media.numChar
+
+	trap_R_SetColor( NULL );
+
+	o = 0;
+
+	return o;
+
+}*/
+
+/*
+=================
+UI_DrawBigNum
+
+TODO: code this better, it's garbage (use tables)
+=================
+*/
+
+int UI_DrawBigNum( int x, int y, int size, int ch, vec4_t color, int noDraw ) {
+
+	int		row, col;
+	int		o;
+	float	frow, fcol;
+	float	sizeFloat;
+	float	ax, ay, aw, ah, ac;
+	int		ich;
+
+	ax = x;
+	ay = y;
+	ah = size;
+
+	if ( ch >= '0' && ch <= '9' ) {
+		ich = ch - '0';
+		row = ich >> 3;
+		col = (ich & 7) << 1;
+
+		if ( ich == 1 ) {
+			aw = size * 0.75;
+			ac = 0.09375;
+			o = size * 0.75;
+		} else {
+			aw = size;
+			ac = 0.125;
+			o = size;
+		}
+
+	} else {
+
+		switch ( ch ) {
+			case ':':
+				row = 1;
+				col = 4;
+				aw = size * 0.5;
+				ac = 0.0625;
+				break;
+
+			case '.':
+				row = 1;
+				col = 5;
+				aw = size * 0.5;
+				ac = 0.0625;
+				break;
+
+			case '-':
+				row = 1;
+				col = 6;
+				aw = size;
+				ac = 0.125;
+				break;
+
+			// st
+			case 's':
+				row = 1;
+				col = 8;
+				aw = size * 0.5;
+				ac = 0.0625;
+				break;
+
+			// nd
+			case 'n':
+				row = 1;
+				col = 10;
+				aw = size * 0.5;
+				ac = 0.0625;
+				break;
+
+			// rd
+			case 'r':
+				row = 1;
+				col = 12;
+				aw = size * 0.5;
+				ac = 0.0625;
+				break;
+
+			// th
+			case 't':
+				row = 1;
+				col = 14;
+				aw = size * 0.5;
+				ac = 0.0625;
+				break;
+
+			default:
+				// nothing to draw, just make a space
+				o = size * .25;
+				return o;
+		}
+
+		o = aw;
+	}
+
+	if ( !noDraw ) {
+
+		CG_AdjustFrom640( &ax, &ay, &aw, &ah );
+
+		frow = row*0.5;
+		fcol = col*0.0625;
+
+		trap_R_SetColor( color );
+
+		trap_R_DrawStretchPic( ax, ay, aw, ah,
+						fcol, frow,
+						fcol + ac, frow + 0.5,
+						cgs.media.charsetBigNumGrad ); // cgs.media.numChar
+
+		trap_R_SetColor( NULL );
+
+	}
+
+	return o;
+
+}
+
+int UI_DrawBigNumString( int x, int y, int size, const char* str, vec4_t color, int align ) {
+	const char 		*s;
+	int				ch;
+	int				charWidth;
+	int				width;
+
+	s = str;
+	width = 0;
+	align &= 3;
+
+	if ( align != UI_LEFT ) {
+
+		// get string width first
+		while ( *s ) {
+			ch = *s & 127;
+			charWidth = UI_DrawBigNum( 0, 0, size, ch, color, 1); // just get the width of each character
+			width += charWidth;
+			s++;
+		}
+
+		// if not right, then it must be center
+		if ( align == UI_RIGHT ) {
+			x -= width;
+		} else {
+			x -= width * 0.5;
+		}
+
+		s = str; // reset the position
+
+		while ( *s ) {
+			ch = *s & 127;
+			charWidth = UI_DrawBigNum( x, y, size, ch, color, 0);
+			x += charWidth;
+			s++;
+		}
+
+	} else {
+
+		while ( *s ) {
+			ch = *s & 127;
+			charWidth = UI_DrawBigNum( x, y, size, ch, color, 0);
+			x += charWidth;
+			width += charWidth;
+			s++;
+		}
+
+	}
+
+	return width;
+}
+
+
 
 
 

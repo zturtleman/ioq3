@@ -2731,8 +2731,8 @@ void HUD_MegaDrawTeamOverlay ( int xpos, int xoff, int ypos, int align, float sc
 			yset_name = y + ( i * yy ) + ( HUD_TEAM_OVERLAY_NAMEYOFFSET * scale );
 
 			trap_R_SetColor( bgcolor );
-			CG_DrawPicExt( bgx1, yset_lo, bgw1, bgh, 0, 0.25, 0.875, 0.5, cgs.media.teamBG );
-			CG_DrawPicExt( bgx2, yset_lo, bgw2, bgh, 0.125, 0.75, 1, 1, cgs.media.teamBG );
+			CG_DrawPicExt( bgx1, yset_lo + 1, bgw1, bgh, 0, 0.25, 0.875, 0.5, cgs.media.teamBG );
+			CG_DrawPicExt( bgx2, yset_lo + 1, bgw2, bgh, 0.125, 0.75, 1, 1, cgs.media.teamBG );
 			trap_R_SetColor( NULL );
 
 			// client name

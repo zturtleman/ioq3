@@ -750,6 +750,8 @@ typedef struct {
 	qhandle_t	charsetPropB;
 	qhandle_t	charsetDigit;
 	qhandle_t	charsetDigitHQ;
+	qhandle_t	charsetBigNum;
+	qhandle_t	charsetBigNumGrad;
 	qhandle_t	whiteShader;
 	qhandle_t	numChar;
 
@@ -909,6 +911,9 @@ typedef struct {
 	qhandle_t	hudScoreBoardSpec; // spectator background
 	qhandle_t	hudScoreBoardBG; // score background
 	qhandle_t	hudHighlight; // highlight
+
+	qhandle_t	hudTopScore; // top score display
+	qhandle_t	hudTopScoreEfx;
 
 	qhandle_t	shadowMarkShader;
 

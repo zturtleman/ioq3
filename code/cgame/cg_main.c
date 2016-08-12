@@ -1860,6 +1860,9 @@ static void CG_RegisterGraphics( void ) {
 	cgs.media.hudScoreBoardBG = trap_R_RegisterShaderNoMip( "gfx/hud/scoreBG" );
 	cgs.media.hudHighlight = trap_R_RegisterShaderNoMip( "gfx/hud/highlight_grad" );
 
+	cgs.media.hudTopScore = trap_R_RegisterShaderNoMip( "gfx/hud/topscore_team" );
+	cgs.media.hudTopScoreEfx = trap_R_RegisterShaderNoMip( "gfx/hud/topscore_team_efx" );
+
 	cgs.media.rulesBG256 = trap_R_RegisterShaderNoMip( "gfx/hud/rule256.tga" );
 	cgs.media.rulesBG064 = trap_R_RegisterShaderNoMip( "gfx/hud/rule064.tga" );
 
@@ -3029,6 +3032,8 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	cgs.media.charsetPropB		= trap_R_RegisterShaderNoMip( "menu/art/propfont2.tga" );
 	cgs.media.charsetDigit		= trap_R_RegisterShaderNoMip( "gfx/fonts/propfont3" );
 	cgs.media.charsetDigitHQ	= trap_R_RegisterShaderNoMip( "gfx/fonts/propfont3hq" );
+	cgs.media.charsetBigNum		= trap_R_RegisterShaderNoMip( "gfx/fonts/bignum" );
+	cgs.media.charsetBigNumGrad	= trap_R_RegisterShaderNoMip( "gfx/fonts/bignum_grad" );
 	cgs.media.numChar			= trap_R_RegisterShaderNoMip( "gfx/2d/numchars.tga" ); // single player/non-custom hud
 
 	CG_RegisterCvars();

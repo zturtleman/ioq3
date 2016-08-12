@@ -493,7 +493,7 @@ static void StartServer_MenuInit( void ) {
 	s_startserver.nextpage.generic.flags    = QMF_LEFT_JUSTIFY|QMF_PULSEIFFOCUS;
 	s_startserver.nextpage.generic.callback = StartServer_MenuEvent;
 	s_startserver.nextpage.generic.id	    = ID_NEXTPAGE;
-	s_startserver.nextpage.generic.x		= 321;
+	s_startserver.nextpage.generic.x		= 324;
 	s_startserver.nextpage.generic.y		= 400;
 	s_startserver.nextpage.width  		    = 64;
 	s_startserver.nextpage.height  		    = 32;
@@ -1093,11 +1093,11 @@ static void ServerOptions_InitBotNames( void ) {
 	if( s_serveroptions.gametype >= GT_TEAM ) {
 		/*Q_strncpyz( s_serveroptions.playerNameBuffers[1], "grunt", 16 );
 		Q_strncpyz( s_serveroptions.playerNameBuffers[2], "major", 16 );*/
-		Q_strncpyz( s_serveroptions.playerNameBuffers[1], "sarge", 16 );
-		Q_strncpyz( s_serveroptions.playerNameBuffers[2], "sarge", 16 );
+		Q_strncpyz( s_serveroptions.playerNameBuffers[1], "bot", 16 );
+		Q_strncpyz( s_serveroptions.playerNameBuffers[2], "bot", 16 );
 		if( s_serveroptions.gametype == GT_TEAM ) {
 			//Q_strncpyz( s_serveroptions.playerNameBuffers[3], "visor", 16 );
-			Q_strncpyz( s_serveroptions.playerNameBuffers[3], "sarge", 16 );
+			Q_strncpyz( s_serveroptions.playerNameBuffers[3], "bot", 16 );
 		}
 		/*else {
 			s_serveroptions.playerType[3].curvalue = 2;
@@ -1109,12 +1109,12 @@ static void ServerOptions_InitBotNames( void ) {
 		/*Q_strncpyz( s_serveroptions.playerNameBuffers[6], "sarge", 16 );
 		Q_strncpyz( s_serveroptions.playerNameBuffers[7], "grunt", 16 );
 		Q_strncpyz( s_serveroptions.playerNameBuffers[8], "major", 16 );*/
-		Q_strncpyz( s_serveroptions.playerNameBuffers[6], "sarge", 16 );
-		Q_strncpyz( s_serveroptions.playerNameBuffers[7], "sarge", 16 );
-		Q_strncpyz( s_serveroptions.playerNameBuffers[8], "sarge", 16 );
+		Q_strncpyz( s_serveroptions.playerNameBuffers[6], "bot", 16 );
+		Q_strncpyz( s_serveroptions.playerNameBuffers[7], "bot", 16 );
+		Q_strncpyz( s_serveroptions.playerNameBuffers[8], "bot", 16 );
 		if( s_serveroptions.gametype == GT_TEAM ) {
 			//Q_strncpyz( s_serveroptions.playerNameBuffers[9], "visor", 16 );
-			Q_strncpyz( s_serveroptions.playerNameBuffers[9], "sarge", 16 );
+			Q_strncpyz( s_serveroptions.playerNameBuffers[9], "bot", 16 );
 		}
 		/*else {
 			s_serveroptions.playerType[9].curvalue = 2;

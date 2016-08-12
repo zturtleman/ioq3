@@ -2722,6 +2722,16 @@ vvvvvvvvvvvvvvvvvvvvv
 	UI_DrawNumCharInteger( 128, 16, 16, ps->stats[STAT_HEALTH], 1, qtrue ); // test
 	*/
 
+	/*xpos = 16;
+	xpos += UI_DrawBigNum(xpos, 16, 32, '3', UI_LEFT, colorMagenta);
+	UI_DrawBigNum(xpos, 16, 32, 'r', UI_LEFT, colorMagenta);*/
+
+	//UI_DrawBigNumString( 16, 32, 32, "12345:67890.12345-1s2n3r4t10t.", colorMagenta, 0 );
+
+	/*UI_DrawBigNumString( 96, 32, 32, "12:34", colorMagenta, UI_LEFT );
+	UI_DrawBigNumString( 96, 64, 32, "12:34", colorMagenta, UI_CENTER );
+	UI_DrawBigNumString( 96, 96, 32, "12:34", colorMagenta, UI_RIGHT );*/
+
 	HUD_MegaDrawFPS( hud_fps_xPos.integer, alignTable[hud_fps_xAlign.integer & 3],
 							hud_fps_yPos.integer, hud_fps_posLock.integer,
 							hud_fps_align.integer, hud_fps_style.integer,
@@ -2729,7 +2739,7 @@ vvvvvvvvvvvvvvvvvvvvv
 							hud_fps_color.string );
 
 	// draw the scoreboard
-	cg.scoreBoardShowing = HUD_MegaDrawScoreBoard( posCenter );
+	cg.scoreBoardShowing = HUD_MegaDrawScoreBoard( posCenter, cg.snap->ps.pm_type );
 
 	if ( cg.snap->ps.pm_type != PM_INTERMISSION ) {
 
@@ -2772,12 +2782,13 @@ vvvvvvvvvvvvvvvvvvvvv
 
 			spectator = ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR );
 
-			HUD_MegaDrawWarmup(posCenter, 24, 1.0);
 			HUD_DrawLagometer( posRight-48, 480-48, 48, 48, 0, color2, color1);
 
 			// order ctrl will go here
 
 			if ( !cg.scoreBoardShowing ) {
+
+				HUD_MegaDrawWarmup(posCenter, 24, 1.0);
 
 				HUD_MegaRuleSet(posCenter, 56, 1.0);
 				HUD_MegaObjective(posCenter, 320, 1.0, team);
