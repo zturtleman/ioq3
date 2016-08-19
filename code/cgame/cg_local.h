@@ -1536,6 +1536,7 @@ extern	vmCvar_t		cg_hitSound;
 extern	vmCvar_t		cg_killSound;
 extern	vmCvar_t		cg_teamKillSound;
 extern	vmCvar_t		cg_lumOverlay;
+extern	vmCvar_t		cg_connectionTone;
 
 extern	vmCvar_t		cg_weaponCycleSkipsBlaster;
 extern	vmCvar_t		cg_placebo;

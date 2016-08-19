@@ -501,10 +501,14 @@ void CG_ParseSndCall( int sndCode ) {
 
 	switch ( sndCode ) {
 		case SC_CONNECT:
-			trap_S_StartLocalSound( cgs.media.toneConnect1, CHAN_ANNOUNCER );
+			if ( ( ( cg.snap->ps.pm_flags & PMF_FOLLOW || cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR ) && cg_connectionTone.integer == 2 ) || cg_connectionTone.integer == 1 ) {
+				trap_S_StartLocalSound( cgs.media.toneConnect1, CHAN_ANNOUNCER );
+			}
 			break;
 		case SC_DISCONNECT:
-			trap_S_StartLocalSound( cgs.media.toneDisconnect1, CHAN_ANNOUNCER );
+			if ( ( ( cg.snap->ps.pm_flags & PMF_FOLLOW || cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR ) && cg_connectionTone.integer == 2 ) || cg_connectionTone.integer == 1 ) {
+				trap_S_StartLocalSound( cgs.media.toneDisconnect1, CHAN_ANNOUNCER );
+			}
 			break;
 		case SC_TIMELIMIT:
 			trap_S_StartLocalSound( cgs.media.timelimit, CHAN_ANNOUNCER );
