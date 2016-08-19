@@ -262,6 +262,11 @@ void Add_Ammo (gentity_t *ent, int weapon, int count)
 				ent->client->ps.ammo[weapon] = WC_MED_AMMO;
 			}
 			break;
+		case AT_ROCKETS:
+			if ( ent->client->ps.ammo[weapon] > WC_VLOW_AMMO ) {
+				ent->client->ps.ammo[weapon] = WC_VLOW_AMMO;
+			}
+			break;
 		default:
 			if ( ent->client->ps.ammo[weapon] > WC_LOW_AMMO ) {
 				ent->client->ps.ammo[weapon] = WC_LOW_AMMO;

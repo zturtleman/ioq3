@@ -496,6 +496,7 @@ typedef enum {
 #define	WC_HIGH_AMMO		300
 #define	WC_MED_AMMO			200
 #define	WC_LOW_AMMO			100
+#define	WC_VLOW_AMMO		50
 
 // not used anymore, will remove
 #define	WC_MACHINEGUN		200

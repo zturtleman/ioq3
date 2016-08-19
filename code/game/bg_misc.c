@@ -1374,6 +1374,11 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 							return qfalse;		// can't hold any more
 						}
 						break;
+					case AT_ROCKETS:
+						if ( ps->ammo[ ammoGroup[item->giTag].ammo ] >= WC_VLOW_AMMO ) {
+							return qfalse;		// can't hold any more
+						}
+						break;
 					default:
 						if ( ps->ammo[ ammoGroup[item->giTag].ammo ] >= WC_LOW_AMMO ) {
 							return qfalse;		// can't hold any more
@@ -1403,6 +1408,11 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 				break;
 			case AT_CELLS:
 				if ( ps->ammo[ item->giTag ] >= WC_MED_AMMO ) {
+					return qfalse;		// can't hold any more
+				}
+				break;
+			case AT_ROCKETS:
+				if ( ps->ammo[ item->giTag ] >= WC_VLOW_AMMO ) {
 					return qfalse;		// can't hold any more
 				}
 				break;

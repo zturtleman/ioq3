@@ -1706,33 +1706,36 @@ void HUD_MegaDrawAmmoBarVert(int xPos, int xoff, int yPos, int align, int cPos, 
 		// TODO: fix the broken match in this switch section
 		switch(i) {
 			case AT_SHELLS:
+				low = 5;
+				max = WC_LOW_AMMO;
+				curJumpAdd = jumpAdd*2;
+				curYSize = HUD_BAR_VERT_HEIGHT_SPACE * 2;
+				boxExt = qtrue;
+				break;
 			case AT_ROCKETS:
 				low = 5;
-				max = 100;
+				max = WC_VLOW_AMMO;
 				curJumpAdd = jumpAdd*2;
 				curYSize = HUD_BAR_VERT_HEIGHT_SPACE * 2;
 				boxExt = qtrue;
 				break;
 			case AT_CELLS:
 				low = 25;
-				max = 200;
+				max = WC_MED_AMMO;
 				curJumpAdd = jumpAdd*2;
 				curYSize = HUD_BAR_VERT_HEIGHT_SPACE * 2;
 				boxExt = qtrue;
-				/*curJumpAdd = jumpAdd*3;
-				curYSize = HUD_BAR_VERT_HEIGHT_SPACE * 3 + HUD_BAR_VERT_HEIGHT_SOLO_SPACE; //  :b
-				curTextPos = y+4 + HUD_BAR_VERT_HEIGHT_HALF_SPACE * 2;*/
 				break;
 			case AT_BULLETS:
 				low = 25;
-				max = 300;
+				max = WC_HIGH_AMMO;
 				curJumpAdd = jumpAdd;
 				curYSize = HUD_BAR_VERT_HEIGHT;
 				boxExt = qfalse;
 				break;
 			default:
 				low = 25;
-				max = 100;
+				max = WC_LOW_AMMO;
 				curJumpAdd = jumpAdd;
 				curYSize = HUD_BAR_VERT_HEIGHT;
 				boxExt = qfalse;
