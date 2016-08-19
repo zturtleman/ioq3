@@ -361,22 +361,22 @@ static void HUD_MegaDrawClientScore( int x, int y, score_t *score, int scRank, v
 			// draw the player's rank
 			switch (scRank) {
 				case 1:
-					UI_DrawBigNumString( x + 20, y + 6, 16, "1s", colorWht, UI_CENTER );
+					UI_DrawBigNumString( x + 20, y + 6, 16, "1s", colorWht, UI_CENTER, qtrue );
 					/*HUD_FuncPosLock( "1st", 0, x + 20, 0, y + 9, 0,
 							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );*/
 					break;
 				case 2:
-					UI_DrawBigNumString( x + 20, y + 6, 16, "2n", colorWht, UI_CENTER );
+					UI_DrawBigNumString( x + 20, y + 6, 16, "2n", colorWht, UI_CENTER, qtrue );
 					/*HUD_FuncPosLock( "2nd", 0, x + 20, 0, y + 9, 0,
 							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );*/
 					break;
 				case 3:
-					UI_DrawBigNumString( x + 20, y + 6, 16, "3r", colorWht, UI_CENTER );
+					UI_DrawBigNumString( x + 20, y + 6, 16, "3r", colorWht, UI_CENTER, qtrue );
 					/*HUD_FuncPosLock( "3rd", 0, x + 20, 0, y + 9, 0,
 							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );*/
 					break;
 				default:
-					UI_DrawBigNumString( x + 20, y + 6, 16, va("%it", scRank), colorWht, UI_CENTER );
+					UI_DrawBigNumString( x + 20, y + 6, 16, va("%it", scRank), colorWht, UI_CENTER, qtrue );
 					/*HUD_FuncPosLock( va("%ith", scRank), 0, x + 20, 0, y + 9, 0,
 							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );*/
 					break;
@@ -846,10 +846,10 @@ qboolean HUD_MegaDrawScoreBoard( int posCenter, int ty ) {
 		UI_DrawCustomProportionalString( posCenter, y + 8, s, UI_CENTER, 0.75, colorBlk, colorYel, qfalse );
 
 		s = va("%i",cg.teamScores[0]);
-		UI_DrawBigNumString( posCenter - 84, y + 27, 32, s, colorCus, UI_CENTER );
+		UI_DrawBigNumString( posCenter - 84, y + 27, 32, s, colorCus, UI_CENTER, qtrue );
 
 		s = va("%i",cg.teamScores[1]);
-		UI_DrawBigNumString( posCenter + 84, y + 27, 32, s, colorCus, UI_CENTER );
+		UI_DrawBigNumString( posCenter + 84, y + 27, 32, s, colorCus, UI_CENTER, qtrue );
 
 	}
 

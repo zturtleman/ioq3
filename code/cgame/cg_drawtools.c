@@ -1886,7 +1886,7 @@ TODO: code this better, it's garbage (use tables)
 =================
 */
 
-int UI_DrawBigNum( int x, int y, int size, int ch, vec4_t color, int noDraw ) {
+int UI_DrawBigNum( int x, int y, int size, int ch, vec4_t color, int noDraw, qboolean shadow ) {
 
 	int		row, col;
 	int		o;
@@ -1894,6 +1894,7 @@ int UI_DrawBigNum( int x, int y, int size, int ch, vec4_t color, int noDraw ) {
 	float	sizeFloat;
 	float	ax, ay, aw, ah, ac;
 	int		ich;
+	vec4_t	bcolor={0.0f, 0.0f, 0.0f, 1.0f};
 
 	ax = x;
 	ay = y;
@@ -1986,12 +1987,21 @@ int UI_DrawBigNum( int x, int y, int size, int ch, vec4_t color, int noDraw ) {
 		frow = row*0.5;
 		fcol = col*0.0625;
 
+		if ( shadow == qtrue ) {
+			trap_R_SetColor( bcolor );
+
+			trap_R_DrawStretchPic( ax + 1, ay + 1, aw, ah,
+							fcol, frow,
+							fcol + ac, frow + 0.5,
+							cgs.media.charsetBigNum );
+		}
+
 		trap_R_SetColor( color );
 
 		trap_R_DrawStretchPic( ax, ay, aw, ah,
 						fcol, frow,
 						fcol + ac, frow + 0.5,
-						cgs.media.charsetBigNumGrad ); // cgs.media.numChar
+						cgs.media.charsetBigNumGrad );
 
 		trap_R_SetColor( NULL );
 
@@ -2001,7 +2011,7 @@ int UI_DrawBigNum( int x, int y, int size, int ch, vec4_t color, int noDraw ) {
 
 }
 
-int UI_DrawBigNumString( int x, int y, int size, const char* str, vec4_t color, int align ) {
+int UI_DrawBigNumString( int x, int y, int size, const char* str, vec4_t color, int align, qboolean shadow ) {
 	const char 		*s;
 	int				ch;
 	int				charWidth;
@@ -2016,7 +2026,7 @@ int UI_DrawBigNumString( int x, int y, int size, const char* str, vec4_t color, 
 		// get string width first
 		while ( *s ) {
 			ch = *s & 127;
-			charWidth = UI_DrawBigNum( 0, 0, size, ch, color, 1); // just get the width of each character
+			charWidth = UI_DrawBigNum( 0, 0, size, ch, color, 1, 0); // just get the width of each character
 			width += charWidth;
 			s++;
 		}
@@ -2032,7 +2042,7 @@ int UI_DrawBigNumString( int x, int y, int size, const char* str, vec4_t color, 
 
 		while ( *s ) {
 			ch = *s & 127;
-			charWidth = UI_DrawBigNum( x, y, size, ch, color, 0);
+			charWidth = UI_DrawBigNum( x, y, size, ch, color, 0, shadow);
 			x += charWidth;
 			s++;
 		}
@@ -2041,7 +2051,7 @@ int UI_DrawBigNumString( int x, int y, int size, const char* str, vec4_t color, 
 
 		while ( *s ) {
 			ch = *s & 127;
-			charWidth = UI_DrawBigNum( x, y, size, ch, color, 0);
+			charWidth = UI_DrawBigNum( x, y, size, ch, color, 0, shadow);
 			x += charWidth;
 			width += charWidth;
 			s++;
