@@ -79,7 +79,7 @@ typedef enum {
 
 // random select types
 typedef enum {
-	RT_COINFLIP,
+	RT_COINTOSS,
 	RT_RNDSELECT,
 	RT_RNDNUM,
 	RT_MAXTYPE

@@ -1959,8 +1959,8 @@ Cmd_RndInProgress_f
 void Cmd_RndInProgress_f( gentity_t *ent ) {
 
 	switch ( level.rnd_type ) {
-		case RT_COINFLIP:
-			trap_SendServerCommand( ent-g_entities, va("notify %i\\\"A coinflip is in progress.\n\"", NF_ERROR) );
+		case RT_COINTOSS:
+			trap_SendServerCommand( ent-g_entities, va("notify %i\\\"A cointoss is in progress.\n\"", NF_ERROR) );
 			return;
 
 		case RT_RNDSELECT:
@@ -1976,12 +1976,12 @@ void Cmd_RndInProgress_f( gentity_t *ent ) {
 
 /*
 =================
-Cmd_Coinflip_f
+Cmd_Cointoss_f
 
-coinflip
+cointoss
 =================
 */
-void Cmd_Coinflip_f( gentity_t *ent ) {
+void Cmd_Cointoss_f( gentity_t *ent ) {
 
 	if ( !level.warmupTime ) {
 		trap_SendServerCommand( ent-g_entities, va("notify %i\\\"This command can only be called during warm-up, sorry.\n\"", NF_ERROR) );
@@ -1989,22 +1989,21 @@ void Cmd_Coinflip_f( gentity_t *ent ) {
 	}
 
 	if ( level.rnd_mode ) {
-		/*trap_SendServerCommand( ent-g_entities, va("notify %i\\\"Coinflip is already in progress.\n\"", NF_ERROR) );*/
 		Cmd_RndInProgress_f( ent );
 		return;
 	}
 
 	if (ent->client->sess.mute == qtrue) {
-		trap_SendServerCommand( ent-g_entities, va("notify %i\\\"You cannot call a coinflip while muted.\n\"", NF_ERROR ) );
+		trap_SendServerCommand( ent-g_entities, va("notify %i\\\"You cannot call a cointoss while muted.\n\"", NF_ERROR ) );
 		return;
 	}
 
-	trap_SendServerCommand( ent-g_entities, va("notify %i\\\"%s" S_COLOR_WHITE " called for a coinflip.\n\"",
+	trap_SendServerCommand( ent-g_entities, va("notify %i\\\"%s" S_COLOR_WHITE " called for a cointoss.\n\"",
 		NF_GAMEINFO, ent->client->pers.netname ) );
 
 	level.rnd_mode = 1; // first step
 	level.rnd_nextthink = level.time + 2000;
-	level.rnd_type = RT_COINFLIP;
+	level.rnd_type = RT_COINTOSS;
 
 }
 
@@ -3403,8 +3402,12 @@ void ClientCommand( int clientNum ) {
 	}
 
 	// mmp
-	if (Q_stricmp (cmd, "coinflip") == 0) {
-		Cmd_Coinflip_f(ent);
+	if (Q_stricmp (cmd, "cointoss") == 0) {
+		Cmd_Cointoss_f(ent);
+		return;
+	}
+	if (Q_stricmp (cmd, "coinflip") == 0) { // deprecated, but kept incase someone forgets it was changed to cointoss
+		Cmd_Cointoss_f(ent);
 		return;
 	}
 	if (Q_stricmp (cmd, "rnd") == 0) {

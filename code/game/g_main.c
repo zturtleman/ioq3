@@ -708,7 +708,7 @@ int		ClientNumForString( const char *s ) {
 
 /*
 ==================
-G_CoinflipUpdate
+G_RandomSelectUpdate
 ==================
 */
 
@@ -717,7 +717,7 @@ void G_RandomSelectUpdate ( void ) {
 	int		rnd;
 
 	if ( !level.rnd_mode ) {
-		return; // no coinflip in progress
+		return; // no cointoss in progress
 	}
 
 	if ( level.time < level.rnd_nextthink ) {
@@ -727,8 +727,8 @@ void G_RandomSelectUpdate ( void ) {
 	if ( level.rnd_mode == 1 ) {
 
 		switch ( level.rnd_type ) {
-			case RT_COINFLIP:
-				trap_SendServerCommand( -1, va("notify %i\\\"COINFLIP IN:\n\"",
+			case RT_COINTOSS:
+				trap_SendServerCommand( -1, va("notify %i\\\"COINTOSS IN:\n\"",
 					NF_GAMEINFO) );
 				break;
 
@@ -751,7 +751,7 @@ void G_RandomSelectUpdate ( void ) {
 		count = 5 - level.rnd_mode;
 		if ( count == 0 ) {
 			switch ( level.rnd_type ) {
-				case RT_COINFLIP:
+				case RT_COINTOSS:
 					rnd = (random()) * 65536;
 					if ( rnd & 1 ) {
 						trap_SendServerCommand( -1, va("notify %i\\\"RESULT: " S_COLOR_YELLOW "HEADS!\n\"",
@@ -773,7 +773,7 @@ void G_RandomSelectUpdate ( void ) {
 						NF_GAMEINFO, level.rnd_minNum + rnd) );
 					break;
 			}
-			level.rnd_mode = 0; // clear coinflip mode
+			level.rnd_mode = 0; // clear cointoss mode
 			return;
 		}
 		trap_SendServerCommand( -1, va("notify %i\\\"" S_COLOR_GRAY "[" S_COLOR_WHITE "%i" S_COLOR_GRAY "]\n\"",
@@ -4698,7 +4698,7 @@ void G_RunFrame( int levelTime ) {
 		G_InfoUpdate();
 	}
 
-	// run coinflip
+	// run cointoss
 	G_RandomSelectUpdate();
 
 	//

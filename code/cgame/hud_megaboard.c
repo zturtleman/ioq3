@@ -205,6 +205,7 @@ void HUD_MegaDrawPingBar( int x, int y, int ping, int type ) {
 			color[0] = color[3] = 1.0;
 			i = 1;
 		} else {
+
 			return; // don't display any bars, if ping is 999 or beyone
 		}
 
@@ -275,6 +276,8 @@ static void HUD_MegaDrawClientScore( int x, int y, score_t *score, int scRank, v
 	int			nameWidthCombine;
 	float		nameWidthAdj;
 
+	vec4_t		hcolor;
+
 	static float	teamColor[3][4] = {
 		 { 0, 0, 0, 1.0f },	//black
 		 { 1.0f, 0, 0, 1.0f },	//red
@@ -318,14 +321,14 @@ static void HUD_MegaDrawClientScore( int x, int y, score_t *score, int scRank, v
 	nameWidth2 = UI_ReturnStringWidth (string2, qfalse) * 0.4;
 	nameWidthCombine = nameWidth + nameWidth2;
 
-	if (nameWidthCombine > 240) {
-		nameWidthAdj = 240/(float)nameWidthCombine;
-		lineXPos = x + 56;
+	if (nameWidthCombine > 256) {
+		nameWidthAdj = 256/(float)nameWidthCombine; // was 240/(float)...
+		lineXPos = x + 40; // was + 56
 		HUD_FuncPosLock( string2, 0, lineXPos, 0, y, 0, UI_DROPSHADOW, 0.4 * nameWidthAdj, 0.4, colorWht, filterColor );
 		lineXPos += nameWidth2 * nameWidthAdj;
 		HUD_FuncPosLock( string, 0, lineXPos, 0, y, 0, UI_DROPSHADOW, 0.63 * nameWidthAdj, 0.63, colorWht, filterColor );
 	} else {
-		lineXPos = x + 56;
+		lineXPos = x + 40; // was + 56
 		HUD_FuncPosLock( string2, 0, lineXPos, 0, y, 0, UI_DROPSHADOW, 0.4, 0.4, colorWht, filterColor );
 		lineXPos += nameWidth2;
 		HUD_FuncPosLock( string, 0, lineXPos, 0, y, 0, UI_DROPSHADOW, 0.63, 0.63, colorWht, filterColor );
@@ -361,22 +364,31 @@ static void HUD_MegaDrawClientScore( int x, int y, score_t *score, int scRank, v
 			// draw the player's rank
 			switch (scRank) {
 				case 1:
-					UI_DrawBigNumString( x + 20, y + 6, 16, "1s", colorWht, UI_CENTER, qtrue );
+					hcolor[2] = hcolor[3] = 1.0f;
+					hcolor[0] = hcolor[1] = 0.5f;
+					UI_DrawBigNumString( x + 20, y + 6, 16, "1s", hcolor, UI_CENTER, qtrue );
 					/*HUD_FuncPosLock( "1st", 0, x + 20, 0, y + 9, 0,
 							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );*/
 					break;
 				case 2:
-					UI_DrawBigNumString( x + 20, y + 6, 16, "2n", colorWht, UI_CENTER, qtrue );
+					hcolor[0] = hcolor[3] = 1.0f;
+					hcolor[1] = hcolor[2] = 0.5f;
+					UI_DrawBigNumString( x + 20, y + 6, 16, "2n", hcolor, UI_CENTER, qtrue );
 					/*HUD_FuncPosLock( "2nd", 0, x + 20, 0, y + 9, 0,
 							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );*/
 					break;
 				case 3:
-					UI_DrawBigNumString( x + 20, y + 6, 16, "3r", colorWht, UI_CENTER, qtrue );
+					hcolor[0] = hcolor[3] = 1.0f;
+					hcolor[1] = 0.875f;
+					hcolor[2] = 0.5f;
+					UI_DrawBigNumString( x + 20, y + 6, 16, "3r", hcolor, UI_CENTER, qtrue );
 					/*HUD_FuncPosLock( "3rd", 0, x + 20, 0, y + 9, 0,
 							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );*/
 					break;
 				default:
-					UI_DrawBigNumString( x + 20, y + 6, 16, va("%it", scRank), colorWht, UI_CENTER, qtrue );
+					hcolor[3] = 1.0f;
+					hcolor[0] = hcolor[1] = hcolor[2] = 0.5f;
+					UI_DrawBigNumString( x + 20, y + 6, 16, va("%it", scRank), hcolor, UI_CENTER, qtrue );
 					/*HUD_FuncPosLock( va("%ith", scRank), 0, x + 20, 0, y + 9, 0,
 							UI_DROPSHADOW | UI_CENTER, 0.63, 0.63, colorWht, qfalse );*/
 					break;
@@ -396,16 +408,16 @@ static void HUD_MegaDrawClientScore( int x, int y, score_t *score, int scRank, v
 
 	ping = score->ping;
 	if ( ping != -1 ) {
-		UI_DrawCustomProportionalString( x + 56, y, "Score:", UI_DROPSHADOW, 0.50, colorYel, qfalse );
-		UI_DrawCustomProportionalString( x + 137, y, va("%i",score->score), UI_DROPSHADOW | UI_RIGHT, 0.50, colorWht, qtrue );
-		UI_DrawCustomProportionalString( x + 155, y, "Ping:", UI_DROPSHADOW, 0.50, colorYel, qfalse );
-		if ( hud_scoreboard_pingType.integer == 0 ) {
-			HUD_MegaDrawPingBar ( x + 217, y, score->ping, hud_scoreboard_barType.integer );
+		UI_DrawCustomProportionalString( x + 40, y, "Score:", UI_DROPSHADOW, 0.50, colorYel, qfalse ); // was + 56
+		UI_DrawCustomProportionalString( x + 121, y, va("%i",score->score), UI_DROPSHADOW | UI_RIGHT, 0.50, colorWht, qtrue ); // was + 137
+		UI_DrawCustomProportionalString( x + 147, y, "Ping:", UI_DROPSHADOW, 0.50, colorYel, qfalse ); // was + 155
+		if (cg.time & 512) {
+			HUD_MegaDrawPingBar ( x + 209, y, score->ping, hud_scoreboard_barType.integer ); // was + 217
 		} else {
 			if ( ci->botSkill <= 0 )
-				UI_DrawCustomProportionalString( x + 217, y, va("%i",score->ping), UI_DROPSHADOW | UI_RIGHT, 0.50, colorWht, qfalse );
+				UI_DrawCustomProportionalString( x + 209, y, va("%i",score->ping), UI_DROPSHADOW | UI_RIGHT, 0.50, colorWht, qfalse );
 			else
-				UI_DrawCustomProportionalString( x + 217, y, "666", UI_DROPSHADOW | UI_RIGHT, 0.50, colorWht, qfalse );
+				UI_DrawCustomProportionalString( x + 209, y, "666", UI_DROPSHADOW | UI_RIGHT, 0.50, colorWht, qfalse );
 		}
 		UI_DrawCustomProportionalString( x + 235, y, "Time:", UI_DROPSHADOW, 0.50, colorYel, qfalse );
 		if ( score->time < 99 )
@@ -437,6 +449,8 @@ static void HUD_MegaDrawClientTournamentScore( int x, int y, score_t *score, vec
 	int			nameWidth2;
 	int			nameWidthCombine;
 	float		nameWidthAdj;
+
+	vec4_t		hcolor;
 
 	static float	teamColor[3][4] = {
 		 { 0, 0, 0, 1.0f },	//black
@@ -488,14 +502,14 @@ static void HUD_MegaDrawClientTournamentScore( int x, int y, score_t *score, vec
 	nameWidth2 = UI_ReturnStringWidth (string2, qfalse) * 0.4;
 	nameWidthCombine = nameWidth + nameWidth2;
 
-	if (nameWidthCombine > 240) {
-		nameWidthAdj = 240/(float)nameWidthCombine;
-		lineXPos = x + 56;
+	if (nameWidthCombine > 256) {
+		nameWidthAdj = 256/(float)nameWidthCombine; // was 240/(float)...
+		lineXPos = x + 40; // was + 56
 		HUD_FuncPosLock( string2, 0, lineXPos, 0, y, 0, UI_DROPSHADOW, 0.4 * nameWidthAdj, 0.4, colorWht, filterColor );
 		lineXPos += nameWidth2 * nameWidthAdj;
 		HUD_FuncPosLock( string, 0, lineXPos, 0, y, 0, UI_DROPSHADOW, 0.63 * nameWidthAdj, 0.63, colorWht, filterColor );
 	} else {
-		lineXPos = x + 56;
+		lineXPos = x + 40; // was + 56
 		HUD_FuncPosLock( string2, 0, lineXPos, 0, y, 0, UI_DROPSHADOW, 0.4, 0.4, colorWht, filterColor );
 		lineXPos += nameWidth2;
 		HUD_FuncPosLock( string, 0, lineXPos, 0, y, 0, UI_DROPSHADOW, 0.63, 0.63, colorWht, filterColor );
@@ -503,7 +517,7 @@ static void HUD_MegaDrawClientTournamentScore( int x, int y, score_t *score, vec
 
 
 	// draw player port
-	CG_DrawPic( x + 39, y + 2, 16, 16, cgs.media.hudPlayerPort[score->client] );
+	/*CG_DrawPic( x + 39, y + 2, 16, 16, cgs.media.hudPlayerPort[score->client] );*/
 	/*trap_R_DrawStretchPic( x + 34, y - 2, 16, 24,
 					0.0f, 0.0f, 1.0f, 0.75f, cgs.media.hudDefaultPort );*/
 
@@ -541,16 +555,14 @@ static void HUD_MegaDrawClientTournamentScore( int x, int y, score_t *score, vec
 
 	ping = score->ping;
 	if ( ping != -1 ) {
-		/*UI_DrawCustomProportionalString( x + 56, y, "Score:", UI_DROPSHADOW, 0.50, colorYel, qfalse );
-		UI_DrawCustomProportionalString( x + 137, y, va("%i",score->score), UI_DROPSHADOW | UI_RIGHT, 0.50, colorWht, qtrue );*/
-		UI_DrawCustomProportionalString( x + 155, y, "Ping:", UI_DROPSHADOW, 0.50, colorYel, qfalse );
-		if ( hud_scoreboard_pingType.integer == 0 ) {
-			HUD_MegaDrawPingBar ( x + 217, y, score->ping, hud_scoreboard_barType.integer );
+		UI_DrawCustomProportionalString( x + 147, y, "Ping:", UI_DROPSHADOW, 0.50, colorYel, qfalse );
+		if (cg.time & 512) {
+			HUD_MegaDrawPingBar ( x + 209, y, score->ping, hud_scoreboard_barType.integer );
 		} else {
 			if ( ci->botSkill <= 0 )
-				UI_DrawCustomProportionalString( x + 217, y, va("%i",score->ping), UI_DROPSHADOW | UI_RIGHT, 0.50, colorWht, qfalse );
+				UI_DrawCustomProportionalString( x + 209, y, va("%i",score->ping), UI_DROPSHADOW | UI_RIGHT, 0.50, colorWht, qfalse );
 			else
-				UI_DrawCustomProportionalString( x + 217, y, "666", UI_DROPSHADOW | UI_RIGHT, 0.50, colorWht, qfalse );
+				UI_DrawCustomProportionalString( x + 209, y, "666", UI_DROPSHADOW | UI_RIGHT, 0.50, colorWht, qfalse );
 		}
 		UI_DrawCustomProportionalString( x + 235, y, "Time:", UI_DROPSHADOW, 0.50, colorYel, qfalse );
 		if ( score->time < 99 )
@@ -560,7 +572,10 @@ static void HUD_MegaDrawClientTournamentScore( int x, int y, score_t *score, vec
 
 		// third row
 		y += 10;
-		UI_DrawCustomProportionalString( x + 297, y, va("%i",score->score), UI_DROPSHADOW | UI_RIGHT, 1.75, colorWht, qtrue );
+		//UI_DrawCustomProportionalString( x + 297, y, va("%i",score->score), UI_DROPSHADOW | UI_RIGHT, 1.75, colorWht, qtrue );
+		hcolor[3] = 1.0f;
+		hcolor[0] = hcolor[1] = hcolor[2] = 0.5f;
+		UI_DrawBigNumString( x + 297, y, 28, va("%i",score->score), hcolor, UI_RIGHT, qtrue );
 
 	} else {
 		if (cg.time & 256)
@@ -675,6 +690,7 @@ qboolean HUD_MegaDrawScoreBoard( int posCenter, int ty ) {
 	int			posLeft, posRight;
 	qboolean	filterColor;
 	int			totalDispPlayers;
+	score_t		*duelPlayerDisp[2];
 
 	team_t		team;
 	vec4_t		colorWht, colorYel, colorBlk, colorCus;
@@ -1014,12 +1030,46 @@ Player score and stats
 				continue;
 			}
 
+			duelPlayerDisp[totalDispPlayers] = score;
+
+			totalDispPlayers++;
+		}
+
+		if ( totalDispPlayers ) {
+
+			if ( totalDispPlayers > 1 ) {
+
+				// keep clients in the same spots on the scoreboard
+				if ( duelPlayerDisp[0]->client > duelPlayerDisp[1]->client ) {
+					score = duelPlayerDisp[1];
+					duelPlayerDisp[1] = duelPlayerDisp[0];
+					duelPlayerDisp[0] = score;
+				}
+
+				HUD_MegaDrawClientTournamentScore( x+315, y, duelPlayerDisp[1], colorWht, colorYel, filterColor );
+
+			}
+
+			HUD_MegaDrawClientTournamentScore( x, y, duelPlayerDisp[0], colorWht, colorYel, filterColor );
+
+		}
+
+
+		/*for ( i = 0, totalDispPlayers = 0; i < cg.numScores && totalDispPlayers < 2; i++ ) {
+			score = &cg.scores[i];
+			ci = &cgs.clientinfo[ score->client ];
+
+			// spectators are not in the game
+			if ( ci->team == TEAM_SPECTATOR ) {
+				continue;
+			}
+
 			totalDispPlayers++;
 
 			HUD_MegaDrawClientTournamentScore( x, y, score, colorWht, colorYel, filterColor );
 			x += 315;
 
-		}
+		}*/
 
 		// top
 		hShader = cgs.media.hudScoreBoard [ TEAM_FREE ]; // score board for team free games
@@ -1111,7 +1161,7 @@ Player score and stats
 				cnt1 ++;
 			} else {
 				if ( cnt2 < 10 ) {
-					HUD_MegaDrawClientScore( posCenter, y2, score, -1, colorWht, colorYel, filterColor );
+					HUD_MegaDrawClientScore( posCenter + 5, y2, score, -1, colorWht, colorYel, filterColor );
 					y2 += 24;
 				}
 				cnt2 ++;

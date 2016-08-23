@@ -189,7 +189,7 @@ void Con_Dump_f (void)
 	}
 
 	Q_strncpyz( filename, Cmd_Argv( 1 ), sizeof( filename ) );
-	COM_DefaultExtension( filename, sizeof( filename ), ".txt" );
+	/*COM_DefaultExtension( filename, sizeof( filename ), ".txt" );*/ // screw windows
 
 	f = FS_FOpenFileWrite( filename );
 	if (!f)
