@@ -1195,6 +1195,10 @@ extern	vmCvar_t	g_allowSpecCallVote;
 extern	vmCvar_t	g_randomSpawn;
 extern	vmCvar_t	g_adminPassword;
 extern	vmCvar_t	g_mapRotation;
+extern	vmCvar_t	g_mapRotation_ffa;
+extern	vmCvar_t	g_mapRotation_duel;
+extern	vmCvar_t	g_mapRotation_tdm;
+extern	vmCvar_t	g_mapRotation_ctf;
 
 extern	vmCvar_t	g_allowedAdminCmds;
 

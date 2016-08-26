@@ -2668,13 +2668,39 @@ Cmd_CallVote_f
 TODO: code this better
 ==================
 */
+
+qboolean G_NextMapPick( int	gt ) {
+
+	qboolean	result = qfalse;
+
+	// pick map from rotation based on game type
+	if ( gt == GT_FFA )
+		result = MapRotation( g_mapRotation_ffa.string );
+	else if ( gt == GT_TOURNAMENT )
+		result = MapRotation( g_mapRotation_duel.string );
+	else if ( gt == GT_TEAM )
+		result = MapRotation( g_mapRotation_tdm.string );
+	else if ( gt == GT_CTF )
+		result = MapRotation( g_mapRotation_ctf.string );
+
+	// pick map from regular rotation
+	if ( result == qfalse ) {
+		if ( MapRotation( g_mapRotation.string ) == qfalse ) {
+			return qfalse;
+		}
+	}
+
+	return qtrue;
+
+}
+
 void Cmd_CallVote_f( gentity_t *ent ) {
-	char*	c;
-	int		i;
-	int		sec;
-	char	arg1[MAX_STRING_TOKENS];
-	char	arg2[MAX_STRING_TOKENS];
-	int		allowedVotes;
+	char*		c;
+	int			i;
+	int			sec;
+	char		arg1[MAX_STRING_TOKENS];
+	char		arg2[MAX_STRING_TOKENS];
+	int			allowedVotes;
 
 	if ( !g_allowVote.integer ) {
 		//trap_SendServerCommand( ent-g_entities, "print \"Voting not allowed here.\n\"" );
@@ -2787,8 +2813,14 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 			return;
 		}
 
-		Com_sprintf( level.voteString, sizeof( level.voteString ), "g_gametype %d; map_restart", i );
-		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %s", arg1, gameNames[i] );
+		if ( G_NextMapPick( i ) == qtrue ) {
+			Com_sprintf( level.voteString, sizeof( level.voteString ), "g_gametype %d; vstr nextmap", i );
+			Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %s", arg1, gameNames[i] );
+		} else {
+			Com_sprintf( level.voteString, sizeof( level.voteString ), "g_gametype %d; map_restart", i );
+			Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %s", arg1, gameNames[i] );
+		}
+
 		level.currentVoteIsKick = qfalse;
 
 	} else if ( !Q_stricmp( arg1, "matchMode" ) ) {
@@ -2890,7 +2922,8 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	} else if ( !Q_stricmp( arg1, "nextmap" ) ) {
 		char	s[MAX_STRING_CHARS];
 
-		if ( MapRotation() == qfalse ) {
+		// pick map from rotation based on game type
+		if ( G_NextMapPick( g_gametype.integer ) == qfalse ) {
 			trap_SendServerCommand( ent-g_entities, "print \"Map rotation not set.\n\"" );
 		}
 

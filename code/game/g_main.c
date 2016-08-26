@@ -127,6 +127,10 @@ vmCvar_t	g_allowSpecCallVote;
 vmCvar_t	g_randomSpawn;
 vmCvar_t	g_adminPassword;
 vmCvar_t	g_mapRotation;
+vmCvar_t	g_mapRotation_ffa;
+vmCvar_t	g_mapRotation_duel;
+vmCvar_t	g_mapRotation_tdm;
+vmCvar_t	g_mapRotation_ctf;
 vmCvar_t	g_allowedAdminCmds;
 vmCvar_t	g_enemyAttackLevel;
 vmCvar_t	g_powerUps;
@@ -325,6 +329,10 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_randomSpawn, "g_randomSpawn", "0", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse },
 	{ &g_adminPassword, "g_adminPassword", "", 0, 0, qfalse },
 	{ &g_mapRotation, "g_mapRotation", "rotation.cfg", CVAR_ARCHIVE | CVAR_NORESTART, 0, qfalse },
+	{ &g_mapRotation_ffa, "g_mapRotation_ffa", "rotation_ffa.cfg", CVAR_ARCHIVE | CVAR_NORESTART, 0, qfalse },
+	{ &g_mapRotation_duel, "g_mapRotation_duel", "rotation_duel.cfg", CVAR_ARCHIVE | CVAR_NORESTART, 0, qfalse },
+	{ &g_mapRotation_tdm, "g_mapRotation_tdm", "rotation_tdm.cfg", CVAR_ARCHIVE | CVAR_NORESTART, 0, qfalse },
+	{ &g_mapRotation_ctf, "g_mapRotation_ctf", "rotation_ctf.cfg", CVAR_ARCHIVE | CVAR_NORESTART, 0, qfalse },
 
 	{ &g_allowedAdminCmds, "g_allowedAdminCmds", "/restart/map/msg/players/gametype/matchMode/proMode/kick/mute/unmute/rpickup/timelimit/scorelimit/ruleSet/teamSize/shortGame/vstr/", CVAR_ARCHIVE, 0, qfalse }, // mmp
 
@@ -2878,10 +2886,10 @@ TODO: check if this code causes a memory leak
 
 =============
 */
-qboolean MapRotation( void ) {
+qboolean MapRotation( const char *qpath ) {
 
 	//Here the game finds the nextmap if g_autonextmap is set
-	if ( strlen(g_mapRotation.string) ) {
+	if ( strlen(qpath) ) {
 		// mmp - the auto map code was grabbed from openarena
 		// however, will modify to run a better rotation system
 		// such as preventing the last X amount of maps from rotation from being picked again
@@ -2893,7 +2901,7 @@ qboolean MapRotation( void ) {
 		trap_GetServerinfo( serverinfo, sizeof( serverinfo ) );
 
 		//Read the file:
-		trap_FS_FOpenFile(g_mapRotation.string, &file, FS_READ);
+		trap_FS_FOpenFile(qpath, &file, FS_READ);
 		if (file) {
 			char  buffer[4*1024]; // buffer to read file into
 			char mapnames[1024][20]; // Array of mapnames in the map pool
@@ -2929,7 +2937,7 @@ qboolean MapRotation( void ) {
 				}
 			}
 		} else {
-			G_Printf( "Could not read file '%s' for map rotation\n", g_mapRotation.string );
+			G_Printf( "Could not read file '%s' for map rotation\n", qpath );
 			//trap_SendServerCommand( ent-g_entities, "print \"Map rotation not set.\n\"" );
 			return qfalse;
 		}
@@ -2961,6 +2969,7 @@ void ExitLevel (void) {
 	qtime_t		timeStamp;
 	int			dayOfWeek;
 	qboolean	serviceRun;
+	qboolean	result = qfalse;
 
 	//bot interbreeding
 	BotInterbreedEndMatch();
@@ -3047,7 +3056,19 @@ void ExitLevel (void) {
 			return;
 		}
 
-		MapRotation();
+		// pick map from rotation based on game type
+		if ( g_gametype.integer == GT_FFA )
+			result = MapRotation( g_mapRotation_ffa.string );
+		else if ( g_gametype.integer == GT_TOURNAMENT )
+			result = MapRotation( g_mapRotation_duel.string );
+		else if ( g_gametype.integer == GT_TEAM )
+			result = MapRotation( g_mapRotation_tdm.string );
+		else if ( g_gametype.integer == GT_CTF )
+			result = MapRotation( g_mapRotation_ctf.string );
+
+		// pick map from regular rotation
+		if ( result == qfalse )
+			MapRotation( g_mapRotation.string );
 
 		trap_Cvar_VariableStringBuffer( "nextmap", nextmap, sizeof(nextmap) );
 		trap_Cvar_VariableStringBuffer( "d1", d1, sizeof(d1) );
@@ -4324,14 +4345,30 @@ void CheckTournament( void ) {
 				}
 			}
 
-			if (counts[TEAM_RED] < teamQuota || counts[TEAM_BLUE] < teamQuota) {
-				notEnough = qtrue;
+			if ( g_gametype.integer >= GT_AA1 ) {
+
+				if ( counts[TEAM_RED] < teamQuota ) {
+					notEnough = qtrue;
+					level.teamSizesOK |= TSOK_MORE_RED_PLAYERS; // |= 1
+				}
+				if ( counts[TEAM_BLUE] < 1 ) {
+					notEnough = qtrue;
+					level.teamSizesOK |= TSOK_MORE_BLUE_PLAYERS; // |= 2
+				} else if ( counts[TEAM_BLUE] > 1 ) {
+					notEnough = qtrue;
+				}
+
+			} else {
+
 				if ( counts[TEAM_RED] < teamQuota ) {
 					level.teamSizesOK |= TSOK_MORE_RED_PLAYERS; // |= 1
+					notEnough = qtrue;
 				}
 				if ( counts[TEAM_BLUE] < teamQuota ) {
 					level.teamSizesOK |= TSOK_MORE_BLUE_PLAYERS; // |= 2
+					notEnough = qtrue;
 				}
+
 			}
 
 		} else if ( level.numPlayingClients < 2 ) {
