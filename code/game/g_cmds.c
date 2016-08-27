@@ -2807,19 +2807,31 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 
 	// special case for g_gametype, check for bad values
 	if ( !Q_stricmp( arg1, "gametype" ) ) {
-		i = atoi( arg2 );
-		if( i == GT_SINGLE_PLAYER || i < GT_FFA || i >= GT_MAX_GAME_TYPE) {
-			trap_SendServerCommand( ent-g_entities, "print \"Invalid gametype.\n\"" );
-			return;
+		// check if we used actual names instead of numbers
+		if ( !Q_stricmp( arg2, "ffa" ) )
+			i = GT_FFA;
+		else if ( !Q_stricmp( arg2, "duel" ) )
+			i = GT_TOURNAMENT;
+		else if ( !Q_stricmp( arg2, "tdm" ) )
+			i = GT_TEAM;
+		else if ( !Q_stricmp( arg2, "ctf" ) )
+			i = GT_CTF;
+		else {
+			// otherwise, assume a number is used
+			i = atoi( arg2 );
+
+			if( i == GT_SINGLE_PLAYER || i < GT_FFA || i >= GT_MAX_GAME_TYPE) {
+				trap_SendServerCommand( ent-g_entities, "print \"Invalid gametype.\n\"" );
+				return;
+			}
 		}
 
 		if ( G_NextMapPick( i ) == qtrue ) {
 			Com_sprintf( level.voteString, sizeof( level.voteString ), "g_gametype %d; vstr nextmap", i );
-			Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %s", arg1, gameNames[i] );
 		} else {
 			Com_sprintf( level.voteString, sizeof( level.voteString ), "g_gametype %d; map_restart", i );
-			Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %s", arg1, gameNames[i] );
 		}
+		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "Change %s to %s", arg1, gameNames[i] );
 
 		level.currentVoteIsKick = qfalse;
 
