@@ -2780,7 +2780,6 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	} else if ( !Q_stricmp( arg1, "kick" ) && (allowedVotes & VOTE_KICK) ) {
 	} else if ( !Q_stricmp( arg1, "clientmute" ) && (allowedVotes & VOTE_CLIENTMUTE) ) {
 	} else if ( !Q_stricmp( arg1, "mute" ) && (allowedVotes & VOTE_MUTE) ) {
-	/*} else if ( !Q_stricmp( arg1, "g_doWarmup" ) && (allowedVotes & VOTE_DO_WARMUP) ) {*/
 	} else if ( !Q_stricmp( arg1, "endWarmup" ) && (allowedVotes & VOTE_ENDWARMUP) ) {
 	} else if ( !Q_stricmp( arg1, "rpickup" ) && (allowedVotes & VOTE_RPICKUP) &&
 			g_gametype.integer >= GT_TEAM && level.warmupTime ) {
@@ -2792,6 +2791,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	} else if ( !Q_stricmp( arg1, "ruleSet" ) && (allowedVotes & VOTE_RULESET) ) {
 	} else if ( !Q_stricmp( arg1, "teamSize" ) && (allowedVotes & VOTE_TEAMSIZE) ) {
 	} else if ( !Q_stricmp( arg1, "shortGame" ) && (allowedVotes & VOTE_SHORTGAME) ) {
+	} else if ( !Q_stricmp( arg1, "bots" ) && (allowedVotes & VOTE_BOTS) ) {
 	} else if ( !Q_stricmp( arg1, "ext" ) && (allowedVotes & VOTE_EXT) ) {
 	} else {
 		trap_SendServerCommand( ent-g_entities, va("notify %i\\\"Invalid vote command.\n\"", NF_ERROR ) );
@@ -2904,6 +2904,23 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %d", arg1, i );
 		level.currentVoteIsKick = qfalse;
 
+	} else if ( !Q_stricmp( arg1, "bots" ) ) {
+		i = atoi( arg2 );
+
+		// correct the value incase the vote caller is an asshole
+		if ( i < 0) {
+			i = 0;
+		} else if (i > 4) {
+			i = 4;
+		}
+
+		if ( i == 0 ) {
+			Com_sprintf( level.voteString, sizeof( level.voteString ), "bot_minplayers 0; kickbots" );
+		} else {
+			Com_sprintf( level.voteString, sizeof( level.voteString ), "bot_minplayers %d", i );
+		}
+		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "stand-in bots %d", arg1, i );
+		level.currentVoteIsKick = qfalse;
 
 	} else if ( !Q_stricmp( arg1, "map" ) ) {
 		// special case for map changes, we want to reset the nextmap setting

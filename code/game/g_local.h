@@ -1186,8 +1186,6 @@ extern	vmCvar_t	g_shortGame;
 extern	vmCvar_t	g_roundFormat;
 extern	vmCvar_t	g_dynamicItemSpawns;
 
-extern	vmCvar_t	g_iUnderstandBotsAreBroken; // mmp
-
 extern	vmCvar_t	g_spamLimitCount;
 extern	vmCvar_t	g_spamLimitTimeRange;
 extern	vmCvar_t	g_allowSpecVote;

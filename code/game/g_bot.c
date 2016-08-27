@@ -231,12 +231,14 @@ static void PlayerIntroSound( const char *modelAndSkin ) {
 /*
 ===============
 G_AddRandomBot
+
+BUG: only one bot connects even when you set bot_minplayers above 1
 ===============
 */
 void G_AddRandomBot( int team ) {
 	int		i, n, num;
 	float	skill;
-	char	*value, netname[36], *teamstr;
+	char	*value, netname[32], *teamstr;
 	gclient_t	*cl;
 
 	num = 0;
@@ -265,7 +267,7 @@ void G_AddRandomBot( int team ) {
 	num = random() * num;
 	for ( n = 0; n < g_numBots ; n++ ) {
 		value = Info_ValueForKey( g_botInfos[n], "name" );
-		//
+		//Com_Printf( va("DEBUG: %i\n",i) );
 		for ( i=0 ; i< g_maxclients.integer ; i++ ) {
 			cl = level.clients + i;
 			if ( cl->pers.connected != CON_CONNECTED ) {
@@ -284,6 +286,7 @@ void G_AddRandomBot( int team ) {
 		if (i >= g_maxclients.integer) {
 			num--;
 			if (num <= 0) {
+				Com_Printf( "DEBUG: BOT ADD\n" );
 				skill = trap_Cvar_VariableValue( "g_spSkill" );
 				if (team == TEAM_RED) teamstr = "red";
 				else if (team == TEAM_BLUE) teamstr = "blue";
@@ -397,11 +400,11 @@ void G_CheckMinimumPlayers( void ) {
 	static int checkminimumplayers_time;
 
 	if (level.intermissiontime) return;
-	//only check once each 10 seconds
-	if (checkminimumplayers_time > level.time - 10000) {
+	//only check once each 5 seconds
+	if (checkminimumplayers_time > level.time) {
 		return;
 	}
-	checkminimumplayers_time = level.time;
+	checkminimumplayers_time = level.time + 5000;
 	trap_Cvar_Update(&bot_minplayers);
 	minplayers = bot_minplayers.integer;
 	if (minplayers <= 0) return;
@@ -452,6 +455,8 @@ void G_CheckMinimumPlayers( void ) {
 		}
 		humanplayers = G_CountHumanPlayers( TEAM_FREE );
 		botplayers = G_CountBotPlayers( TEAM_FREE );
+		//
+		//Com_Printf( va("DEBUG: bots=%i, humans=%i, minplayers=%i vs %i\n", botplayers, humanplayers, minplayers, humanplayers + botplayers) );
 		//
 		if (humanplayers + botplayers < minplayers) {
 			G_AddRandomBot( TEAM_FREE );
@@ -696,11 +701,6 @@ void Svcmd_AddBot_f( void ) {
 	char			string[MAX_TOKEN_CHARS];
 	char			team[MAX_TOKEN_CHARS];
 
-	// disallow bots in dedicated servers
-	if (g_dedicated.integer > 0 && !g_iUnderstandBotsAreBroken.integer) {
-		return;
-	}
-
 	// are bots enabled?
 	if ( !trap_Cvar_VariableIntegerValue( "bot_enable" ) ) {
 		return;
@@ -890,11 +890,6 @@ static void G_LoadBots( void ) {
 	char*		dirptr;
 	int			i;
 	int			dirlen;
-
-	// disallow bots in dedicated servers
-	if (g_dedicated.integer > 0 && !g_iUnderstandBotsAreBroken.integer) {
-		return;
-	}
 
 	if ( !trap_Cvar_VariableIntegerValue( "bot_enable" ) ) {
 		return;

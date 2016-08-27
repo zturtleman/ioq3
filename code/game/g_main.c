@@ -140,8 +140,6 @@ vmCvar_t	g_shortGame;
 vmCvar_t	g_roundFormat;
 vmCvar_t	g_dynamicItemSpawns;
 
-vmCvar_t	g_iUnderstandBotsAreBroken; // mmp
-
 vmCvar_t	g_serviceScheduleSun;
 vmCvar_t	g_serviceScheduleMon;
 vmCvar_t	g_serviceScheduleTues;
@@ -258,7 +256,7 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_podiumDrop, "g_podiumDrop", "70", 0, 0, qfalse },
 
 	{ &g_allowVote, "g_allowVote", "1", CVAR_ARCHIVE, 0, qfalse },
-	{ &g_allowedVoteNames, "g_allowedVoteNames", "/restart/nextmap/map/mute/endWarmup/rpickup/", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_allowedVoteNames, "g_allowedVoteNames", "/restart/", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_voteWaitTime, "g_voteWaitTime", "10", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_specChat, "g_specChat", "1", CVAR_ARCHIVE, 0, qtrue },
 	{ &g_listEntity, "g_listEntity", "0", 0, 0, qfalse },
@@ -319,8 +317,6 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_shortGame, "g_shortGame", "0", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // halves timelimit by half
 	{ &g_roundFormat, "g_roundFormat", "1", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // enables 3 round matches, 1r = normal, 2r = losing player must have half of leader, 3r = overtime
 	{ &g_dynamicItemSpawns, "g_dynamicItemSpawns", "1", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // increases item respawn times as rounds advance
-
-	{ &g_iUnderstandBotsAreBroken, "iUnderstandBotsAreBroken", "0", CVAR_ARCHIVE, 0, qtrue }, // server admin understands bots are broken, and really wants them in a server
 
 	{ &g_spamLimitCount, "g_spamLimitCount", "4", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_spamLimitTimeRange, "g_spamLimitTimeRange", "2000", CVAR_ARCHIVE, 0, qfalse },
@@ -600,6 +596,12 @@ int G_AllowedVotes ( gentity_t *ent, qboolean printNames ) {
 		voteFlags |= VOTE_SHORTGAME;
 		if ( printNames == qtrue ) {
 			trap_SendServerCommand( ent-g_entities, va("print \"shortGame <0/1>\n\"" ) );
+		}
+	}
+	if(Q_stristr(voteNames, "/bots/" ) != NULL) {
+		voteFlags |= VOTE_BOTS;
+		if ( printNames == qtrue ) {
+			trap_SendServerCommand( ent-g_entities, va("print \"bots <n>\n\"" ) );
 		}
 	}
 	if(Q_stristr(voteNames, "/ext/" ) != NULL) {

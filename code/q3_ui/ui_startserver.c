@@ -38,8 +38,8 @@ START SERVER MENU *****
 #define GAMESERVER_NEXT1		"menu/art/next_1"
 #define GAMESERVER_FRAMEL		"menu/art/frame2_l"
 #define GAMESERVER_FRAMER		"menu/art/frame1_r"
-#define GAMESERVER_SELECT		"menu/art/maps_select"
-#define GAMESERVER_SELECTED		"menu/art/maps_selected"
+#define GAMESERVER_SELECT		"menu/art/map_select_0"
+#define GAMESERVER_SELECTED		"menu/art/map_select_1"
 #define GAMESERVER_FIGHT0		"menu/art/fight_0"
 #define GAMESERVER_FIGHT1		"menu/art/fight_1"
 #define GAMESERVER_UNKNOWNMAP	"menu/art/unknownmap"
@@ -384,7 +384,8 @@ static void StartServer_LevelshotDraw( void *self ) {
 	w = b->width;
 	h =	b->height + 28;
 	if( b->generic.flags & QMF_HIGHLIGHT ) {
-		UI_DrawHandlePic( x, y, w, h, b->focusshader );
+		/*UI_DrawHandlePic( x, y, w, h, b->focusshader );*/
+		UI_DrawHandlePic( x, y, 128, 128, b->focusshader );
 	}
 }
 
@@ -460,10 +461,10 @@ static void StartServer_MenuInit( void ) {
 		s_startserver.mapbuttons[i].generic.flags    = QMF_LEFT_JUSTIFY|QMF_PULSEIFFOCUS|QMF_NODEFAULTINIT;
 		s_startserver.mapbuttons[i].generic.id       = ID_PICTURES+i;
 		s_startserver.mapbuttons[i].generic.callback = StartServer_MapEvent;
-		s_startserver.mapbuttons[i].generic.x	     = x - 30;
-		s_startserver.mapbuttons[i].generic.y	     = y - 32;
-		s_startserver.mapbuttons[i].width  		     = 256;
-		s_startserver.mapbuttons[i].height  	     = 248;
+		s_startserver.mapbuttons[i].generic.x	     = x;
+		s_startserver.mapbuttons[i].generic.y	     = y;
+		s_startserver.mapbuttons[i].width  		     = 128;
+		s_startserver.mapbuttons[i].height  	     = 128;
 		s_startserver.mapbuttons[i].generic.left     = x;
 		s_startserver.mapbuttons[i].generic.top  	 = y;
 		s_startserver.mapbuttons[i].generic.right    = x + 128;
@@ -1333,10 +1334,10 @@ static void ServerOptions_MenuInit( qboolean multiplayer ) {
 
 	s_serveroptions.picframe.generic.type		= MTYPE_BITMAP;
 	s_serveroptions.picframe.generic.flags		= QMF_LEFT_JUSTIFY|QMF_INACTIVE|QMF_HIGHLIGHT;
-	s_serveroptions.picframe.generic.x			= 352 - 38;
-	s_serveroptions.picframe.generic.y			= 80 - 40;
-	s_serveroptions.picframe.width  			= 320;
-	s_serveroptions.picframe.height  			= 320;
+	s_serveroptions.picframe.generic.x			= 352;
+	s_serveroptions.picframe.generic.y			= 80;
+	s_serveroptions.picframe.width  			= 160;
+	s_serveroptions.picframe.height  			= 120;
 	s_serveroptions.picframe.focuspic			= GAMESERVER_SELECT;
 
 	y = 272;

@@ -298,6 +298,7 @@ typedef enum {
 #define VOTE_RULESET		0x00010000
 #define VOTE_TEAMSIZE		0x00020000
 #define VOTE_SHORTGAME		0x00040000
+#define VOTE_BOTS			0x00080000
 #define VOTE_DO_WARMUP		0 // remove
 
 // admin cmd options
