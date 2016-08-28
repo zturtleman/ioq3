@@ -766,7 +766,7 @@ void CG_RegisterWeapon( int weaponNum ) {
 		weaponInfo->trailRadius = 32;
 		MAKERGB( weaponInfo->flashDlightColor, 1, 0.70f, 0 );
 		weaponInfo->flashSound[0] = trap_S_RegisterSound( "sound/weapons/proxmine/wstbfire.wav", qfalse );
-		cgs.media.grenadeExplosionShader = trap_R_RegisterShader( "grenadeExplosion" );
+		cgs.media.grenadeExplosionShader = trap_R_RegisterShader( "rocketExplosion" );
 		break;
 #endif
 
@@ -777,7 +777,7 @@ void CG_RegisterWeapon( int weaponNum ) {
 		weaponInfo->trailRadius = 32;
 		MAKERGB( weaponInfo->flashDlightColor, 1, 0.70f, 0 );
 		weaponInfo->flashSound[0] = trap_S_RegisterSound( "sound/weapons/grenade/grenlf1a.wav", qfalse );
-		cgs.media.grenadeExplosionShader = trap_R_RegisterShader( "grenadeExplosion" );
+		cgs.media.grenadeExplosionShader = trap_R_RegisterShader( "rocketExplosion" );
 		break;
 
 #ifdef MISSIONPACK
@@ -1904,6 +1904,7 @@ void CG_MissileHitWall( int weapon, int clientNum, vec3_t origin, vec3_t dir, im
 		radius = 64;
 		light = 300;
 		isSprite = qtrue;
+		duration = 1000;
 		break;
 #endif
 	case WP_GRENADE_LAUNCHER:
@@ -1914,6 +1915,7 @@ void CG_MissileHitWall( int weapon, int clientNum, vec3_t origin, vec3_t dir, im
 		radius = 64;
 		light = 300;
 		isSprite = qtrue;
+		duration = 1000;
 		//CG_Printf ("^9DEBUG: CG GRENADE EXPLODE\n");
 		break;
 	case WP_ROCKET_LAUNCHER:
@@ -1928,13 +1930,11 @@ void CG_MissileHitWall( int weapon, int clientNum, vec3_t origin, vec3_t dir, im
 		lightColor[0] = 1;
 		lightColor[1] = 0.75;
 		lightColor[2] = 0.0;
-		//if (cg_oldRocket.integer == 0) {
-			// explosion sprite animation
-			VectorMA( origin, 24, dir, sprOrg );
-			VectorScale( dir, 64, sprVel );
 
-			CG_ParticleExplosion( "explode1", sprOrg, sprVel, 1400, 20, 30 );
-		//}
+		VectorMA( origin, 24, dir, sprOrg );
+		VectorScale( dir, 64, sprVel );
+
+		CG_ParticleExplosion( "explode1", sprOrg, sprVel, 1400, 20, 30 );
 		break;
 #ifdef MISSIONPACK
 	case WP_RAILGUN:
@@ -2002,12 +2002,18 @@ void CG_MissileHitWall( int weapon, int clientNum, vec3_t origin, vec3_t dir, im
 
 			CG_ParticleExplosion( "explode1", sprOrg, sprVel, 1400, 20, 30 );
 		}*/
-		mod = cgs.media.dishFlashModel;
-		//shader = cgs.media.flameExplosionShader;
+		//mod = cgs.media.ballFlashModel;
+		/*mod = cgs.media.dishFlashModel;
 		shader = cgs.media.rocketExplosionShader;
-		//sfx = cgs.media.sfx_rockexp;// mmp - was cgs.media.sfx_plasmaexp
-		sfx = 0;
 		mark = cgs.media.burnMarkShader;
+		radius = 64;
+		light = 100;
+		isSprite = qtrue;
+		duration = 1000;*/
+
+		mark = cgs.media.burnMarkShader;
+		radius = 64;
+
 		break;
 
 	}

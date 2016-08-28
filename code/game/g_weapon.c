@@ -585,6 +585,10 @@ FLAME
 void Weapon_Flamethrower_fire (gentity_t *ent) {
 	gentity_t	*m;
 
+	// if underwater, flamethrower becomes useless
+	if (trap_PointContents (muzzle, -1) & MASK_WATER) {
+		return;
+	}
 	m = fire_flame (ent, muzzle, forward, right, up);
 	m->damage *= s_quadFactor * GetDamageLevel( ent );
 	m->splashDamage *= s_quadFactor * GetDamageLevel( ent );

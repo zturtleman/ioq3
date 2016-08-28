@@ -815,7 +815,7 @@ typedef struct {
 	qhandle_t	machinegunBrassModel;
 	qhandle_t	shotgunBrassModel;
 
-	qhandle_t	laserRingsShader;
+	qhandle_t	laserRingsShader; // TODO: needs to be renamed, the laser gun was removed a long time ago, plasma gun and spread shot only uses this shader
 	qhandle_t	laserCoreShader;
 
 	qhandle_t	lightningShader;
@@ -957,6 +957,7 @@ typedef struct {
 	qhandle_t	bulletFlashModel;
 	qhandle_t	ringFlashModel;
 	qhandle_t	dishFlashModel;
+	qhandle_t	ballFlashModel; // mmp
 	qhandle_t	lightningExplosionModel;
 
 	// weapon effect shaders
