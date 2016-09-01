@@ -6,7 +6,7 @@
 ## Information
 MFArena is an Arena First Person Shooter (AFPS), that follows in the foot steps of Quake 1 and 2 (however not QuakeLive, and yes, you can thank god).  While the game's theme may not be Quake'ish, the gameplay will feel Quake'ish.
 
-Since MFArena is currently in alpha release, may features have not been implemented as of yet.  Mainly the Multiplayer component is the only playable part of MFArena.  UI functions were not started much at all, and still use layouts from Quake 3.
+Since MFArena is currently in alpha release, many features have not been implemented as of yet.  Mainly the Multiplayer component is the only playable part of MFArena.  UI functions were not started much at all, and still use layouts from Quake 3.
 
 MFA code is forked from IOQuake3 and is licensed under GNU General Public License v2.  Code is open for those who want to mod, and open for those who just want the openness of code.
 
