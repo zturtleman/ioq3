@@ -275,11 +275,11 @@ vmCvar_t	hud_briefScore_xAlign;
 vmCvar_t	hud_briefScore_yPos;
 vmCvar_t	hud_briefScore_xScale;
 vmCvar_t	hud_briefScore_yScale;
-vmCvar_t	hud_briefScore_colorTeam;
+/*vmCvar_t	hud_briefScore_colorTeam;
 vmCvar_t	hud_briefScore_colorEnemy;
 vmCvar_t	hud_briefScore_colorRed;
 vmCvar_t	hud_briefScore_colorBlue;
-vmCvar_t	hud_briefScore_colorNum;
+vmCvar_t	hud_briefScore_colorNum;*/
 
 vmCvar_t	hud_matchInfo_show;
 vmCvar_t	hud_matchInfo_align;
@@ -852,11 +852,11 @@ static cvarTable_t cvarTable[] = {
 	{ &hud_briefScore_yPos, "hud_briefScore_yPos", "0", CVAR_ARCHIVE},
 	{ &hud_briefScore_xScale, "hud_briefScore_xScale", "1.0", CVAR_ARCHIVE},
 	{ &hud_briefScore_yScale, "hud_briefScore_yScale", "1.0", CVAR_ARCHIVE},
-	{ &hud_briefScore_colorTeam, "hud_briefScore_colorTeam", "0060C0FF", CVAR_ARCHIVE},
+	/*{ &hud_briefScore_colorTeam, "hud_briefScore_colorTeam", "0060C0FF", CVAR_ARCHIVE},
 	{ &hud_briefScore_colorEnemy, "hud_briefScore_colorEnemy", "00C000FF", CVAR_ARCHIVE},
 	{ &hud_briefScore_colorRed, "hud_briefScore_colorRed", "FF0000FF", CVAR_ARCHIVE},
 	{ &hud_briefScore_colorBlue, "hud_briefScore_colorBlue", "0000FFFF", CVAR_ARCHIVE},
-	{ &hud_briefScore_colorNum, "hud_briefScore_colorNum", "FFFFFFFF", CVAR_ARCHIVE},
+	{ &hud_briefScore_colorNum, "hud_briefScore_colorNum", "FFFFFFFF", CVAR_ARCHIVE},*/
 
 	{ &hud_matchInfo_show, "hud_matchInfo_show", "1", CVAR_ARCHIVE},
 	{ &hud_matchInfo_align, "hud_matchInfo_align", "0", CVAR_ARCHIVE},
@@ -1664,9 +1664,9 @@ static void CG_RegisterSounds( void ) {
 	cgs.media.flightSound = trap_S_RegisterSound( "sound/items/flight.wav", qfalse );
 	cgs.media.medkitSound = trap_S_RegisterSound ("sound/items/use_medkit.wav", qfalse);
 	cgs.media.quadSound = trap_S_RegisterSound("sound/items/quad_act.wav", qfalse);
-	cgs.media.sfx_ric1 = trap_S_RegisterSound ("sound/weapons/machinegun/ric1.wav", qfalse);
-	cgs.media.sfx_ric2 = trap_S_RegisterSound ("sound/weapons/machinegun/ric2.wav", qfalse);
-	cgs.media.sfx_ric3 = trap_S_RegisterSound ("sound/weapons/machinegun/ric3.wav", qfalse);
+	cgs.media.sfx_ric1 = trap_S_RegisterSound ("sound/weapons/ric1.wav", qfalse);
+	cgs.media.sfx_ric2 = trap_S_RegisterSound ("sound/weapons/ric2.wav", qfalse);
+	cgs.media.sfx_ric3 = trap_S_RegisterSound ("sound/weapons/ric3.wav", qfalse);
 	//cgs.media.sfx_railg = trap_S_RegisterSound ("sound/weapons/railgun/railgf1a.wav", qfalse);
 	//cgs.media.sfx_rockexp = trap_S_RegisterSound ("sound/weapons/rocket/rocklx1a.wav", qfalse);
 	cgs.media.sfx_rockexp = trap_S_RegisterSound ("sound/action/explosion.wav", qfalse);
@@ -1791,16 +1791,15 @@ static void CG_RegisterGraphics( void ) {
 	cgs.media.miniMapTeam = trap_R_RegisterShaderNoMip( "gfx/hud/miniMapTeam" );
 
 	// hud bar parts
-	for ( i=0 ; i<NUM_HUDBAR_TYPES ; i++) {
+	/*for ( i=0 ; i<NUM_HUDBAR_TYPES ; i++) {
 		cgs.media.hudBarShaders[i] = trap_R_RegisterShaderNoMip( va("gfx/hud/statBar%c", '0'+i) );
-	}
-	/*for ( y=0 ; y<NUM_HUDBAR_TYPES ; y++) {
-		for ( x=0 ; x<NUM_HUDBAR_PARTS ; x++) {
-			cgs.media.hudBarShaders[y][x] = trap_R_RegisterShaderNoMip( va("gfx/hud/statBar%c%c", '0'+y, '0'+x) );
-		}
 	}*/
 
 	// hud elements
+	cgs.media.hudBorderShaders[0] = trap_R_RegisterShaderNoMip( "gfx/hud/border0" );
+	cgs.media.hudMiniScoreShaders[0] = trap_R_RegisterShaderNoMip( "gfx/hud/miniScore0" );
+	cgs.media.hudFlagStatus[0] = trap_R_RegisterShaderNoMip( "gfx/hud/flagInfo0" );
+	/*
 	for ( i=0 ; i<NUM_BORDER_TYPES ; i++) {
 		cgs.media.hudBorderShaders[i] = trap_R_RegisterShaderNoMip( va("gfx/hud/border%c", '0'+i) );
 	}
@@ -1812,10 +1811,10 @@ static void CG_RegisterGraphics( void ) {
 	for ( i=0 ; i<NUM_PLAYER_PORTS ; i++) {
 		cgs.media.hudPlayerPort[i] = trap_R_RegisterShaderNoMip( "gfx/hud/defaultPort" );
 	}
-	//cgs.media.hudPlayerPort[1] = trap_R_RegisterShaderNoMip( "gfx/hud/testPort" ); // test
 	for ( i=0 ; i<NUM_FIXED_PORTS ; i++) {
 		cgs.media.hudFixedPort[i] = trap_R_RegisterShaderNoMip( va("gfx/hud/fixedPort%i", '0'+i) );
 	}
+	*/
 
 	cgs.media.hudGrad = trap_R_RegisterShaderNoMip( "gfx/hud/grad0" );
 	cgs.media.hudGradRCurve = trap_R_RegisterShaderNoMip( "gfx/hud/grad1" );
@@ -2016,8 +2015,10 @@ static void CG_RegisterGraphics( void ) {
 	/*cgs.media.armorModel = trap_R_RegisterModel( "models/powerups/armor/armor_yel.md3" );
 	cgs.media.armorIcon  = trap_R_RegisterShaderNoMip( "icons/iconr_yellow" );*/
 
-	cgs.media.machinegunBrassModel = trap_R_RegisterModel( "models/weapons2/shells/m_shell.md3" );
-	cgs.media.shotgunBrassModel = trap_R_RegisterModel( "models/weapons2/shells/s_shell.md3" );
+	/*cgs.media.machinegunBrassModel = trap_R_RegisterModel( "models/weapons2/shells/m_shell.md3" );
+	cgs.media.shotgunBrassModel = trap_R_RegisterModel( "models/weapons2/shells/s_shell.md3" );*/
+	cgs.media.machinegunBrassModel = trap_R_RegisterModel( "models/weaphits/bullet.md3" );
+	cgs.media.shotgunBrassModel = trap_R_RegisterModel( "models/weaphits/bullet.md3" );
 
 	/*
 	cgs.media.gibAbdomen = trap_R_RegisterModel( "models/gibs/abdomen.md3" );
@@ -2049,7 +2050,8 @@ static void CG_RegisterGraphics( void ) {
 
 	cgs.media.bloodExplosionShader = trap_R_RegisterShader( "bloodExplosion" );
 
-	cgs.media.bulletFlashModel = trap_R_RegisterModel("models/weaphits/bullet.md3");
+	/*cgs.media.bulletFlashModel = trap_R_RegisterModel("models/weaphits/bullet.md3");*/
+	cgs.media.bulletFlashModel = trap_R_RegisterModel("models/weaphits/ring02.md3");
 	cgs.media.ringFlashModel = trap_R_RegisterModel("models/weaphits/ring02.md3");
 	cgs.media.dishFlashModel = trap_R_RegisterModel("models/weaphits/boom01.md3");
 	cgs.media.ballFlashModel = trap_R_RegisterModel("models/weaphits/ball03.md3");

@@ -1608,11 +1608,11 @@ extern	vmCvar_t		hud_briefScore_xAlign;
 extern	vmCvar_t		hud_briefScore_yPos;
 extern	vmCvar_t		hud_briefScore_xScale;
 extern	vmCvar_t		hud_briefScore_yScale;
-extern	vmCvar_t		hud_briefScore_colorTeam;
+/*extern	vmCvar_t		hud_briefScore_colorTeam;
 extern	vmCvar_t		hud_briefScore_colorEnemy;
 extern	vmCvar_t		hud_briefScore_colorRed;
 extern	vmCvar_t		hud_briefScore_colorBlue;
-extern	vmCvar_t		hud_briefScore_colorNum;
+extern	vmCvar_t		hud_briefScore_colorNum;*/
 
 extern	vmCvar_t		hud_matchInfo_show;
 extern	vmCvar_t		hud_matchInfo_align;

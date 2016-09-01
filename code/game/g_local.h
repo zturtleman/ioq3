@@ -90,6 +90,7 @@ typedef enum {
 	FTYPE_NOTHING,
 	FTYPE_POWERUP,
 	FTYPE_OBJECTIVE,
+	FTYPE_LEADER,
 	FTYPE_MAXTYPE
 } followType_t;
 

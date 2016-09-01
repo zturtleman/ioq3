@@ -786,8 +786,8 @@ static qboolean CG_ScanForExistingClientInfo( clientInfo_t *ci ) {
 		if ( !Q_stricmp( ci->modelName, match->modelName )
 			&& !Q_stricmp( ci->skinName, match->skinName )
 			&& !Q_stricmp( ci->headModelName, match->headModelName )
-			&& !Q_stricmp( ci->headSkinName, match->headSkinName ) 
-			&& !Q_stricmp( ci->blueTeam, match->blueTeam ) 
+			&& !Q_stricmp( ci->headSkinName, match->headSkinName )
+			&& !Q_stricmp( ci->blueTeam, match->blueTeam )
 			&& !Q_stricmp( ci->redTeam, match->redTeam )
 			&& (cgs.gametype < GT_TEAM || ci->team == match->team) ) {
 			// this clientinfo is identical, so use its handles
@@ -1321,7 +1321,7 @@ static void CG_SwingAngles( float destination, float swingTolerance, float clamp
 	if ( !*swinging ) {
 		return;
 	}
-	
+
 	// modify the speed depending on the delta
 	// so it doesn't seem so linear
 	swing = AngleSubtract( destination, *angle );
@@ -1415,8 +1415,8 @@ static void CG_PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t torso[3], v
 	// --------- yaw -------------
 
 	// allow yaw to drift a bit
-	if ( ( cent->currentState.legsAnim & ~ANIM_TOGGLEBIT ) != LEGS_IDLE 
-		|| ((cent->currentState.torsoAnim & ~ANIM_TOGGLEBIT) != TORSO_STAND 
+	if ( ( cent->currentState.legsAnim & ~ANIM_TOGGLEBIT ) != LEGS_IDLE
+		|| ((cent->currentState.torsoAnim & ~ANIM_TOGGLEBIT) != TORSO_STAND
 		&& (cent->currentState.torsoAnim & ~ANIM_TOGGLEBIT) != TORSO_STAND2)) {
 		// if not standing still, always point all in the same direction
 		cent->pe.torso.yawing = qtrue;	// always center
@@ -1536,10 +1536,10 @@ static void CG_HasteTrail( centity_t *cent ) {
 	VectorCopy( cent->lerpOrigin, origin );
 	origin[2] -= 16;
 
-	smoke = CG_SmokePuff( origin, vec3_origin, 
-				  8, 
+	smoke = CG_SmokePuff( origin, vec3_origin,
+				  8,
 				  1, 1, 1, 1,
-				  500, 
+				  500,
 				  cg.time,
 				  0,
 				  0,
@@ -2007,7 +2007,7 @@ static void CG_PlayerSprites( centity_t *cent ) {
 	}*/
 
 	team = cgs.clientinfo[ cent->currentState.clientNum ].team;
-	if ( !(cent->currentState.eFlags & EF_DEAD) && 
+	if ( !(cent->currentState.eFlags & EF_DEAD) &&
 		cg.snap->ps.persistant[PERS_TEAM] == team &&
 		cgs.gametype >= GT_TEAM) {
 		if (cg_drawFriend.integer) {
@@ -2064,11 +2064,11 @@ static qboolean CG_PlayerShadow( centity_t *cent, float *shadowPlane ) {
 	alpha = 1.0 - trace.fraction;
 
 	// hack / FPE - bogus planes?
-	//assert( DotProduct( trace.plane.normal, trace.plane.normal ) != 0.0f ) 
+	//assert( DotProduct( trace.plane.normal, trace.plane.normal ) != 0.0f )
 
 	// add the mark as a temporary, so it goes directly to the renderer
 	// without taking a spot in the cg_marks array
-	CG_ImpactMark( cgs.media.shadowMarkShader, trace.endpos, trace.plane.normal, 
+	CG_ImpactMark( cgs.media.shadowMarkShader, trace.endpos, trace.plane.normal,
 		cent->pe.legs.yawAngle, alpha,alpha,alpha,1, qfalse, 24, qtrue );
 
 	return qtrue;
@@ -2196,7 +2196,8 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, entityState_t *state, int te
 			trap_R_AddRefEntityToScene( ent );
 		//}
 
-		if ( !isMissile && cg_lumOverlay.integer && !(state->eFlags & EF_DEAD) ) {
+		// lum overlay
+		/*if ( !isMissile && cg_lumOverlay.integer && !(state->eFlags & EF_DEAD) ) {
 			switch(team) {
 				case TEAM_RED:
 					ent->customShader = cgs.media.redOverlay;
@@ -2210,7 +2211,7 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, entityState_t *state, int te
 					ent->customShader = cgs.media.neutralOverlay;
 					trap_R_AddRefEntityToScene( ent );
 			}
-		}
+		}*/
 
 		if ( isMissile || !(state->eFlags & EF_DEAD) ) {
 
@@ -2262,7 +2263,7 @@ int CG_LightVerts( vec3_t normal, int numVerts, polyVert_t *verts )
 			verts[i].modulate[2] = ambientLight[2];
 			verts[i].modulate[3] = 255;
 			continue;
-		} 
+		}
 		j = ( ambientLight[0] + incoming * directedLight[0] );
 		if ( j > 255 ) {
 			j = 255;
@@ -2284,6 +2285,41 @@ int CG_LightVerts( vec3_t normal, int numVerts, polyVert_t *verts )
 		verts[i].modulate[3] = 255;
 	}
 	return qtrue;
+}
+
+/*
+===============
+CG_setColor
+===============
+*/
+void CG_setColor(clientInfo_t * ci, refEntity_t * model, int state){
+
+  	clientInfo_t *localPlayer;
+  	localPlayer = &cgs.clientinfo[cg.clientNum];
+
+	if( ( state & EF_DEAD ) ){
+		model->shaderRGBA[0] = model->shaderRGBA[1] = model->shaderRGBA[2] = model->shaderRGBA[3] = 0;
+		return;
+	}
+	else if( ci->team == TEAM_FREE ){
+		// TODO: allow players in team free games to choose the color they want (other than black of course)
+		model->shaderRGBA[0] = model->shaderRGBA[1] = model->shaderRGBA[2] = model->shaderRGBA[3] = 255;
+
+		/*CG_setRGBA(legs->shaderRGBA, cg_enemyLegsColor.string);
+		CG_setRGBA(torso->shaderRGBA, cg_enemyTorsoColor.string);
+		CG_setRGBA(head->shaderRGBA, cg_enemyHeadColor.string);*/
+		return;
+	}
+	else if( ci->team == TEAM_RED ){
+		model->shaderRGBA[1] = model->shaderRGBA[2] = 0;
+		model->shaderRGBA[0] = model->shaderRGBA[3] = 255;
+		return;
+	}
+	else if( ci->team == TEAM_BLUE ){
+		model->shaderRGBA[0] = model->shaderRGBA[1] = 0;
+		model->shaderRGBA[2] = model->shaderRGBA[3] = 255;
+		return;
+	}
 }
 
 /*
@@ -2341,9 +2377,13 @@ void CG_Player( centity_t *cent ) {
 	memset( &torso, 0, sizeof(torso) );
 	memset( &head, 0, sizeof(head) );
 
+	CG_setColor( ci, &legs, cent->currentState.eFlags );
+	CG_setColor( ci, &torso, cent->currentState.eFlags );
+	CG_setColor( ci, &head, cent->currentState.eFlags );
+
 	// get the rotation information
 	CG_PlayerAngles( cent, legs.axis, torso.axis, head.axis );
-	
+
 	// get the animation state (after rotation, to allow feet shuffle)
 	CG_PlayerAnimation( cent, &legs.oldframe, &legs.frame, &legs.backlerp,
 		 &torso.oldframe, &torso.frame, &torso.backlerp );
@@ -2424,7 +2464,7 @@ void CG_Player( centity_t *cent ) {
 			angle = ((cg.time / 4) & 255) * (M_PI * 2) / 255;
 			dir[2] = 15 + sin(angle) * 8;
 			VectorAdd(torso.origin, dir, skull.origin);
-			
+
 			dir[2] = 0;
 			VectorCopy(dir, skull.axis[1]);
 			VectorNormalize(skull.axis[1]);
@@ -2502,7 +2542,7 @@ void CG_Player( centity_t *cent ) {
 			dir[1] = cos(angle) * 20;
 			dir[2] = 0;
 			VectorAdd(torso.origin, dir, skull.origin);
-			
+
 			VectorCopy(dir, skull.axis[1]);
 			VectorNormalize(skull.axis[1]);
 			VectorSet(skull.axis[2], 0, 0, 1);
@@ -2654,7 +2694,7 @@ A player just came into view or teleported, so reset all animation info
 */
 void CG_ResetPlayerEntity( centity_t *cent ) {
 	cent->errorTime = -99999;		// guarantee no error decay added
-	cent->extrapolated = qfalse;	
+	cent->extrapolated = qfalse;
 
 	CG_ClearLerpFrame( &cgs.clientinfo[ cent->currentState.clientNum ], &cent->pe.legs, cent->currentState.legsAnim );
 	CG_ClearLerpFrame( &cgs.clientinfo[ cent->currentState.clientNum ], &cent->pe.torso, cent->currentState.torsoAnim );

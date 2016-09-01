@@ -2528,7 +2528,7 @@ static void CG_Draw2D(stereoFrame_t stereoFrame)
 	vec4_t		colorMagenta, colorGreen, colorDirtBlue, colorMapColor;
 	vec4_t		colorRed, colorBlue;
 	vec4_t		colorBlack;
-	vec4_t		colorDGray;
+	vec4_t		colorDGray, colorBrown, colorWhite;
 
 	vec4_t		colorOverlay;
 	//int			powerupFlags;
@@ -2658,6 +2658,8 @@ vvvvvvvvvvvvvvvvvvvvv
 	color[0] = color[1] = color[2] = 1.0;
 	color[3] = 1.0; // alpha
 
+	colorWhite[0] = colorWhite[1] = colorWhite[2] = colorWhite[3] = 1.0;
+
 	colorMagenta[0] = colorMagenta[2] = colorMagenta[3] = color[0];
 	colorMagenta[1] = 0.0;
 
@@ -2674,6 +2676,11 @@ vvvvvvvvvvvvvvvvvvvvv
 
 	colorGreen[0] = colorGreen[2] = 0.0;
 	colorGreen[1] = colorGreen[3] = 1.0;
+
+	colorBrown[0] = 0.5;
+	colorBrown[1] = 0.325;
+	colorBrown[2] = 0.2;
+	colorBrown[3] = 1.0;
 
 	colorMapColor[0] = 0.0;
 	colorMapColor[1] = 0.8;
@@ -2815,14 +2822,14 @@ vvvvvvvvvvvvvvvvvvvvv
 										hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
 										hud_briefScore_align.integer, hud_briefScore_style.integer,
 										hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-										1, hud_briefScore_colorTeam.string );
+										1, colorDirtBlue );
 						} else {
 							HUD_MegaDrawBriefScoreGrad ( hud_briefScore_xPos.integer,
 										alignTable[hud_briefScore_xAlign.integer & 3],
 										hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
 										hud_briefScore_align.integer, hud_briefScore_style.integer,
 										hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-										1, hud_briefScore_colorEnemy.string );
+										1, colorBrown );
 						}
 
 						// 1st place
@@ -2832,14 +2839,14 @@ vvvvvvvvvvvvvvvvvvvvv
 										hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
 										hud_briefScore_align.integer, hud_briefScore_style.integer,
 										hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-										0, hud_briefScore_colorTeam.string );
+										0, colorDirtBlue );
 						} else {
 							HUD_MegaDrawBriefScoreGrad ( hud_briefScore_xPos.integer,
 										alignTable[hud_briefScore_xAlign.integer & 3],
 										hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
 										hud_briefScore_align.integer, hud_briefScore_style.integer,
 										hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-										0, hud_briefScore_colorEnemy.string );
+										0, colorBrown );
 						}
 
 					} else {
@@ -2848,14 +2855,14 @@ vvvvvvvvvvvvvvvvvvvvv
 									hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
 									hud_briefScore_align.integer, hud_briefScore_style.integer,
 									hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-									0, hud_briefScore_colorRed.string );
+									0, colorRed );
 
 						HUD_MegaDrawBriefScoreGrad ( hud_briefScore_xPos.integer,
 									alignTable[hud_briefScore_xAlign.integer & 3],
 									hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
 									hud_briefScore_align.integer, hud_briefScore_style.integer,
 									hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-									1, hud_briefScore_colorBlue.string );
+									1, colorBlue );
 					}
 				}
 
@@ -2863,7 +2870,7 @@ vvvvvvvvvvvvvvvvvvvvv
 						hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
 						hud_briefScore_align.integer, hud_briefScore_style.integer,
 						hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-						hud_briefScore_colorNum.string );
+						colorWhite );
 
 				HUD_MegaDrawMatchInfo( hud_matchInfo_xPos.integer, alignTable[hud_matchInfo_xAlign.integer & 3],
 							hud_matchInfo_yPos.integer, hud_matchInfo_posLock.integer,

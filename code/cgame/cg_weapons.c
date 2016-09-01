@@ -699,7 +699,8 @@ void CG_RegisterWeapon( int weaponNum ) {
 
 		weaponInfo->flashSound[0] = trap_S_RegisterSound( "sound/weapons/lightning/lg_fire.wav", qfalse );
 		cgs.media.lightningShader = trap_R_RegisterShader( "lightningBolt");
-		cgs.media.lightningExplosionModel = trap_R_RegisterModel( "models/weaphits/crackle.md3" );
+		/*cgs.media.lightningExplosionModel = trap_R_RegisterModel( "models/weaphits/crackle.md3" );*/
+		cgs.media.lightningExplosionModel = trap_R_RegisterModel( "models/weaphits/zap.md3" );
 		cgs.media.sfx_lghit1 = trap_S_RegisterSound( "sound/weapons/lightning/lg_hit.wav", qfalse );
 		cgs.media.sfx_lghit2 = trap_S_RegisterSound( "sound/weapons/lightning/lg_hit2.wav", qfalse );
 		cgs.media.sfx_lghit3 = trap_S_RegisterSound( "sound/weapons/lightning/lg_hit3.wav", qfalse );
@@ -1962,23 +1963,41 @@ void CG_MissileHitWall( int weapon, int clientNum, vec3_t origin, vec3_t dir, im
 		radius = 16;
 		break;
 	case WP_SHOTGUN:
+	case WP_SUPER_SHOTGUN:
 		mod = cgs.media.bulletFlashModel;
 		shader = cgs.media.bulletExplosionShader;
 		mark = cgs.media.bulletMarkShader;
-		sfx = 0;
+		duration = 333;
+		r = rand() & 3;
+		if ( r == 1 ) {
+			sfx = cgs.media.sfx_ric1;
+		} else if ( r > 1 ) {
+			sfx = cgs.media.sfx_ric2;
+		} else {
+			sfx = cgs.media.sfx_ric3;
+		}
 		radius = 4;
 		break;
 
 	case WP_CHAINGUN:
 		mod = cgs.media.bulletFlashModel;
-		if( soundType == IMPACTSOUND_FLESH ) {
+		shader = cgs.media.bulletExplosionShader;
+		mark = cgs.media.bulletMarkShader;
+		/*if( soundType == IMPACTSOUND_FLESH ) {
 			sfx = cgs.media.sfx_chghitflesh;
 		} else if( soundType == IMPACTSOUND_METAL ) {
 			sfx = cgs.media.sfx_chghitmetal;
 		} else {
 			sfx = cgs.media.sfx_chghit;
+		}*/
+		r = rand() & 3;
+		if ( r == 1 ) {
+			sfx = cgs.media.sfx_ric1;
+		} else if ( r > 1 ) {
+			sfx = cgs.media.sfx_ric2;
+		} else {
+			sfx = cgs.media.sfx_ric3;
 		}
-		mark = cgs.media.bulletMarkShader;
 
 		radius = 8;
 		break;

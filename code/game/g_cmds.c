@@ -1926,14 +1926,23 @@ void Cmd_FollowCycle_f( gentity_t *ent, int dir, int ftype ) {
 		// switch based on a filter
 		if ( ftype ) {
 			switch ( ftype ) {
+
 				// filter based on powerup
 				case FTYPE_POWERUP:
 					if ( !level.clients[ clientnum ].ps.powerups[PW_PENT] && !level.clients[ clientnum ].ps.powerups[PW_QUAD] ) {
 						continue;
 					}
+
 				// filter based on objective
 				case FTYPE_OBJECTIVE:
 					if ( !level.clients[ clientnum ].ps.powerups[PW_REDFLAG] && !level.clients[ clientnum ].ps.powerups[PW_BLUEFLAG] ) {
+						continue;
+					}
+					break;
+
+				// filter based on score leader
+				case FTYPE_LEADER:
+					if ( /*clientnum != level.sortedClients[0] && */ level.clients[clientnum].ps.persistant[PERS_SCORE] != level.clients[level.sortedClients[0]].ps.persistant[PERS_SCORE] ) {
 						continue;
 					}
 					break;
@@ -3525,6 +3534,10 @@ void ClientCommand( int clientNum ) {
 		Cmd_FollowCycle_f (ent, 1, FTYPE_POWERUP);
 	else if (Q_stricmp (cmd, "followprevpowerup") == 0)
 		Cmd_FollowCycle_f (ent, -1, FTYPE_POWERUP);
+	else if (Q_stricmp (cmd, "follownextleader") == 0)
+		Cmd_FollowCycle_f (ent, 1, FTYPE_LEADER);
+	else if (Q_stricmp (cmd, "followprevleader") == 0)
+		Cmd_FollowCycle_f (ent, -1, FTYPE_LEADER);
 	else if (Q_stricmp (cmd, "follownextobj") == 0)
 		Cmd_FollowCycle_f (ent, 1, FTYPE_OBJECTIVE);
 	else if (Q_stricmp (cmd, "followprevobj") == 0)

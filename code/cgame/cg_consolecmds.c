@@ -653,6 +653,8 @@ void CG_InitConsoleCommands( void ) {
 	trap_AddCommand ("followprev");
 	trap_AddCommand ("follownextpowerup");
 	trap_AddCommand ("followprevpowerup");
+	trap_AddCommand ("follownextleader");
+	trap_AddCommand ("followprevleader");
 	trap_AddCommand ("follownextobj");
 	trap_AddCommand ("followprevobj");
 	trap_AddCommand ("specMode");

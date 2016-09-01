@@ -684,9 +684,9 @@ HUD_MegaDrawBriefScoreGrad
 =================
 */
 void HUD_MegaDrawBriefScoreGrad( int xpos, int xoff, int ypos, int posLock, int align, int style,
-						float scaleX, float scaleY, int spos, const char *colorStr ) {
+						float scaleX, float scaleY, int spos, vec4_t color /*const char *colorStr*/ ) {
 
-	vec4_t		color;
+	/*vec4_t		color;*/
 
 	// position lock
 	if (posLock > 0 && posLock <= 6) {
@@ -753,7 +753,7 @@ void HUD_MegaDrawBriefScoreGrad( int xpos, int xoff, int ypos, int posLock, int 
 
 	ypos += (spos * 14 + 2) * scaleY;
 
-	HUD_FuncColorGet ( colorStr, color );
+	//HUD_FuncColorGet ( colorStr, color );
 	trap_R_SetColor( color );
 	trap_R_DrawStretchPic( (float)(xpos - ( 43 * scaleX ) ) * cgs.screenXScale + cgs.screenXOffset,
 				(float)ypos * cgs.screenYScale + cgs.screenYOffset,
@@ -861,8 +861,8 @@ HUD_MegaDrawBriefScore
 */
 void HUD_MegaDrawBriefScore( /*int xpos, int ypos, int layout, int style, float scale,*/
 						int xpos, int xoff, int ypos, int posLock, int align, int style,
-						float scaleX, float scaleY,
-						/*char *colorStr1, char *colorStr2,*/ const char *colorStr ) {
+						float scaleX, float scaleY, vec4_t color
+						/*char *colorStr1, char *colorStr2,*/ /*const char *colorStr*/ ) {
 
 	const char	*s;
 	int			s1, s2, score;
@@ -879,7 +879,7 @@ void HUD_MegaDrawBriefScore( /*int xpos, int ypos, int layout, int style, float 
 	float		scoreWidthAdj;
 	int			limitAlert;
 
-	vec4_t		color;
+	/*vec4_t		color;*/
 
 	if ( !hud_briefScore_show.integer ) {
 		return;
@@ -1025,7 +1025,7 @@ void HUD_MegaDrawBriefScore( /*int xpos, int ypos, int layout, int style, float 
 						(float) 16 * axscale, (float) 32 * ayscale,
 						0.75, 0.0, 1.0, 1.0, hShader );
 
-		HUD_FuncColorGet ( colorStr, color );
+		/*HUD_FuncColorGet ( colorStr, color );*/
 		x = ( 5 * scaleX );
 		if ( s1 != SCORE_NOT_PRESENT ) {
 			if ( HUD_MegaDrawBriefScoreLimitFlash(s1, s2, limitAlert) ) {
@@ -1072,7 +1072,7 @@ void HUD_MegaDrawBriefScore( /*int xpos, int ypos, int layout, int style, float 
 						(float) 16 * axscale, (float) 32 * ayscale,
 						0.75, 0.0, 1.0, 1.0, hShader );
 
-		HUD_FuncColorGet ( colorStr, color );
+		/*HUD_FuncColorGet ( colorStr, color );*/
 		x = ( 5 * scaleX );
 
 		if ( HUD_MegaDrawBriefScoreLimitFlash(s1, s2, limitAlert) ) {

@@ -365,7 +365,7 @@ void Con_Init (void) {
 	Cmd_AddCommand ("messagemode4", Con_MessageMode4_f);
 	Cmd_AddCommand ("clear", Con_Clear_f);
 	Cmd_AddCommand ("condump", Con_Dump_f);
-	Cmd_SetCommandCompletionFunc( "condump", Cmd_CompleteTxtName );
+	//Cmd_SetCommandCompletionFunc( "condump", Cmd_CompleteTxtName );
 }
 
 /*
