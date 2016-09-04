@@ -689,6 +689,7 @@ void CG_AddToHUDInfo( int hudBox, const char *str, int emoticon, int hideInfo ) 
 		}
 
 		// emoticons
+		// TODO: code this whole section better
 		if ( emoticon && hud_useEmoticons.integer ) {
 			if ( (emoticonSkipPos + 1) == emoticon ) {
 				//Com_Printf( S_COLOR_SKY "DEBUG: %i=='%i'\n", emoticonSkipPos, emoticon);
@@ -777,6 +778,21 @@ void CG_AddToHUDInfo( int hudBox, const char *str, int emoticon, int hideInfo ) 
 						*p++ = '\x1A';
 						str+=2;
 						continue;
+					}
+				} else
+				// TODO: code this better
+				if ( *str == '(' ) {
+					advstr = str + 1;
+					if ( *advstr == '_' ) {
+						if ( *(advstr+1) == '|' ) {
+							if ( *(advstr+2) == '_' ) {
+								if ( *(advstr+3) == ')' ) {
+									*p++ = '\x80';
+									str+=5;
+									continue;
+								}
+							}
+						}
 					}
 				} else
 				if ( *str == '8' ) {
