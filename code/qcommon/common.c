@@ -176,7 +176,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 		}
 		Q_strcat(rd_buffer, rd_buffersize, msg);
     // TTimo nooo .. that would defeat the purpose
-		//rd_flush(rd_buffer);			
+		//rd_flush(rd_buffer);
 		//*rd_buffer = 0;
 		return;
 	}
@@ -202,11 +202,11 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 			newtime = localtime( &aclock );
 
 			logfile = FS_FOpenFileWrite( "qconsole.log" );
-			
+
 			if(logfile)
 			{
 				Com_Printf( "logfile opened on %s\n", asctime( newtime ) );
-			
+
 				if ( com_logfile->integer > 1 )
 				{
 					// force it to not buffer so we get valid
@@ -239,15 +239,15 @@ A Com_Printf that only shows up if the "developer" cvar is set
 void QDECL Com_DPrintf( const char *fmt, ...) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
-		
+
 	if ( !com_developer || !com_developer->integer ) {
 		return;			// don't confuse non-developers with techie stuff...
 	}
 
-	va_start (argptr,fmt);	
+	va_start (argptr,fmt);
 	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
-	
+
 	Com_Printf ("%s", msg);
 }
 
@@ -471,7 +471,7 @@ void Com_StartupVariable( const char *match ) {
 		}
 
 		s = Cmd_Argv(1);
-		
+
 		if(!match || !strcmp(s, match))
 		{
 			if(Cvar_Flags(s) == CVAR_NONEXISTENT)
@@ -789,7 +789,7 @@ Z_ClearZone
 */
 void Z_ClearZone( memzone_t *zone, int size ) {
 	memblock_t	*block;
-	
+
 	// set the entire zone to one free block
 
 	zone->blocklist.next = zone->blocklist.prev = block =
@@ -800,7 +800,7 @@ void Z_ClearZone( memzone_t *zone, int size ) {
 	zone->rover = block;
 	zone->size = size;
 	zone->used = 0;
-	
+
 	block->prev = block->next = &zone->blocklist;
 	block->tag = 0;			// free block
 	block->id = ZONEID;
@@ -833,7 +833,7 @@ Z_Free
 void Z_Free( void *ptr ) {
 	memblock_t	*block, *other;
 	memzone_t *zone;
-	
+
 	if (!ptr) {
 		Com_Error( ERR_DROP, "Z_Free: NULL pointer" );
 	}
@@ -868,7 +868,7 @@ void Z_Free( void *ptr ) {
 	Com_Memset( ptr, 0xaa, block->size - sizeof( *block ) );
 
 	block->tag = 0;		// mark as free
-	
+
 	other = block->prev;
 	if (!other->tag) {
 		// merge with previous free block
@@ -959,10 +959,10 @@ void *Z_TagMalloc( int size, int tag ) {
 	size += sizeof(memblock_t);	// account for size of block header
 	size += 4;					// space for memory trash tester
 	size = PAD(size, sizeof(intptr_t));		// align to 32/64 bit boundary
-	
+
 	base = rover = zone->rover;
 	start = base->prev;
-	
+
 	do {
 		if (rover == start)	{
 			// scaned all the way around the list
@@ -983,7 +983,7 @@ void *Z_TagMalloc( int size, int tag ) {
 			rover = rover->next;
 		}
 	} while (base->tag || base->size < size);
-	
+
 	//
 	// found a block big enough
 	//
@@ -1000,12 +1000,12 @@ void *Z_TagMalloc( int size, int tag ) {
 		base->next = new;
 		base->size = size;
 	}
-	
+
 	base->tag = tag;			// no longer a free block
-	
+
 	zone->rover = base->next;	// next allocation will start looking here
 	zone->used += base->size;	//
-	
+
 	base->id = ZONEID;
 
 #ifdef ZONE_DEBUG
@@ -1032,7 +1032,7 @@ void *Z_MallocDebug( int size, char *label, char *file, int line ) {
 void *Z_Malloc( int size ) {
 #endif
 	void	*buf;
-	
+
   //Z_CheckHeap ();	// DEBUG
 
 #ifdef ZONE_DEBUG
@@ -1062,7 +1062,7 @@ Z_CheckHeap
 */
 void Z_CheckHeap( void ) {
 	memblock_t	*block;
-	
+
 	for (block = mainzone->blocklist.next ; ; block = block->next) {
 		if (block->next == &mainzone->blocklist) {
 			break;			// all blocks have been hit
@@ -1161,7 +1161,7 @@ memstatic_t numberstring[] = {
 	{ {(sizeof(memstatic_t) + 3) & ~3, TAG_STATIC, NULL, NULL, ZONEID}, {'5', '\0'} },
 	{ {(sizeof(memstatic_t) + 3) & ~3, TAG_STATIC, NULL, NULL, ZONEID}, {'6', '\0'} },
 	{ {(sizeof(memstatic_t) + 3) & ~3, TAG_STATIC, NULL, NULL, ZONEID}, {'7', '\0'} },
-	{ {(sizeof(memstatic_t) + 3) & ~3, TAG_STATIC, NULL, NULL, ZONEID}, {'8', '\0'} }, 
+	{ {(sizeof(memstatic_t) + 3) & ~3, TAG_STATIC, NULL, NULL, ZONEID}, {'8', '\0'} },
 	{ {(sizeof(memstatic_t) + 3) & ~3, TAG_STATIC, NULL, NULL, ZONEID}, {'9', '\0'} }
 };
 
@@ -1292,7 +1292,7 @@ void Com_Meminfo_f( void ) {
 		}
 
 		if (block->next == &mainzone->blocklist) {
-			break;			// all blocks have been hit	
+			break;			// all blocks have been hit
 		}
 		if ( (byte *)block + block->size != (byte *)block->next) {
 			Com_Printf ("ERROR: block size does not touch the next block\n");
@@ -1314,7 +1314,7 @@ void Com_Meminfo_f( void ) {
 		}
 
 		if (block->next == &smallzone->blocklist) {
-			break;			// all blocks have been hit	
+			break;			// all blocks have been hit
 		}
 	}
 
@@ -1390,7 +1390,7 @@ void Com_TouchMemory( void ) {
 			}
 		}
 		if ( block->next == &mainzone->blocklist ) {
-			break;			// all blocks have been hit	
+			break;			// all blocks have been hit
 		}
 	}
 
@@ -1531,7 +1531,7 @@ void Com_InitHunkMemory( void ) {
 
 	// make sure the file system has allocated and "not" freed any temp blocks
 	// this allows the config and product id files ( journal files too ) to be loaded
-	// by the file system without redunant routines in the file system utilizing different 
+	// by the file system without redunant routines in the file system utilizing different
 	// memory systems
 	if (FS_LoadStack() != 0) {
 		Com_Error( ERR_FATAL, "Hunk initialization failed. File system load stack not zero");
@@ -1777,7 +1777,7 @@ void *Hunk_AllocateTempMemory( int size ) {
 
 	// return a Z_Malloc'd block if the hunk has not been initialized
 	// this allows the config and product id files ( journal files too ) to be loaded
-	// by the file system without redunant routines in the file system utilizing different 
+	// by the file system without redunant routines in the file system utilizing different
 	// memory systems
 	if ( s_hunkData == NULL )
 	{
@@ -1825,7 +1825,7 @@ void Hunk_FreeTempMemory( void *buf ) {
 
 	  // free with Z_Free if the hunk has not been initialized
 	  // this allows the config and product id files ( journal files too ) to be loaded
-	  // by the file system without redunant routines in the file system utilizing different 
+	  // by the file system without redunant routines in the file system utilizing different
 	  // memory systems
 	if ( s_hunkData == NULL )
 	{
@@ -2235,7 +2235,7 @@ int Com_Milliseconds (void) {
 			Com_PushEvent( &ev );
 		}
 	} while ( ev.evType != SE_NONE );
-	
+
 	return ev.evTime;
 }
 
@@ -2312,13 +2312,13 @@ void Com_Setenv_f(void)
 	if(argc > 2)
 	{
 		char *arg2 = Cmd_ArgsFrom(2);
-		
+
 		Sys_SetEnv(arg1, arg2);
 	}
 	else if(argc == 2)
 	{
 		char *env = getenv(arg1);
-		
+
 		if(env)
 			Com_Printf("%s=%s\n", arg1, env);
 		else
@@ -2363,10 +2363,10 @@ void Com_GameRestart(int checksumFeed, qboolean disconnect)
 	if(!com_gameRestarting && com_fullyInitialized)
 	{
 		int clWasRunning;
-		
+
 		com_gameRestarting = qtrue;
 		clWasRunning = com_cl_running->integer;
-		
+
 		// Kill server if we have one
 		if(com_sv_running->integer)
 			SV_Shutdown("Game directory changed");
@@ -2375,12 +2375,12 @@ void Com_GameRestart(int checksumFeed, qboolean disconnect)
 		{
 			if(disconnect)
 				CL_Disconnect(qfalse);
-				
+
 			CL_Shutdown("Game directory changed", disconnect, qfalse);
 		}
 
 		FS_Restart(checksumFeed);
-	
+
 		// Clean out any user and VM created cvars
 		Cvar_Restart(qtrue);
 		Com_ExecuteCfg();
@@ -2398,7 +2398,7 @@ void Com_GameRestart(int checksumFeed, qboolean disconnect)
 			CL_Init();
 			CL_StartHunkUsers(qfalse);
 		}
-		
+
 		com_gameRestarting = qfalse;
 	}
 }
@@ -2418,7 +2418,7 @@ void Com_GameRestart_f(void)
 		// This is the standard base game. Servers and clients should
 		// use "" and not the standard basegame name because this messes
 		// up pak file negotiation and lots of other stuff
-		
+
 		Cvar_Set("fs_game", "");
 	}
 	else
@@ -2580,7 +2580,7 @@ static void Com_DetectSSE(void)
 {
 #if !idx64
 	cpuFeatures_t feat;
-	
+
 	feat = Sys_GetProcessorFeatures();
 
 	if(feat & CF_SSE)
@@ -2681,7 +2681,7 @@ void Com_Init( char *commandLine ) {
 	com_standalone = Cvar_Get("com_standalone", "0", CVAR_ROM);
 	com_basegame = Cvar_Get("com_basegame", BASEGAME, CVAR_INIT);
 	com_homepath = Cvar_Get("com_homepath", "", CVAR_INIT);
-	
+
 	if(!com_basegame->string[0])
 		Cvar_ForceReset("com_basegame");
 
@@ -2994,7 +2994,7 @@ int Com_ModifyMsec( int msec ) {
 	} else if (com_cameraMode->integer) {
 		msec *= com_timescale->value;
 	}
-	
+
 	// don't let it scale below 1 msec
 	if ( msec < 1 && com_timescale->value) {
 		msec = 1;
@@ -3008,7 +3008,7 @@ int Com_ModifyMsec( int msec ) {
 			Com_Printf( "Hitch warning: %i msec frame time\n", msec );
 
 		clampTime = 5000;
-	} else 
+	} else
 	if ( !com_sv_running->integer ) {
 		// clients of remote servers do not want to clamp time, because
 		// it would skew their view of the server's time temporarily
@@ -3057,13 +3057,13 @@ void Com_Frame( void ) {
 	int		msec, minMsec;
 	int		timeVal, timeValSV;
 	static int	lastTime = 0, bias = 0;
- 
+
 	int		timeBeforeFirstEvents;
 	int		timeBeforeServer;
 	int		timeBeforeEvents;
 	int		timeBeforeClient;
 	int		timeAfter;
-  
+
 
 	if ( setjmp (abortframe) ) {
 		return;			// an ERR_DROP was thrown
@@ -3076,7 +3076,7 @@ void Com_Frame( void ) {
 	timeAfter = 0;
 
 	// write config file if anything changed
-	Com_WriteConfiguration(); 
+	Com_WriteConfiguration();
 
 	//
 	// main event loop
@@ -3100,13 +3100,13 @@ void Com_Frame( void ) {
 				minMsec = 1000 / com_maxfps->integer;
 			else
 				minMsec = 1;
-			
+
 			timeVal = com_frameTime - lastTime;
 			bias += timeVal - minMsec;
-			
+
 			if(bias > minMsec)
 				bias = minMsec;
-			
+
 			// Adjust minMsec if previous frame took too long to render so
 			// that framerate is stable at the requested value.
 			minMsec -= bias;
@@ -3120,7 +3120,7 @@ void Com_Frame( void ) {
 		if(com_sv_running->integer)
 		{
 			timeValSV = SV_SendQueuedPackets();
-			
+
 			timeVal = Com_TimeVal(minMsec);
 
 			if(timeValSV < timeVal)
@@ -3128,16 +3128,16 @@ void Com_Frame( void ) {
 		}
 		else
 			timeVal = Com_TimeVal(minMsec);
-		
+
 		if(com_busyWait->integer || timeVal < 1)
 			NET_Sleep(0);
 		else
 			NET_Sleep(timeVal - 1);
 	} while(Com_TimeVal(minMsec));
-	
+
 	lastTime = com_frameTime;
 	com_frameTime = Com_EventLoop();
-	
+
 	msec = com_frameTime - lastTime;
 
 	Cbuf_Execute ();
@@ -3225,15 +3225,15 @@ void Com_Frame( void ) {
 		sv -= time_game;
 		cl -= time_frontend + time_backend;
 
-		Com_Printf ("frame:%i all:%3i sv:%3i ev:%3i cl:%3i gm:%3i rf:%3i bk:%3i\n", 
+		Com_Printf ("frame:%i all:%3i sv:%3i ev:%3i cl:%3i gm:%3i rf:%3i bk:%3i\n",
 					 com_frameNumber, all, sv, ev, cl, time_game, time_frontend, time_backend );
-	}	
+	}
 
 	//
 	// trace optimization tracking
 	//
 	if ( com_showtrace->integer ) {
-	
+
 		extern	int c_traces, c_brush_traces, c_patch_traces;
 		extern	int	c_pointcontents;
 
@@ -3499,7 +3499,7 @@ void Field_CompleteCommand( char *cmd,
 		if( ( p = Field_FindFirstSeparator( cmd ) ) )
 			Field_CompleteCommand( p + 1, qtrue, qtrue ); // Compound command
 		else
-			Cmd_CompleteArgument( baseCmd, cmd, completionArgument ); 
+			Cmd_CompleteArgument( baseCmd, cmd, completionArgument );
 	}
 	else
 	{
@@ -3582,12 +3582,12 @@ qboolean Com_IsVoipTarget(uint8_t *voipTargets, int voipTargetsSize, int clientN
 			if(voipTargets[index])
 				return qtrue;
 		}
-		
+
 		return qfalse;
 	}
 
 	index = clientNum >> 3;
-	
+
 	if(index < voipTargetsSize)
 		return (voipTargets[index] & (1 << (clientNum & 0x07)));
 
@@ -3623,7 +3623,7 @@ static qboolean Field_CompletePlayerNameFinal( qboolean whitespace )
 	return qfalse;
 }
 
-static void Name_PlayerNameCompletion( const char **names, int nameCount, void(*callback)(const char *s) ) 
+static void Name_PlayerNameCompletion( const char **names, int nameCount, void(*callback)(const char *s) )
 {
 	int i;
 
@@ -3700,7 +3700,7 @@ qboolean Com_PlayerNameToFieldString( char *str, int length, const char *name )
 			i += 4;
 		} else {
 			str[i] = *p;
-		}		
+		}
 	}
 	str[i] = '\0';
 
@@ -3727,13 +3727,13 @@ void Field_CompletePlayerName( const char **names, int nameCount )
 	//allow to tab player names
 	//if full player name switch to next player name
 	if( completionString[0] != '\0'
-		&& Q_stricmp( shortestMatch, completionString ) == 0 
-		&& nameCount > 1 ) 
+		&& Q_stricmp( shortestMatch, completionString ) == 0
+		&& nameCount > 1 )
 	{
 		int i;
 
 		for( i = 0; i < nameCount; i++ ) {
-			if( Q_stricmp( names[ i ], completionString ) == 0 ) 
+			if( Q_stricmp( names[ i ], completionString ) == 0 )
 			{
 				i++;
 				if( i >= nameCount )
@@ -3750,7 +3750,7 @@ void Field_CompletePlayerName( const char **names, int nameCount )
 	if( matchCount > 1 )
 	{
 		Com_Printf( "]%s\n", completionField->buffer );
-		
+
 		Name_PlayerNameCompletion( names, nameCount, PrintMatches );
 	}
 

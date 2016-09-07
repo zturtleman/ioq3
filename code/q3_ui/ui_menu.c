@@ -273,7 +273,8 @@ static void Main_MenuDraw( void ) {
 	UI_DrawHandlePic( 0, y2, 640, 64, s_main.bannerDemo );
 
 	// draw test banner
-	//UI_DrawHandlePic( 0, 48, 640, 64, s_main.bannerTest ); // only use this when testing an unreleased build
+	UI_DrawHandlePic( 0, 48, 640, 64, s_main.bannerTest ); // only use this when testing an unreleased build
+	// *************** DISABLE THIS WHEN RELEASING ***************
 }
 
 
