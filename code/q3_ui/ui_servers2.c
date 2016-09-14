@@ -603,6 +603,7 @@ static void ArenaServers_UpdateMenu( void ) {
 			// TODO: allow older subversions to show up in server browser
 			svinfo_ver_yr = Com_HexToByte( servernodeptr->svrInfo, INFO_POS_VERSION_Y );
 			svinfo_ver_sv = Com_HexToByte( servernodeptr->svrInfo, INFO_POS_VERSION_S );
+
 			//Com_Printf("^8DEBUG svrInfo: %i.%i (to match: %i.%i)\n", svinfo_ver_yr, svinfo_ver_sv, SVINFO_VERSION_YR, SVINFO_VERSION_SV );
 			/*if (svinfo_ver_yr == INFO_POS_VERSION_Y && svinfo_ver_sv == INFO_POS_VERSION_S ) {
 				servernodeptr->mfaCurVer = qtrue;
@@ -610,6 +611,7 @@ static void ArenaServers_UpdateMenu( void ) {
 				servernodeptr->mfaCurVer = qfalse;
 				continue;
 			}*/
+
 			if (svinfo_ver_yr != SVINFO_VERSION_YR || svinfo_ver_sv != SVINFO_VERSION_SV ) {
 				continue;
 			}
@@ -1146,8 +1148,8 @@ static void ArenaServers_StartRefresh( void )
 			trap_Cmd_ExecuteText( EXEC_APPEND, va( "globalservers %d %s%s\n", g_servertype - 1, protocol, myargs ));
 		}
 		else {
-			//trap_Cmd_ExecuteText( EXEC_APPEND, va( "globalservers %d %d%s\n", g_servertype - 1, (int)trap_Cvar_VariableValue( "protocol" ), myargs ) );
-			trap_Cmd_ExecuteText( EXEC_APPEND, va( "globalservers %d %d%s\n", g_servertype - 1, (int)trap_Cvar_VariableValue( "com_protocol" ), myargs ) );
+			trap_Cmd_ExecuteText( EXEC_APPEND, va( "globalservers %d %d%s\n", g_servertype - 1, (int)trap_Cvar_VariableValue( "protocol" ), myargs ) );
+			//trap_Cmd_ExecuteText( EXEC_APPEND, va( "globalservers %d %d%s\n", g_servertype - 1, (int)trap_Cvar_VariableValue( "com_protocol" ), myargs ) );
 		}
 	}
 }

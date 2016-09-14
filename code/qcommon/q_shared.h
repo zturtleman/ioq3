@@ -38,10 +38,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define GAMENAME_FOR_MASTER			"Quake3Arena"	// must NOT contain whitespace
 #define CINEMATICS_LOGO				"mmplogo.roq"
 #define CINEMATICS_INTRO			"intro.roq"
-//  #define LEGACY_PROTOCOL	// You probably don't need this for your standalone game
+#define LEGACY_PROTOCOL								// You probably don't need this for your standalone game
 
 // Heartbeat for dpmaster protocol. You shouldn't change this unless you know what you're doing
 #define HEARTBEAT_FOR_MASTER		"QuakeArena-1"
+#define LEGACY_PROTOCOL // this line must exist to show all servers
 
 // When com_gamename is LEGACY_MASTER_GAMENAME, use quake3 master protocol.
 // You shouldn't change this unless you know what you're doing
@@ -51,11 +52,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define BASETA				"missionpack"
 
 #ifndef PRODUCT_VERSION //  FIXME: get this working via makefile, for some reason, the set variable is not making it here
-  #define PRODUCT_VERSION	"160831.h"
+  #define PRODUCT_VERSION	"160900.h"
 #endif
 
 #define SVINFO_VERSION_YR	16
-#define SVINFO_VERSION_SV	0
+#define SVINFO_VERSION_SV	1
 
 #define Q3_VERSION PRODUCT_NAME " " PRODUCT_VERSION
 

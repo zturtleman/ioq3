@@ -44,7 +44,7 @@ typedef struct voipServerPacket_s
 	int len;
 	int sender;
 	int flags;
-	byte data[4000];
+	byte data[4096];
 } voipServerPacket_t;
 #endif
 

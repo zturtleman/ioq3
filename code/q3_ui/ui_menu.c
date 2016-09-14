@@ -43,6 +43,7 @@ MAIN MENU
 #define ID_EXIT					18
 #define ID_DLC					69
 #define ID_TEST					99
+#define ID_SERVERTEST			98
 
 #define MAIN_BANNER_MODEL			"models/mapobjects/banner/banner5.md3"
 #define MAIN_BANNER_LOGO			"mfatitle"
@@ -65,6 +66,7 @@ typedef struct {
 	menutext_s		exit;
 	menutext_s		dlc;
 	menutext_s		test;
+	menutext_s		servertest;
 
 	qhandle_t		bannerModel;
 	qhandle_t		bannerLogo;
@@ -151,6 +153,10 @@ void Main_MenuEvent (void* ptr, int event) {
 
 	case ID_TEST:
 		UI_TestMenu();
+		break;
+
+	case ID_SERVERTEST:
+		UI_ArenaServersMenu();
 		break;
 	}
 }
@@ -486,6 +492,16 @@ void UI_MainMenu( void ) {
 	s_main.test.color					= color_dim;
 	s_main.test.style					= style;
 
+	s_main.servertest.generic.type		= MTYPE_PTEXT;
+	s_main.servertest.generic.flags		= QMF_RIGHT_JUSTIFY;
+	s_main.servertest.generic.x			= 640-4;
+	s_main.servertest.generic.y			= 480-24;
+	s_main.servertest.generic.id		= ID_SERVERTEST;
+	s_main.servertest.generic.callback	= Main_MenuEvent;
+	s_main.servertest.string			= "S";
+	s_main.servertest.color				= color_dim;
+	s_main.servertest.style				= style;
+
 	Menu_AddItem( &s_main.menu,	&s_main.singleplayer );
 	Menu_AddItem( &s_main.menu,	&s_main.practice );
 	Menu_AddItem( &s_main.menu,	&s_main.multiplayer );
@@ -499,6 +515,7 @@ void UI_MainMenu( void ) {
 	Menu_AddItem( &s_main.menu,	&s_main.mods );
 	Menu_AddItem( &s_main.menu,	&s_main.exit );
 	Menu_AddItem( &s_main.menu,	&s_main.test );
+	Menu_AddItem( &s_main.menu,	&s_main.servertest );
 
 	trap_Key_SetCatcher( KEYCATCH_UI );
 	uis.menusp = 0;

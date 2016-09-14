@@ -252,7 +252,7 @@ PROTOCOL
 */
 
 #define	PROTOCOL_VERSION	72
-#define PROTOCOL_LEGACY_VERSION	72
+#define PROTOCOL_LEGACY_VERSION	PROTOCOL_VERSION
 // 1.31 - 67
 
 // maintain a list of compatible protocols for demo playing
