@@ -1668,6 +1668,31 @@ void CG_PrintBooleanStats( char *string, int result ) {
 	}
 }
 
+void CG_PrintFloatValueStats( char *string, float result, const char *afterString ) {
+	char		*sf;
+	int			r;
+	float		rf;
+
+	r = result;
+
+	if ( (result >= 0.25f && result < 1.0f) || (result >= 1.25f) ) {
+		rf = result - floor(result);
+		if (rf >= .75)
+			sf = " 3/4";
+		else if (rf >= .50)
+			sf = " 1/2";
+		else if (rf >= .25)
+			sf = " 1/4";
+		else
+			sf = "";
+		Com_Printf( "  %s: %i%s%ss\n", string, r, sf, afterString );
+	} else if ( result >= 1.0f && result < 1.25f ) {
+		Com_Printf( "  %s: 1%s\n", string, afterString );
+	} else {
+		Com_Printf( "  %s: No\n", string );
+	}
+}
+
 void CG_PrintValueStats( char *string, int result, const char *afterString ) {
 	if ( result > 1 ) {
 		Com_Printf( "  %s: %i%ss\n", string, result, afterString );
@@ -1687,6 +1712,10 @@ static void CG_Stats ( int endGame ) {
 	const char	*name;
 	const char	*s;
 	float		kdr; // total kills, divide by total deaths
+
+	char		*sf;
+	int			r;
+	float		rf;
 
 	int			msec, sec, min;
 
@@ -1851,8 +1880,9 @@ static void CG_Stats ( int endGame ) {
 			Com_Printf( "  MATCH MODE: WTF???\n" );
 	}
 
-	CG_PrintValueStats("TIME LIMIT", cgs.fullTimelimit, " minute");
-	if ( cgs.timelimit > 0 ) {
+	//CG_PrintValueStats("TIME LIMIT", cgs.fullTimelimit, " minute");
+	CG_PrintFloatValueStats("TIME LIMIT", cgs.fullTimelimit, " minute");
+	if ( cgs.fullTimelimit > 0 ) {
 		if ( cgs.overtime > 1 ) {
 			Com_Printf( "  OVERTIME: Extension of %i minutes\n", cgs.overtime );
 		} else if ( cgs.overtime > 0 ) {

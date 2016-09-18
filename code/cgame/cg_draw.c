@@ -3035,7 +3035,7 @@ vvvvvvvvvvvvvvvvvvvvv
 
 	}
 
-	if (hud_iUnderstand.integer != 1) {
+	/*if (hud_iUnderstand.integer != 1) {
 		if (hud_iUnderstand.integer == 0) {
 			HUD_DrawPrototypeNotice(4, 386, 1, UI_DROPSHADOW, color);
 		} else {
@@ -3045,7 +3045,7 @@ vvvvvvvvvvvvvvvvvvvvv
 				HUD_DrawPrototypeNotice(4, 386+24, 0, UI_DROPSHADOW, color);
 			}
 		}
-	}
+	}*/
 
 /*
 ^^^^^^^^^^^^^^^^^^^

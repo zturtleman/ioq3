@@ -250,6 +250,7 @@ void HUD_DrawPrototypeNotice( int xpos, int ypos, int mtype, int style, vec4_t c
 	int		w;
 	vec4_t		blkBG;
 
+	/*
 	blkBG[0] = blkBG[1] = blkBG[2] = 0.0;
 	blkBG[3] = 0.75;
 
@@ -284,6 +285,7 @@ void HUD_DrawPrototypeNotice( int xpos, int ypos, int mtype, int style, vec4_t c
 		Com_sprintf(string, sizeof(string), "^Oremove this message.");
 		UI_DrawCustomProportionalString( xpos, y, string, style, 0.5, color, qfalse );
 	}
+	*/
 
 	/*y += 8;
 	Com_sprintf(string, sizeof(string), "^a!^b!^c!^d!^e!^f!^g!^h!^i!^j!^k!^l!^m!");
@@ -3987,6 +3989,32 @@ void HUD_MegaRuleSet_BooleanStats( int x, int y, float scale, int result, vec4_t
 	UI_DrawCustomProportionalString( x, y, s, UI_DROPSHADOW | UI_RIGHT, 0.5 * scale, color, qfalse );
 }
 
+void HUD_MegaRuleSet_FloatValueStats( int x, int y, float scale, float result, const char *afterString, vec4_t color ) {
+	char		*s;
+	char		*sf;
+	int			r;
+	float		rf;
+
+	r = result;
+	if ( (result >= 0.25f && result < 1.0f) || (result >= 1.25f) ) {
+		rf = result - floor(result);
+		if (rf >= .75)
+			sf = "\xBE";
+		else if (rf >= .50)
+			sf = "\xBD";
+		else if (rf >= .25)
+			sf = "\xBC";
+		else
+			sf = "";
+		s = va("%i%s %ss", r, sf, afterString );
+	} else if ( result >= 1.0f && result < 1.25f ) {
+		s = va("1 %s", afterString );
+	} else {
+		s = "No";
+	}
+	UI_DrawCustomProportionalString( x, y, s, UI_DROPSHADOW | UI_RIGHT, 0.5 * scale, color, qfalse );
+}
+
 void HUD_MegaRuleSet_ValueStats( int x, int y, float scale, int result, const char *afterString, vec4_t color ) {
 	char		*s;
 	if ( result > 1 ) {
@@ -4127,7 +4155,8 @@ static void HUD_MegaRuleSet( int xpos, int ypos, float scale ) {
 	if (cgs.timelimit) {
 		s = "TIME LIMIT:";
 		UI_DrawCustomProportionalString( xst, y, s, UI_DROPSHADOW, 0.5 * scale, colorLAmber, qfalse );
-		HUD_MegaRuleSet_ValueStats( xend, y, scale, cgs.fullTimelimit, "minute", color); // TODO: add seconds from timelimit
+		//HUD_MegaRuleSet_ValueStats( xend, y, scale, cgs.fullTimelimit, "minute", color); // TODO: add seconds from timelimit
+		HUD_MegaRuleSet_FloatValueStats( xend, y, scale, cgs.fullTimelimit, "minute", color);
 		y += 8 * scale;
 		if (cgs.overtime) {
 			s = "OVERTIME:";

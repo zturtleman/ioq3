@@ -279,7 +279,7 @@ static void Main_MenuDraw( void ) {
 	UI_DrawHandlePic( 0, y2, 640, 64, s_main.bannerDemo );
 
 	// draw test banner
-	UI_DrawHandlePic( 0, 48, 640, 64, s_main.bannerTest ); // only use this when testing an unreleased build
+	//UI_DrawHandlePic( 0, 48, 640, 64, s_main.bannerTest ); // only use this when testing an unreleased build
 	// *************** DISABLE THIS WHEN RELEASING ***************
 }
 
@@ -392,7 +392,7 @@ void UI_MainMenu( void ) {
 
 	y += MAIN_MENU_VERTICAL_SPACING;
 	s_main.multiplayer.generic.type			= MTYPE_PTEXT;
-	s_main.multiplayer.generic.flags		= QMF_LEFT_JUSTIFY|QMF_PULSEIFFOCUS/*|QMF_GRAYED*/;
+	s_main.multiplayer.generic.flags		= QMF_LEFT_JUSTIFY|QMF_PULSEIFFOCUS|QMF_GRAYED;
 	s_main.multiplayer.generic.x			= x;
 	s_main.multiplayer.generic.y			= y;
 	s_main.multiplayer.generic.id			= ID_MULTIPLAYER;

@@ -1,3 +1,11 @@
+Update 160918
+-------------
+- Removed multiplayer option, due to multiplayer browser not working after IOQuake3 update.  However, one still can play on a server, using the "/connect" command, assuming they know the address for that server.
+- Re-added map MFDM02, some area's were expanded, and megahealth was added.
+- Ruleset now shows fractions in minutes, when timelimit is not a whole number.
+- Added minimap for MFARENA03, simply forgot to add one before.
+
+
 Update 160831
 -------------
 - Source code now on Github.
