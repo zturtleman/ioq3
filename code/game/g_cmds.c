@@ -420,7 +420,7 @@ void Cmd_Admin_Mute_f( gentity_t *ent ) {
 	if ( cl->sess.mute != qtrue ) {
 
 		trap_SendServerCommand( -1,
-			va("notify %i\\\"%s" S_COLOR_RED " has been muted by admin " S_COLOR_WHITE "%s" S_COLOR_WHITE ".\n\"",
+			va("notify %i\\\"%s" S_COLOR_RED " has been muted by admin " S_COLOR_WHITE "%s" S_COLOR_RED ".\n\"",
 			NF_GAMEINFO, cl->pers.netname, ent->client->pers.netname) );
 
 		// set mute
@@ -462,7 +462,7 @@ void Cmd_Admin_Unmute_f( gentity_t *ent ) {
 	if ( cl->sess.mute != qfalse ) {
 
 		trap_SendServerCommand( -1,
-			va("notify %i\\\"%s" S_COLOR_GREEN " is no longer muted, thanks to admin " S_COLOR_WHITE "%s" S_COLOR_WHITE ".\n\"",
+			va("notify %i\\\"%s" S_COLOR_GREEN " is no longer muted, thanks to admin " S_COLOR_WHITE "%s" S_COLOR_GREEN ".\n\"",
 			NF_GAMEINFO, cl->pers.netname, ent->client->pers.netname) );
 
 		// set mute
