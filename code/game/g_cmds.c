@@ -2896,8 +2896,8 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		// correct the value incase the vote caller is an asshole
 		if ( i < 0) {
 			i = 0;
-		} else if (i > 4) {
-			i = 4;
+		} else if (i > 5) {
+			i = 5;
 		}
 
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "g_ruleSet %d; map_restart", i );
