@@ -33,7 +33,7 @@ pml_t		pml;
 // movement parameters
 float	pm_stopspeed = 100.0f;
 float	pm_duckScale = 0.25f;
-float	pm_swimScale = 0.50f;
+float	pm_swimScale = 0.75f;
 float	pm_ladderScale = 0.50f; // set the max movement speed to HALF of normal
 
 float	pm_accelerate = 10.0f * GAME_SPEED_MULTIPLIER;
@@ -50,7 +50,7 @@ float	pm_ladderfriction = 3000; // friction is high enough so you don't slip dow
 
 int		c_pmove = 0;
 
-float	pm_alt_swimScale = 0.75f;
+//float	pm_alt_swimScale = 0.75f;
 
 float	pm_alt_accelerate = 15.0f * GAME_SPEED_MULTIPLIER;
 
@@ -677,25 +677,14 @@ static void PM_WaterMove( void ) {
 	VectorCopy (wishvel, wishdir);
 	wishspeed = VectorNormalize(wishdir);
 
-	/*if ( (pm->ps->persistant[PERS_MISC] & PMSC_PHYSICS_SELECTION) ||
-			(pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) ) {
-		if ( wishspeed > pm->ps->speed * pm_swimScale ) {
-			wishspeed = pm->ps->speed * pm_swimScale;
-		}
-	} else {
-		if ( wishspeed > pm->ps->speed * pm_alt_swimScale ) {
-			wishspeed = pm->ps->speed * pm_alt_swimScale;
-		}
-	}*/
-
 	if ( (pm->ps->persistant[PERS_MISC] & PMSC_PHYSICS_SELECTION) &&
 			!(pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) ) {
 		if ( wishspeed > pm->ps->speed * pm_swimScale ) {
 			wishspeed = pm->ps->speed * pm_swimScale;
 		}
 	} else {
-		if ( wishspeed > pm->ps->speed * pm_alt_swimScale ) {
-			wishspeed = pm->ps->speed * pm_alt_swimScale;
+		if ( wishspeed > pm->ps->speed * pm_swimScale ) {
+			wishspeed = pm->ps->speed * pm_swimScale;
 		}
 	}
 
@@ -997,11 +986,7 @@ static void PM_WalkMove( void ) {
 		float	waterScale;
 
 		waterScale = pm->waterlevel / 3.0;
-		if ( (pm->ps->persistant[PERS_MISC] & PMSC_PHYSICS_SELECTION) ||
-			(pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) )
-			waterScale = 1.0 - ( 1.0 - pm_swimScale ) * waterScale;
-		else
-			waterScale = 1.0 - ( 1.0 - pm_alt_swimScale ) * waterScale;
+		waterScale = 1.0 - ( 1.0 - pm_swimScale ) * waterScale;
 		if ( wishspeed > pm->ps->speed * waterScale ) {
 			wishspeed = pm->ps->speed * waterScale;
 		}
