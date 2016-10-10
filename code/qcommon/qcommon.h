@@ -1030,6 +1030,9 @@ void CL_StartHunkUsers( qboolean rendererOnly );
 qboolean CL_ConnectedToRemoteServer( void );
 // returns qtrue if connected to a remote server
 
+void CL_MustDownloadFile( const char *qpath );
+// connected to a remote server and is missing default.cfg for new fs_game
+
 void CL_Snd_Shutdown(void);
 // Restart sound subsystem
 

@@ -104,3 +104,6 @@ qboolean CL_CDKeyValidate( const char *key, const char *checksum ) { return qtru
 qboolean CL_ConnectedToRemoteServer( void ) {
 	return qfalse;
 }
+
+void CL_MustDownloadFile( const char *qpath ) {
+}

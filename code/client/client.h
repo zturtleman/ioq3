@@ -214,6 +214,7 @@ typedef struct {
 	int			downloadSize;	// how many bytes we got
 	char		downloadList[MAX_INFO_STRING]; // list of paks we need to download
 	qboolean	downloadRestart;	// if true, we need to do another FS_Restart because we downloaded a pak
+	char		missingFile[MAX_QPATH]; // a required file that is expected to be downloaded in a pk3 from server (i.e., default.cfg)
 
 	// demo information
 	char		demoName[MAX_QPATH];

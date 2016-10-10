@@ -300,6 +300,18 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 
 	restartClient = com_gameClientRestarting && !( com_cl_running && com_cl_running->integer );
 
+#if 0
+	// if switching mods fails (such as loading UI VM) switch back to previous mod
+	if ( com_gameRestarting && code == ERR_DROP && FS_LastGameValid() ) {
+		FS_LoadLastValidGame();
+
+		if ( com_cl_running && com_cl_running->integer ) {
+			CL_Shutdown(va("Change Game Directory: %s", com_errorMessage), qtrue, qtrue);
+			restartClient = qtrue;
+		}
+	}
+#endif
+
 	com_gameRestarting = qfalse;
 	com_gameClientRestarting = qfalse;
 

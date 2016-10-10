@@ -4019,6 +4019,9 @@ FS_Restart
 ================
 */
 void FS_Restart( int checksumFeed ) {
+	int i;
+	char *essentialFiles[] = { "default.cfg", "vm/ui.qvm", NULL };
+	char *missingFile;
 
 	// free anything we currently have loaded
 	FS_Shutdown(qfalse);
@@ -4036,10 +4039,18 @@ void FS_Restart( int checksumFeed ) {
 	FS_CheckPak0( );
 #endif
 
+	missingFile = NULL;
+	for ( i = 0; essentialFiles[i] != NULL; i++ ) {
+		if ( FS_ReadFile( essentialFiles[i], NULL ) <= 0 ) {
+			missingFile = essentialFiles[i];
+			break;
+		}
+	}
+
 	// if we can't find default.cfg, assume that the paths are
 	// busted and error out now, rather than getting an unreadable
 	// graphics screen when the font fails to load
-	if ( FS_ReadFile( "default.cfg", NULL ) <= 0 ) {
+	if ( missingFile ) {
 		// this might happen when connecting to a pure server not using BASEGAME/pak0.pk3
 		// (for instance a TA demo server)
 		if ( FS_LastGameValid() ) {
@@ -4047,13 +4058,14 @@ void FS_Restart( int checksumFeed ) {
 
 			// if connected to a remote server, try to download the files
 			if ( CL_ConnectedToRemoteServer() ) {
-				Com_Printf( S_COLOR_YELLOW "WARNING: Couldn't load default.cfg, switched to last game to try to download missing files.\n" );
+				Com_Printf( S_COLOR_YELLOW "WARNING: Couldn't load %s, switched to last game to try to download missing files.\n", missingFile );
+				CL_MustDownloadFile( missingFile );
 			} else {
-				Com_Error( ERR_DROP, "Couldn't load default.cfg" );
+				Com_Error( ERR_DROP, "FS_Restart: Couldn't load %s", missingFile );
 			}
 			return;
 		}
-		Com_Error( ERR_FATAL, "Couldn't load default.cfg" );
+		Com_Error( ERR_FATAL, "FS_Restart2: Couldn't load %s", missingFile );
 	}
 
 	if ( Q_stricmp(fs_gamedirvar->string, lastValidGame) ) {

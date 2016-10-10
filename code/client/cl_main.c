@@ -2093,8 +2093,15 @@ void CL_DownloadsComplete( void ) {
 		CL_cURL_Shutdown();
 		if( clc.cURLDisconnected ) {
 			if(clc.downloadRestart) {
-				FS_Restart(clc.checksumFeed);
 				clc.downloadRestart = qfalse;
+				clc.missingFile[0] = 0;
+
+				FS_Restart( clc.checksumFeed ); // We possibly downloaded a pak, restart the file system to load it
+
+				// still missing default.cfg after downloading files
+				if ( clc.missingFile[0] ) {
+					Com_Error( ERR_DROP, "Couldn't load %s", clc.missingFile );
+				}
 			}
 			clc.cURLDisconnected = qfalse;
 			CL_Reconnect_f();
@@ -2106,8 +2113,14 @@ void CL_DownloadsComplete( void ) {
 	// if we downloaded files we need to restart the file system
 	if (clc.downloadRestart) {
 		clc.downloadRestart = qfalse;
+		clc.missingFile[0] = 0;
 
 		FS_Restart(clc.checksumFeed); // We possibly downloaded a pak, restart the file system to load it
+
+		// still missing default.cfg after downloading files
+		if ( clc.missingFile[0] ) {
+			Com_Error( ERR_DROP, "CL_DownloadsComplete: Couldn't load %s", clc.missingFile );
+		}
 
 		// inform the server so we get new gamestate info
 		CL_AddReliableCommand("donedl", qfalse);
@@ -2115,6 +2128,11 @@ void CL_DownloadsComplete( void ) {
 		// by sending the donedl command we request a new gamestate
 		// so we don't want to load stuff yet
 		return;
+	}
+
+	// didn't download default.cfg
+	if ( clc.missingFile[0] ) {
+		Com_Error( ERR_DROP, "CL_DownloadsComplete2: Couldn't load %s", clc.missingFile );
 	}
 
 	// let the client game init and load data
@@ -2323,6 +2341,18 @@ void CL_InitDownloads(void) {
 	}
 		
 	CL_DownloadsComplete();
+}
+
+/*
+=================
+CL_MustDownloadFile
+
+Client connected to a remote server and when changing fs_game found
+that it was missing a required file.
+=================
+*/
+void CL_MustDownloadFile( const char *qpath ) {
+	Q_strncpyz( clc.missingFile, qpath, sizeof ( clc.missingFile ) );
 }
 
 /*
