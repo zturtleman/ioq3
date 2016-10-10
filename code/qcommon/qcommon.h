@@ -614,6 +614,10 @@ qboolean FS_ConditionalRestart(int checksumFeed, qboolean disconnect);
 void	FS_Restart( int checksumFeed );
 // shutdown and restart the filesystem so changes to fs_gamedir can take effect
 
+void	FS_SetGameValid( void );
+qboolean FS_LastGameValid( void );
+void	FS_LoadLastValidGame( void );
+
 void FS_AddGameDirectory( const char *path, const char *dir );
 
 char	**FS_ListFiles( const char *directory, const char *extension, int *numfiles );
@@ -827,6 +831,7 @@ void 		QDECL Com_DPrintf( const char *fmt, ... ) __attribute__ ((format (printf,
 void 		QDECL Com_Error( int code, const char *fmt, ... ) __attribute__ ((noreturn, format(printf, 2, 3)));
 void 		Com_Quit_f( void ) __attribute__ ((noreturn));
 void		Com_GameRestart(int checksumFeed, qboolean disconnect);
+void		Com_ExecuteCfg(void);
 
 int			Com_Milliseconds( void );	// will be journaled properly
 unsigned	Com_BlockChecksum( const void *buffer, int length );
@@ -1021,6 +1026,9 @@ void CL_InitRef(void);
 
 void CL_StartHunkUsers( qboolean rendererOnly );
 // start all the client stuff using the hunk
+
+qboolean CL_ConnectedToRemoteServer( void );
+// returns qtrue if connected to a remote server
 
 void CL_Snd_Shutdown(void);
 // Restart sound subsystem

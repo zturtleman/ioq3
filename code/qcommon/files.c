@@ -3961,9 +3961,55 @@ void FS_InitFilesystem( void ) {
 	if ( FS_ReadFile( "default.cfg", NULL ) <= 0 ) {
 		Com_Error( ERR_FATAL, "Couldn't load default.cfg" );
 	}
+}
 
+
+/*
+=================
+FS_SetGameValid
+=================
+*/
+void FS_SetGameValid( void ) {
 	Q_strncpyz(lastValidBase, fs_basepath->string, sizeof(lastValidBase));
 	Q_strncpyz(lastValidGame, fs_gamedirvar->string, sizeof(lastValidGame));
+}
+
+/*
+=================
+FS_LastGameValid
+=================
+*/
+qboolean FS_LastGameValid( void ) {
+	return lastValidBase[0] != '\0';
+}
+
+/*
+================
+FS_LoadLastValidGame
+
+Called by Com_Error and FS_Restart if failed during game directory change
+================
+*/
+void FS_LoadLastValidGame( void ) {
+	if ( !FS_LastGameValid() ) {
+		return;
+	}
+
+	// don't call FS_Restart from in FS_PureServerSetLoadedPaks
+	fs_reordered = qfalse;
+
+	FS_PureServerSetLoadedPaks("", "");
+
+	Cvar_Set("fs_basepath", lastValidBase);
+	Cvar_Set("fs_game", lastValidGame);
+	lastValidBase[0] = '\0';
+	lastValidGame[0] = '\0';
+
+	FS_Restart(fs_checksumFeed);
+
+	// Clean out any user and VM created cvars
+	Cvar_Restart(qtrue);
+	Com_ExecuteCfg();
 }
 
 
@@ -3996,14 +4042,15 @@ void FS_Restart( int checksumFeed ) {
 	if ( FS_ReadFile( "default.cfg", NULL ) <= 0 ) {
 		// this might happen when connecting to a pure server not using BASEGAME/pak0.pk3
 		// (for instance a TA demo server)
-		if (lastValidBase[0]) {
-			FS_PureServerSetLoadedPaks("", "");
-			Cvar_Set("fs_basepath", lastValidBase);
-			Cvar_Set("fs_game", lastValidGame);
-			lastValidBase[0] = '\0';
-			lastValidGame[0] = '\0';
-			FS_Restart(checksumFeed);
-			Com_Error( ERR_DROP, "Invalid game folder" );
+		if ( FS_LastGameValid() ) {
+			FS_LoadLastValidGame();
+
+			// if connected to a remote server, try to download the files
+			if ( CL_ConnectedToRemoteServer() ) {
+				Com_Printf( S_COLOR_YELLOW "WARNING: Couldn't load default.cfg, switched to last game to try to download missing files.\n" );
+			} else {
+				Com_Error( ERR_DROP, "Couldn't load default.cfg" );
+			}
 			return;
 		}
 		Com_Error( ERR_FATAL, "Couldn't load default.cfg" );
@@ -4019,9 +4066,9 @@ void FS_Restart( int checksumFeed ) {
 		}
 	}
 
-	Q_strncpyz(lastValidBase, fs_basepath->string, sizeof(lastValidBase));
-	Q_strncpyz(lastValidGame, fs_gamedirvar->string, sizeof(lastValidGame));
-
+#ifdef DEDICATED
+	FS_SetGameValid();
+#endif
 }
 
 /*
