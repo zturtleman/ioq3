@@ -372,7 +372,8 @@ static void CG_Obituary( entityState_t *ent ) {
 			deathIcon = cg_weapons[WP_CHAINGUN].weaponIcon;
 			break;
 		case MOD_SHOTGUN:
-			message = "was gunned down by";
+			message = "chewed on";
+			message2 = "'s boomstick";
 			deathIcon = cg_weapons[WP_SHOTGUN].weaponIcon;
 			break;
 		case MOD_SUPER_SHOTGUN:
