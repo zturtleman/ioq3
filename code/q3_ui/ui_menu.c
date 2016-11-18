@@ -374,10 +374,10 @@ void UI_MainMenu( void ) {
 	s_main.singleplayer.generic.x			= x;
 	s_main.singleplayer.generic.y			= y;
 	s_main.singleplayer.generic.id			= ID_SINGLEPLAYER;
-	s_main.singleplayer.generic.callback		= Main_MenuEvent;
-	s_main.singleplayer.string			= "SINGLE PLAYER";
-	s_main.singleplayer.color			= color_red;
-	s_main.singleplayer.style			= style;
+	s_main.singleplayer.generic.callback	= Main_MenuEvent;
+	s_main.singleplayer.string				= "SINGLE PLAYER";
+	s_main.singleplayer.color				= color_red;
+	s_main.singleplayer.style				= style;
 
 	y += MAIN_MENU_VERTICAL_SPACING;
 	s_main.practice.generic.type		= MTYPE_PTEXT;
@@ -385,21 +385,21 @@ void UI_MainMenu( void ) {
 	s_main.practice.generic.x			= x;
 	s_main.practice.generic.y			= y;
 	s_main.practice.generic.id			= ID_PRACTICE;
-	s_main.practice.generic.callback		= Main_MenuEvent;
-	s_main.practice.string			= "PRACTICE";
-	s_main.practice.color			= color_red;
-	s_main.practice.style			= style;
+	s_main.practice.generic.callback	= Main_MenuEvent;
+	s_main.practice.string				= "PRACTICE";
+	s_main.practice.color				= color_red;
+	s_main.practice.style				= style;
 
 	y += MAIN_MENU_VERTICAL_SPACING;
 	s_main.multiplayer.generic.type			= MTYPE_PTEXT;
-	s_main.multiplayer.generic.flags		= QMF_LEFT_JUSTIFY|QMF_PULSEIFFOCUS|QMF_GRAYED;
+	s_main.multiplayer.generic.flags		= QMF_LEFT_JUSTIFY|QMF_PULSEIFFOCUS/*|QMF_GRAYED*/;
 	s_main.multiplayer.generic.x			= x;
 	s_main.multiplayer.generic.y			= y;
 	s_main.multiplayer.generic.id			= ID_MULTIPLAYER;
 	s_main.multiplayer.generic.callback		= Main_MenuEvent;
-	s_main.multiplayer.string			= "MULTIPLAYER";
-	s_main.multiplayer.color			= color_red;
-	s_main.multiplayer.style			= style;
+	s_main.multiplayer.string				= "MULTIPLAYER";
+	s_main.multiplayer.color				= color_red;
+	s_main.multiplayer.style				= style;
 
 	y += MAIN_MENU_VERTICAL_SPACING;
 	s_main.setup.generic.type			= MTYPE_PTEXT;
@@ -407,10 +407,10 @@ void UI_MainMenu( void ) {
 	s_main.setup.generic.x				= x;
 	s_main.setup.generic.y				= y;
 	s_main.setup.generic.id				= ID_SETUP;
-	s_main.setup.generic.callback			= Main_MenuEvent;
-	s_main.setup.string				= "SETUP";
-	s_main.setup.color				= color_red;
-	s_main.setup.style				= style;
+	s_main.setup.generic.callback		= Main_MenuEvent;
+	s_main.setup.string					= "SETUP";
+	s_main.setup.color					= color_red;
+	s_main.setup.style					= style;
 
 	y += MAIN_MENU_VERTICAL_SPACING;
 	s_main.demos.generic.type			= MTYPE_PTEXT;
@@ -418,10 +418,10 @@ void UI_MainMenu( void ) {
 	s_main.demos.generic.x				= x;
 	s_main.demos.generic.y				= y;
 	s_main.demos.generic.id				= ID_DEMOS;
-	s_main.demos.generic.callback			= Main_MenuEvent;
-	s_main.demos.string				= "DEMOS";
-	s_main.demos.color				= color_red;
-	s_main.demos.style				= style;
+	s_main.demos.generic.callback		= Main_MenuEvent;
+	s_main.demos.string					= "DEMOS";
+	s_main.demos.color					= color_red;
+	s_main.demos.style					= style;
 
 	/*y += MAIN_MENU_VERTICAL_SPACING;
 	s_main.cinematics.generic.type			= MTYPE_PTEXT;
@@ -450,15 +450,15 @@ void UI_MainMenu( void ) {
 
 	// inside joke
 	y += MAIN_MENU_VERTICAL_SPACING;
-	s_main.dlc.generic.type			= MTYPE_PTEXT;
+	s_main.dlc.generic.type				= MTYPE_PTEXT;
 	s_main.dlc.generic.flags			= QMF_LEFT_JUSTIFY|QMF_PULSEIFFOCUS|QMF_GRAYED;
 	s_main.dlc.generic.x				= x;
 	s_main.dlc.generic.y				= y;
 	s_main.dlc.generic.id				= ID_MODS;
 	s_main.dlc.generic.callback			= Main_MenuEvent;
-	s_main.dlc.string				= "DLC STORE... J/K";
-	s_main.dlc.color				= color_red;
-	s_main.dlc.style				= style;
+	s_main.dlc.string					= "DLC STORE... J/K";
+	s_main.dlc.color					= color_red;
+	s_main.dlc.style					= style;
 
 	y += MAIN_MENU_VERTICAL_SPACING;
 	s_main.mods.generic.type			= MTYPE_PTEXT;
@@ -466,10 +466,10 @@ void UI_MainMenu( void ) {
 	s_main.mods.generic.x				= x;
 	s_main.mods.generic.y				= y;
 	s_main.mods.generic.id				= ID_MODS;
-	s_main.mods.generic.callback			= Main_MenuEvent;
-	s_main.mods.string				= "MODS";
-	s_main.mods.color				= color_red;
-	s_main.mods.style				= style;
+	s_main.mods.generic.callback		= Main_MenuEvent;
+	s_main.mods.string					= "MODS";
+	s_main.mods.color					= color_red;
+	s_main.mods.style					= style;
 
 	y += MAIN_MENU_VERTICAL_SPACING * 2;
 	s_main.exit.generic.type			= MTYPE_PTEXT;
@@ -477,10 +477,10 @@ void UI_MainMenu( void ) {
 	s_main.exit.generic.x				= x;
 	s_main.exit.generic.y				= y;
 	s_main.exit.generic.id				= ID_EXIT;
-	s_main.exit.generic.callback			= Main_MenuEvent;
-	s_main.exit.string				= "EXIT";
-	s_main.exit.color				= color_red;
-	s_main.exit.style				= style;
+	s_main.exit.generic.callback		= Main_MenuEvent;
+	s_main.exit.string					= "EXIT";
+	s_main.exit.color					= color_red;
+	s_main.exit.style					= style;
 
 	s_main.test.generic.type			= MTYPE_PTEXT;
 	s_main.test.generic.flags			= QMF_RIGHT_JUSTIFY;
