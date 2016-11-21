@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 //
 
-#define CTF_CAPTURE_BONUS		25		// what you get for capture
-#define CTF_TEAM_CAPTURE_MULTI	25		// team score multiplier based on how many opponents the team has
+#define CTF_CAPTURE_BONUS		15		// what you get for capture
+#define CTF_TEAM_CAPTURE_MULTI	15		// team score multiplier based on how many opponents the team has
 #define CTF_TEAM_BONUS			0		// what your team gets for capture
 #define CTF_RECOVERY_BONUS		2		// what you get for recovery
 #define CTF_FLAG_BONUS			0		// what you get for picking up enemy flag
