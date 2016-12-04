@@ -1319,6 +1319,49 @@ void G_RuleSetUpdate ( void ) {
 	level.updateRuleset = qfalse; // we are now updating the ruleset
 	level.forcefullyUpdateRuleset = qfalse; // likewise
 
+	// standard rules for single player across the board
+	if ( g_gametype.integer == GT_SINGLE_PLAYER ) {
+
+		level.rs_armor = 1;
+		level.rs_popCTF = 0;
+		level.rs_dynamicItemSpawns = 0;
+		level.rs_roundFormat = 0;
+
+		level.rs_teamLocOverlay = 0;
+		level.rs_hitSound = 0;
+		level.rs_randomSpawn = 0;
+		level.rs_scoreBalance = 0;
+
+		level.rs_quadMode = 0;
+		level.rs_selfDamage = 1;
+
+		level.rs_doubleAmmo = 0;
+		level.rs_keycardRespawn = 0;
+		level.rs_keycardDropable = 0;
+
+		level.rs_noArenaGrenades = 0;
+		level.rs_noArenaLightningGun = 0;
+		level.rs_enemyAttackLevel = 0.5;
+
+		level.rs_matchMode = MM_PICKUP_ONCE;
+
+		level.rs_timelimit = 10;
+		level.rs_mercylimit = 0;
+		level.rs_overtime = 0;
+		level.rs_scorelimit = 0;
+		level.rs_friendlyFire = 1;
+		level.rs_weaponRespawn = 1;
+		level.rs_forceRespawn = 10;
+		level.rs_powerUps = 1;
+
+		level.rs_warmup = 0;
+
+		level.updateInfo = qtrue;
+
+		return;
+
+	}
+
 	if ( g_ruleset.integer > RSET_CUSTOM && g_ruleset.integer < RSET_MAX_RULESET ) {
 		level.rulesetEnforced = qtrue;
 

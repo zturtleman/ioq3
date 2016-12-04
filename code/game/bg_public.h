@@ -48,8 +48,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define DEFAULT_SHOTGUN_COUNT				6 // 11
 
 // super shotgun
-#define DEFAULT_SHOTGUN_SPREAD_HI			400 // 20 damage pellets
-#define DEFAULT_SHOTGUN_SPREAD_LO			700 // 10 damage pellets
+#define DEFAULT_SHOTGUN_SPREAD_HI			2//400 // 20 damage pellets
+#define DEFAULT_SHOTGUN_SPREAD_LO			40//700 // 10 damage pellets
 // mmp - was 300/700
 
 #define	ITEM_RADIUS			15		// item sizes are needed for client side pickup detection

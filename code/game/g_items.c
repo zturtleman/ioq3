@@ -844,7 +844,8 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 		return;
 
 	// wait of -1 will not respawn
-	if ( ent->wait == -1 ) {
+	// items also don't respawn in single player
+	if ( ent->wait == -1 || g_gametype.integer == GT_SINGLE_PLAYER ) {
 		ent->r.svFlags |= SVF_NOCLIENT;
 		ent->s.eFlags |= EF_NODRAW;
 		ent->r.contents = 0;

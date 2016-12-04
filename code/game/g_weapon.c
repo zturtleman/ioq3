@@ -464,12 +464,13 @@ void SuperShotgunPattern( vec3_t origin, vec3_t origin2, int seed, gentity_t *en
 		if (i) {
 			r = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;
 			u = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_HI * 16;
+			VectorMA( origin, 1024, forward, end);
 		} else {
 			// one pelet will always shoot straight
 			r = 0;
 			u = 0;
+			VectorMA( origin, 8192 * 16, forward, end);
 		}
-		VectorMA( origin, 8192 * 16, forward, end);
 		VectorMA (end, r, right, end);
 		VectorMA (end, u, up, end);
 		if( ShotgunPellet( origin, end, ent, damage, qtrue ) && !hitClient ) {
@@ -481,7 +482,7 @@ void SuperShotgunPattern( vec3_t origin, vec3_t origin2, int seed, gentity_t *en
 	for ( i = 0 ; i < DEFAULT_SHOTGUN_COUNT ; i++ ) {
 		r = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_LO * 16;
 		u = Q_crandom( &seed ) * DEFAULT_SHOTGUN_SPREAD_LO * 16;
-		VectorMA( origin, 8192 * 16, forward, end);
+		VectorMA( origin, 8192, forward, end);
 		VectorMA (end, r, right, end);
 		VectorMA (end, u, up, end);
 		if( ShotgunPellet( origin, end, ent, damage, qtrue ) && !hitClient ) {
