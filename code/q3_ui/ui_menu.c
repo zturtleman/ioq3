@@ -504,7 +504,7 @@ void UI_MainMenu( void ) {
 
 	Menu_AddItem( &s_main.menu,	&s_main.singleplayer );
 	Menu_AddItem( &s_main.menu,	&s_main.practice );
-	Menu_AddItem( &s_main.menu,	&s_main.multiplayer );
+	/*Menu_AddItem( &s_main.menu,	&s_main.multiplayer );*/
 	Menu_AddItem( &s_main.menu,	&s_main.setup );
 	Menu_AddItem( &s_main.menu,	&s_main.demos );
 	/*Menu_AddItem( &s_main.menu,	&s_main.cinematics );
