@@ -1162,8 +1162,8 @@ void FinishSpawningItem( gentity_t *ent ) {
 		}
 	}
 
-	// powerups don't spawn in for a while
-	if ( ent->item->giType == IT_POWERUP ) {
+	// powerups don't spawn in for a while, unless in single player
+	if ( ent->item->giType == IT_POWERUP && g_gametype.integer != GT_SINGLE_PLAYER ) {
 		float	respawn;
 
 //		respawn = 45 + crandom() * 15;

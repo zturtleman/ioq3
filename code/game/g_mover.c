@@ -1238,8 +1238,10 @@ void SP_func_button( gentity_t *ent ) {
 		ent->speed = 40;
 	}
 
-	if ( !ent->wait ) {
-		ent->wait = 1;
+	if (!ent->wait) {
+		ent->wait = 1; // default wait of 1 seconds
+	} else if (ent->wait < 0) {
+		ent->wait = 6660; // negative value shall result in a 111 minute wait
 	}
 	ent->wait *= 1000;
 
@@ -1249,6 +1251,7 @@ void SP_func_button( gentity_t *ent ) {
 	// calculate second position
 	trap_SetBrushModel( ent, ent->model );
 
+	// ignores splash damage related to a weapon's splash damage
 	G_SpawnInt( "ignoresplash", "0", &ignoresplash );
 
 	// allow multiple button requirements to open door
