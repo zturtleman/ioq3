@@ -766,6 +766,9 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	case IT_KEYCARD: // mmp - wip
 		respawnValue = level.rs_keycardRespawn;
 
+		if ( g_gametype.integer == GT_SINGLE_PLAYER ) {
+			respawn = Pickup_Keycard(ent, other, -1);
+		} else
 		if (respawnValue > 0) {
 			respawn = Pickup_Keycard(ent, other, respawnValue) + respawnTimeAdd;
 			alwaysSpawned = 0; // this shouldn't be needed, will remove later
