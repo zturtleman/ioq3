@@ -1761,7 +1761,9 @@ void CG_FireWeapon( centity_t *cent ) {
 
 	// mark the entity as muzzle flashing, so when it is added it will
 	// append the flash to the weapon model
-	cent->muzzleFlashTime = cg.time;
+	if ( cg_muzzleFlash.integer ) {
+		cent->muzzleFlashTime = cg.time;
+	}
 
 	// lightning gun only does this this on initial press
 	if ( ent->weapon == WP_LIGHTNING ) {
@@ -2045,21 +2047,25 @@ void CG_MissileHitWall( int weapon, int clientNum, vec3_t origin, vec3_t dir, im
 	// create the explosion
 	//
 	if ( mod ) {
-		le = CG_MakeExplosion( origin, dir,
-								mod,	shader,
-								duration, isSprite );
-		le->light = light;
-		VectorCopy( lightColor, le->lightColor );
+		if ( cg_drawExplosion.integer ) {
+
+			le = CG_MakeExplosion( origin, dir,
+									mod,	shader,
+									duration, isSprite );
+			le->light = light;
+			VectorCopy( lightColor, le->lightColor );
 #ifdef MISSIONPACK
-		if ( weapon == WP_RAILGUN ) {
-			// colorize with client color
-			VectorCopy( cgs.clientinfo[clientNum].color1, le->color );
-			le->refEntity.shaderRGBA[0] = le->color[0] * 0xff;
-			le->refEntity.shaderRGBA[1] = le->color[1] * 0xff;
-			le->refEntity.shaderRGBA[2] = le->color[2] * 0xff;
-			le->refEntity.shaderRGBA[3] = 0xff;
-		}
+			if ( weapon == WP_RAILGUN ) {
+				// colorize with client color
+				VectorCopy( cgs.clientinfo[clientNum].color1, le->color );
+				le->refEntity.shaderRGBA[0] = le->color[0] * 0xff;
+				le->refEntity.shaderRGBA[1] = le->color[1] * 0xff;
+				le->refEntity.shaderRGBA[2] = le->color[2] * 0xff;
+				le->refEntity.shaderRGBA[3] = 0xff;
+			}
 #endif
+
+		}
 	}
 
 	//

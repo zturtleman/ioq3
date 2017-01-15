@@ -1542,6 +1542,8 @@ extern	vmCvar_t		cg_connectionTone;
 extern	vmCvar_t		cg_weaponCycleSkipsBlaster;
 extern	vmCvar_t		cg_placebo;
 extern	vmCvar_t		cg_weaponBobbing;
+extern	vmCvar_t		cg_muzzleFlash;
+extern	vmCvar_t		cg_drawExplosion;
 
 
 // hud

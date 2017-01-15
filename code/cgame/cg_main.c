@@ -210,6 +210,8 @@ vmCvar_t	cg_connectionTone;
 vmCvar_t	cg_weaponCycleSkipsBlaster;
 vmCvar_t	cg_placebo;
 vmCvar_t	cg_weaponBobbing;
+vmCvar_t	cg_muzzleFlash;
+vmCvar_t	cg_drawExplosion;
 
 // hud
 vmCvar_t	hud_scoreboard_pingType;
@@ -785,8 +787,11 @@ static cvarTable_t cvarTable[] = {
 
 	{ &cg_weaponCycleSkipsBlaster, "cg_weaponCycleSkipsBlaster", "1", CVAR_ARCHIVE},
 
-	{ &cg_placebo, "cg_placebo", "0", CVAR_ARCHIVE}, // placebo...  does it work?  you decide, 2016
+	{ &cg_placebo, "cg_placebo", "0", CVAR_ARCHIVE}, // placebo...  does it work?  you decide, 2020
 	{ &cg_weaponBobbing, "cg_weaponBobbing", "1", CVAR_ARCHIVE},
+	{ &cg_muzzleFlash, "cg_muzzleFlash", "1", CVAR_ARCHIVE},
+	{ &cg_drawExplosion, "cg_drawExplosion", "1", CVAR_ARCHIVE},
+
 
 // hud
 	{ &hud_scoreboard_pingType, "hud_scoreboard_pingType", "0", CVAR_ARCHIVE},
