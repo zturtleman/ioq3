@@ -563,6 +563,9 @@ void CG_ParseSndCall( int sndCode ) {
 		case SC_AN_PERFECT:
 			trap_S_StartLocalSound( cgs.media.an_perfect, CHAN_ANNOUNCER );
 			break;
+		case SC_AN_MONSTER:
+			trap_S_StartLocalSound( cgs.media.an_monster, CHAN_ANNOUNCER );
+			break;
 
 	}
 

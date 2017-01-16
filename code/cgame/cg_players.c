@@ -2303,7 +2303,9 @@ void CG_setColor(clientInfo_t * ci, refEntity_t * model, int state){
 	}
 	else if( ci->team == TEAM_FREE ){
 		// TODO: allow players in team free games to choose the color they want (other than black of course)
-		model->shaderRGBA[0] = model->shaderRGBA[1] = model->shaderRGBA[2] = model->shaderRGBA[3] = 255;
+		model->shaderRGBA[0] = model->shaderRGBA[2] = model->shaderRGBA[3] = 255;
+		model->shaderRGBA[1] = 0;
+		//model->shaderRGBA[0] = model->shaderRGBA[1] = model->shaderRGBA[2] = model->shaderRGBA[3] = 255;
 
 		/*CG_setRGBA(legs->shaderRGBA, cg_enemyLegsColor.string);
 		CG_setRGBA(torso->shaderRGBA, cg_enemyTorsoColor.string);

@@ -1470,8 +1470,9 @@ static void CG_RegisterSounds( void ) {
 	cgs.media.an_wonderful = trap_S_RegisterSound( "sound/announcer/mmp/fucking_wonderful.wav", qtrue );
 	cgs.media.an_fuckem = trap_S_RegisterSound( "sound/announcer/mmp/fuck_em_in_the_ass.wav", qtrue );
 	cgs.media.an_youSuck = trap_S_RegisterSound( "sound/announcer/mmp/you_suck.wav", qtrue );
-	cgs.media.an_cBreaker = trap_S_RegisterSound( "sound/announcer/mmp/combo_breaker_2.wav", qtrue );
+	cgs.media.an_cBreaker = trap_S_RegisterSound( "sound/announcer/mmp/momentum_breaker.wav", qtrue );
 	cgs.media.an_perfect = trap_S_RegisterSound( "sound/announcer/mmp/perfect.wav", qtrue );
+	cgs.media.an_monster = trap_S_RegisterSound( "sound/announcer/mmp/monster.wav", qtrue );
 
 #ifdef MISSIONPACK
 	cgs.media.countPrepareTeamSound = trap_S_RegisterSound( "sound/feedback/prepare_team.wav", qtrue );

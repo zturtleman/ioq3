@@ -1187,6 +1187,7 @@ typedef struct {
 	sfxHandle_t	an_youSuck;
 	sfxHandle_t	an_cBreaker;
 	sfxHandle_t	an_perfect;
+	sfxHandle_t	an_monster;
 
 	sfxHandle_t	countPrepareSound;
 

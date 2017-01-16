@@ -438,6 +438,7 @@ typedef enum {
 
 	SC_AN_COMBO_BREAKER,
 	SC_AN_PERFECT,
+	SC_AN_MONSTER,
 
 	SC_MAX // max value
 } soundCall_t;
