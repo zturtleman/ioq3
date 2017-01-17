@@ -241,14 +241,17 @@ void CG_RailTrail (clientInfo_t *ci, vec3_t start, vec3_t end) {
 	VectorCopy(start, re->origin);
 	VectorCopy(end, re->oldorigin);
 
-	re->shaderRGBA[0] = ci->color1[0] * 255;
+	/*re->shaderRGBA[0] = ci->color1[0] * 255;
 	re->shaderRGBA[1] = ci->color1[1] * 255;
-	re->shaderRGBA[2] = ci->color1[2] * 255;
+	re->shaderRGBA[2] = ci->color1[2] * 255;*/
+	re->shaderRGBA[0] = 0;
+	re->shaderRGBA[1] = 255;
+	re->shaderRGBA[2] = 0;
 	re->shaderRGBA[3] = 255;
 
-	le->color[0] = ci->color1[0] * 0.75;
-	le->color[1] = ci->color1[1] * 0.75;
-	le->color[2] = ci->color1[2] * 0.75;
+	le->color[0] = 0.0f;
+	le->color[1] = 0.75f;
+	le->color[2] = 0.0f;
 	le->color[3] = 1.0f;
 
 	AxisClear( re->axis );
@@ -294,14 +297,14 @@ void CG_RailTrail (clientInfo_t *ci, vec3_t start, vec3_t end) {
 			re->radius = 1.1f;
 			re->customShader = cgs.media.laserRingsShader;
 
-			re->shaderRGBA[0] = ci->color2[0] * 255;
-			re->shaderRGBA[1] = ci->color2[1] * 255;
-			re->shaderRGBA[2] = ci->color2[2] * 255;
+			re->shaderRGBA[0] = 0;
+			re->shaderRGBA[1] = 255;
+			re->shaderRGBA[2] = 0;
 			re->shaderRGBA[3] = 255;
 
-			le->color[0] = ci->color2[0] * 0.75;
-			le->color[1] = ci->color2[1] * 0.75;
-			le->color[2] = ci->color2[2] * 0.75;
+			le->color[0] = 0.0f;
+			le->color[1] = 0.75f;
+			le->color[2] = 0.0f;
 			le->color[3] = 1.0f;
 
 			le->pos.trType = TR_LINEAR;

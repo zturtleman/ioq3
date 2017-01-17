@@ -3613,13 +3613,14 @@ void CL_Init( void ) {
 	cl_rate = Cvar_Get ("rate", "25000", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("snaps", "40", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("model", "sarge", CVAR_USERINFO | CVAR_ARCHIVE ); // model info will be removed in the future
-	Cvar_Get ("headmodel", "sarge", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("team_model", "james", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("team_headmodel", "*james", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("headmodel", "", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("team_model", "", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("team_headmodel", "", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("g_redTeam", "NULL", CVAR_SERVERINFO | CVAR_ARCHIVE);
 	Cvar_Get ("g_blueTeam", "NULL", CVAR_SERVERINFO | CVAR_ARCHIVE);
-	/*Cvar_Get ("color1", "4", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("color2", "5", CVAR_USERINFO | CVAR_ARCHIVE );*/
+	Cvar_Get ("color1", "11", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("color2", "11", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("color3", "11", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("chatColorCode", "2", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("teamchatColorCode", "5", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("handicap", "0", CVAR_USERINFO );

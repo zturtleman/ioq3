@@ -901,6 +901,8 @@ void CG_NewClientInfo( int clientNum ) {
 	// the old value
 	memset( &newInfo, 0, sizeof( newInfo ) );
 
+	//CG_Printf( "^6DEBUG: %s\n", configstring );
+
 	// isolate the player's name
 	v = Info_ValueForKey(configstring, "n");
 	Q_strncpyz( newInfo.name, v, sizeof( newInfo.name ) );
@@ -914,6 +916,13 @@ void CG_NewClientInfo( int clientNum ) {
 	Q_strncpyz( newInfo.port, v, sizeof( newInfo.port ) );
 
 	// colors
+	v = Info_ValueForKey( configstring, "c1" );
+	newInfo.color1 = atoi( v );
+	v = Info_ValueForKey( configstring, "c2" );
+	newInfo.color2 = atoi( v );
+	v = Info_ValueForKey( configstring, "c3" );
+	newInfo.color3 = atoi( v );
+
 	/*v = Info_ValueForKey( configstring, "c1" );
 	CG_ColorFromString( v, newInfo.color1 );
 
@@ -2287,12 +2296,39 @@ int CG_LightVerts( vec3_t normal, int numVerts, polyVert_t *verts )
 	return qtrue;
 }
 
+
+typedef struct {
+	int			red; // this is for the color red
+	int			green; // this is for the color green
+	int			blue; // this is for the color three
+} setColor_t;
+
+static setColor_t		setColorTable[] = {
+	{ 255, 255, 255 },
+	{ 255,   0,   0 },
+	{ 255, 128,   0 },
+	{ 255, 255,   0 },
+	{ 128, 255,   0 },
+	{   0, 255,   0 },
+	{   0, 255, 128 },
+	{   0, 255, 255 },
+
+	{   0, 128, 255 },
+	{   0,   0, 255 },
+	{ 128,   0, 255 },
+	{ 255,   0, 255 },
+	{ 255,   0, 128 },
+	{ 255, 128, 128 },
+	{ 128, 255, 128 },
+	{ 128, 128, 255 }
+};
+
 /*
 ===============
 CG_setColor
 ===============
 */
-void CG_setColor(clientInfo_t * ci, refEntity_t * model, int state){
+void CG_setColor(clientInfo_t * ci, refEntity_t * model, int state, int value){
 
   	clientInfo_t *localPlayer;
   	localPlayer = &cgs.clientinfo[cg.clientNum];
@@ -2302,9 +2338,18 @@ void CG_setColor(clientInfo_t * ci, refEntity_t * model, int state){
 		return;
 	}
 	else if( ci->team == TEAM_FREE ){
-		// TODO: allow players in team free games to choose the color they want (other than black of course)
+
+		value &= 15; // don't go out of bounds
+		model->shaderRGBA[0] = setColorTable[value].red;
+		model->shaderRGBA[1] = setColorTable[value].green;
+		model->shaderRGBA[2] = setColorTable[value].blue;
+		model->shaderRGBA[3] = 255; // always visible
+
+		/*
 		model->shaderRGBA[0] = model->shaderRGBA[2] = model->shaderRGBA[3] = 255;
 		model->shaderRGBA[1] = 0;
+		*/
+
 		//model->shaderRGBA[0] = model->shaderRGBA[1] = model->shaderRGBA[2] = model->shaderRGBA[3] = 255;
 
 		/*CG_setRGBA(legs->shaderRGBA, cg_enemyLegsColor.string);
@@ -2379,9 +2424,10 @@ void CG_Player( centity_t *cent ) {
 	memset( &torso, 0, sizeof(torso) );
 	memset( &head, 0, sizeof(head) );
 
-	CG_setColor( ci, &legs, cent->currentState.eFlags );
-	CG_setColor( ci, &torso, cent->currentState.eFlags );
-	CG_setColor( ci, &head, cent->currentState.eFlags );
+	CG_setColor( ci, &legs, cent->currentState.eFlags, ci->color3 );
+	CG_setColor( ci, &torso, cent->currentState.eFlags, ci->color2 );
+	CG_setColor( ci, &head, cent->currentState.eFlags, ci->color1 );
+	//CG_Printf( "^6DEBUG: %i %i %i\n", ci->color1, ci->color2, ci->color3 );
 
 	// get the rotation information
 	CG_PlayerAngles( cent, legs.axis, torso.axis, head.axis );

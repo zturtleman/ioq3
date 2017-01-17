@@ -636,14 +636,21 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 	key = "color1";
 	s = Info_ValueForKey( botinfo, key );
 	if ( !*s ) {
-		s = "4";
+		s = "3";
 	}
 	Info_SetValueForKey( userinfo, key, s );
 
 	key = "color2";
 	s = Info_ValueForKey( botinfo, key );
 	if ( !*s ) {
-		s = "5";
+		s = "2";
+	}
+	Info_SetValueForKey( userinfo, key, s );
+
+	key = "color3";
+	s = Info_ValueForKey( botinfo, key );
+	if ( !*s ) {
+		s = "1";
 	}
 	Info_SetValueForKey( userinfo, key, s );
 

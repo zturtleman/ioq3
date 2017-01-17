@@ -378,11 +378,15 @@ typedef struct {
 
 	int				botSkill;		// 0 = not bot, 1-5 = bot
 
-	vec3_t			color1; // to be removed
+	int				color1; // hihglight overlays for non-team games
+	int				color2;
+	int				color3;
+
+	/*vec3_t			color1; // to be removed
 	vec3_t			color2; // to be removed
 
 	byte			c1RGBA[4];
-	byte			c2RGBA[4];
+	byte			c2RGBA[4];*/
 
 	int				score;			// updated by score servercmds
 	int				location;		// location index for team mode
