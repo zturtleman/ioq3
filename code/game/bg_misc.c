@@ -151,7 +151,7 @@ gitem_t	bg_itemlist[] =
 		NULL, NULL },*/
 /* icon */		"icons/iconh_green",
 /* pickup */	"Normal Health Kit",
-		25,
+		HEALTH_POINT_BONUS2, // Was 25
 		IT_HEALTH,
 		0,
 /* precache */ "",
@@ -171,7 +171,7 @@ gitem_t	bg_itemlist[] =
 		NULL, NULL },*/
 /* icon */		"icons/iconh_yellow",
 /* pickup */	"Large Health Kit",
-		50,
+		HEALTH_POINT_BONUS3, // was 50
 		IT_HEALTH,
 		0,
 /* precache */ "",
@@ -1115,7 +1115,7 @@ Only in One Flag CTF games
 		NULL, NULL, NULL},
 /* icon */		"icons/food_burger",
 /* pickup */	"Tasty Burger",
-		15,
+		HEALTH_POINT_BONUS1,
 		IT_HEALTH,
 		0,
 /* precache */ "",
@@ -1259,7 +1259,7 @@ gitem_t	*BG_FindItemForFood( int type ) {
 
 	for ( it = bg_itemlist + 1 ; it->classname ; it++) {
 		if ( it->giType == IT_HEALTH ) {
-			if ( it->quantity == 15 ) {
+			if ( it->quantity == HEALTH_POINT_BONUS1 ) {
 				return it;
 			}
 		}

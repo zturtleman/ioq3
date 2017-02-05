@@ -37,6 +37,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	GIB_HEALTH_BONUS_CHANCE		0.25
 #define	ARMOR_PROTECTION	0.66
 
+#define HEALTH_POINT_BONUS1	10 // burger
+#define HEALTH_POINT_BONUS2	15 // health kit
+#define HEALTH_POINT_BONUS3	25 // large health kit
+#define HEALTH_POINT_BONUS4	50 // turkey
+
 #define MARK_OF_THE_DEVIL	666
 
 #define	MAX_ITEMS			256
