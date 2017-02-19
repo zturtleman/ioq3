@@ -2304,23 +2304,23 @@ typedef struct {
 } setColor_t;
 
 static setColor_t		setColorTable[] = {
-	{ 255, 255, 255 },
-	{ 255,   0,   0 },
-	{ 255, 128,   0 },
-	{ 255, 255,   0 },
-	{ 128, 255,   0 },
-	{   0, 255,   0 },
-	{   0, 255, 128 },
-	{   0, 255, 255 },
+	{ 255, 255, 255 }, // white
+	{ 255,   0,   0 }, // red
+	{ 255, 128,   0 }, // orange
+	{ 255, 255,   0 }, // yellow
+	{ 128, 255,   0 }, // lime
+	{   0, 255,   0 }, // green
+	{   0, 255, 128 }, // aqua
+	{   0, 255, 255 }, // cyan
 
-	{   0, 128, 255 },
-	{   0,   0, 255 },
-	{ 128,   0, 255 },
-	{ 255,   0, 255 },
-	{ 255,   0, 128 },
-	{ 255, 128, 128 },
-	{ 128, 255, 128 },
-	{ 128, 128, 255 }
+	{   0, 128, 255 }, // sky
+	{   0,   0, 255 }, // blue
+	{ 128,   0, 255 }, // purple
+	{ 255,   0, 255 }, // magenta
+	{ 255,   0, 128 }, // rose
+	{ 255, 128, 128 }, // light red
+	{ 128, 255, 128 }, // light green
+	{ 128, 128, 255 }  // light blue
 };
 
 /*
@@ -2328,7 +2328,7 @@ static setColor_t		setColorTable[] = {
 CG_setColor
 ===============
 */
-void CG_setColor(clientInfo_t * ci, refEntity_t * model, int state, int value){
+void CG_setColor(/*clientInfo_t * ci, */refEntity_t * model, int state, int value){
 
   	clientInfo_t *localPlayer;
   	localPlayer = &cgs.clientinfo[cg.clientNum];
@@ -2337,6 +2337,14 @@ void CG_setColor(clientInfo_t * ci, refEntity_t * model, int state, int value){
 		model->shaderRGBA[0] = model->shaderRGBA[1] = model->shaderRGBA[2] = model->shaderRGBA[3] = 0;
 		return;
 	}
+
+	value &= 15; // don't go out of bounds
+	model->shaderRGBA[0] = setColorTable[value].red;
+	model->shaderRGBA[1] = setColorTable[value].green;
+	model->shaderRGBA[2] = setColorTable[value].blue;
+	model->shaderRGBA[3] = 255; // always visible
+
+/*
 	else if( ci->team == TEAM_FREE ){
 
 		value &= 15; // don't go out of bounds
@@ -2344,6 +2352,7 @@ void CG_setColor(clientInfo_t * ci, refEntity_t * model, int state, int value){
 		model->shaderRGBA[1] = setColorTable[value].green;
 		model->shaderRGBA[2] = setColorTable[value].blue;
 		model->shaderRGBA[3] = 255; // always visible
+*/
 
 		/*
 		model->shaderRGBA[0] = model->shaderRGBA[2] = model->shaderRGBA[3] = 255;
@@ -2355,6 +2364,8 @@ void CG_setColor(clientInfo_t * ci, refEntity_t * model, int state, int value){
 		/*CG_setRGBA(legs->shaderRGBA, cg_enemyLegsColor.string);
 		CG_setRGBA(torso->shaderRGBA, cg_enemyTorsoColor.string);
 		CG_setRGBA(head->shaderRGBA, cg_enemyHeadColor.string);*/
+
+/*
 		return;
 	}
 	else if( ci->team == TEAM_RED ){
@@ -2367,6 +2378,9 @@ void CG_setColor(clientInfo_t * ci, refEntity_t * model, int state, int value){
 		model->shaderRGBA[2] = model->shaderRGBA[3] = 255;
 		return;
 	}
+*/
+
+
 }
 
 /*
@@ -2419,14 +2433,26 @@ void CG_Player( centity_t *cent ) {
 		}
 	}
 
-
 	memset( &legs, 0, sizeof(legs) );
 	memset( &torso, 0, sizeof(torso) );
 	memset( &head, 0, sizeof(head) );
 
-	CG_setColor( ci, &legs, cent->currentState.eFlags, ci->color3 );
-	CG_setColor( ci, &torso, cent->currentState.eFlags, ci->color2 );
-	CG_setColor( ci, &head, cent->currentState.eFlags, ci->color1 );
+	if( ci->team == TEAM_RED ){
+		CG_setColor( &legs, cent->currentState.eFlags, 1 );
+		CG_setColor( &torso, cent->currentState.eFlags, 2 );
+		CG_setColor( &head, cent->currentState.eFlags, 3 );
+	}
+	else if( ci->team == TEAM_BLUE ){
+		CG_setColor( &legs, cent->currentState.eFlags, 9 );
+		CG_setColor( &torso, cent->currentState.eFlags, 8 );
+		CG_setColor( &head, cent->currentState.eFlags, 7 );
+	} else {
+		CG_setColor( &legs, cent->currentState.eFlags, ci->color3 );
+		CG_setColor( &torso, cent->currentState.eFlags, ci->color2 );
+		CG_setColor( &head, cent->currentState.eFlags, ci->color1 );
+	}
+
+	// CG_setColor( ci, &legs, cent->currentState.eFlags, ci->color3 ); <-- old reference
 	//CG_Printf( "^6DEBUG: %i %i %i\n", ci->color1, ci->color2, ci->color3 );
 
 	// get the rotation information

@@ -1507,6 +1507,7 @@ static void PM_CheckDuck (void)
 {
 	trace_t	trace;
 
+	/*
 	if ( pm->ps->powerups[PW_INVULNERABILITY] ) {
 		if ( pm->ps->pm_flags & PMF_INVULEXPAND ) {
 			// invulnerability sphere has a 42 units radius
@@ -1522,6 +1523,7 @@ static void PM_CheckDuck (void)
 		return;
 	}
 	pm->ps->pm_flags &= ~PMF_INVULEXPAND;
+	*/
 
 	pm->mins[0] = -15;
 	pm->mins[1] = -15;
