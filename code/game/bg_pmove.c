@@ -2418,7 +2418,7 @@ void PmoveSingle (pmove_t *pmove) {
 		//PM_WaterEvents();
 
 		// snap some parts of playerstate to save network bandwidth
-		trap_SnapVector( pm->ps->velocity ); // mmp - not sure if we need this
+		trap_SnapVector( pm->ps->velocity );
 
 		return;
 	}
@@ -2498,7 +2498,12 @@ void PmoveSingle (pmove_t *pmove) {
 	PM_WaterEvents();
 
 	// snap some parts of playerstate to save network bandwidth
-	trap_SnapVector( pm->ps->velocity );
+	// however, only if pmove_float is disabled
+	// otherwise, fuck it
+	if ( !(pm->pmove_float) )
+		trap_SnapVector( pm->ps->velocity );
+
+	//Com_Printf("^6float = %i\n", pm->pmove_float); // debug
 }
 
 

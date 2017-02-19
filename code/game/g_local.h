@@ -1159,6 +1159,7 @@ extern	vmCvar_t	g_blueteam;
 extern	vmCvar_t	g_smoothClients;
 extern	vmCvar_t	pmove_fixed;
 extern	vmCvar_t	pmove_msec;
+extern	vmCvar_t	pmove_float;
 
 // mmp
 extern	vmCvar_t	g_info;

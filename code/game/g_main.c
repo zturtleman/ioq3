@@ -100,6 +100,7 @@ vmCvar_t	g_filterBan;
 vmCvar_t	g_smoothClients;
 vmCvar_t	pmove_fixed;
 vmCvar_t	pmove_msec;
+vmCvar_t	pmove_float;
 
 // mmp
 vmCvar_t	g_info;
@@ -277,13 +278,14 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_proxMineTimeout, "g_proxMineTimeout", "20000", 0, 0, qfalse },
 #endif
 	{ &g_smoothClients, "g_smoothClients", "1", 0, 0, qfalse},
-	{ &pmove_fixed, "pmove_fixed", "0", CVAR_SYSTEMINFO, 0, qtrue},
-	{ &pmove_msec, "pmove_msec", "8", CVAR_SYSTEMINFO, 0, qtrue},
+	{ &pmove_fixed, "pmove_fixed", "0", CVAR_SYSTEMINFO/* | CVAR_ARCHIVE*/, 0, qtrue},
+	{ &pmove_msec, "pmove_msec", "8", CVAR_SYSTEMINFO/* | CVAR_ARCHIVE*/, 0, qtrue},
+	{ &pmove_float, "pmove_float", "1", CVAR_SYSTEMINFO/* | CVAR_ARCHIVE*/, 0, qtrue}, // sago physics
 
 //unlagged - server options
 	{ &g_truePing, "g_truePing", "0", CVAR_ARCHIVE, 0, qfalse },
 	// it's CVAR_SYSTEMINFO so the client's sv_fps will be automagically set to its value
-	{ &sv_fps, "sv_fps", "", CVAR_SYSTEMINFO | CVAR_ARCHIVE, 0, qfalse },
+	{ &sv_fps, "sv_fps", "40", CVAR_SYSTEMINFO | CVAR_ARCHIVE, 0, qfalse },
 //unlagged - server options
 
 //unlagged - lagNudge
