@@ -73,7 +73,7 @@ keyname_t keynames[] =
 
 	{"CAPSLOCK", K_CAPSLOCK},
 
-
+	
 	{"F1", K_F1},
 	{"F2", K_F2},
 	{"F3", K_F3},
@@ -176,7 +176,7 @@ keyname_t keynames[] =
 	{"KP_EQUALS",		K_KP_EQUALS },
 
 	{"PAUSE", K_PAUSE},
-
+	
 	{"SEMICOLON", ';'},	// because a raw semicolon seperates commands
 
 	{"WORLD_0", K_WORLD_0},
@@ -289,6 +289,33 @@ keyname_t keynames[] =
 	{"EURO", K_EURO},
 	{"UNDO", K_UNDO},
 
+	{"PAD0_A", K_PAD0_A },
+	{"PAD0_B", K_PAD0_B },
+	{"PAD0_X", K_PAD0_X },
+	{"PAD0_Y", K_PAD0_Y },
+	{"PAD0_BACK", K_PAD0_BACK },
+	{"PAD0_GUIDE", K_PAD0_GUIDE },
+	{"PAD0_START", K_PAD0_START },
+	{"PAD0_LEFTSTICK_CLICK", K_PAD0_LEFTSTICK_CLICK },
+	{"PAD0_RIGHTSTICK_CLICK", K_PAD0_RIGHTSTICK_CLICK },
+	{"PAD0_LEFTSHOULDER", K_PAD0_LEFTSHOULDER },
+	{"PAD0_RIGHTSHOULDER", K_PAD0_RIGHTSHOULDER },
+	{"PAD0_DPAD_UP", K_PAD0_DPAD_UP },
+	{"PAD0_DPAD_DOWN", K_PAD0_DPAD_DOWN },
+	{"PAD0_DPAD_LEFT", K_PAD0_DPAD_LEFT },
+	{"PAD0_DPAD_RIGHT", K_PAD0_DPAD_RIGHT },
+
+	{"PAD0_LEFTSTICK_LEFT", K_PAD0_LEFTSTICK_LEFT },
+	{"PAD0_LEFTSTICK_RIGHT", K_PAD0_LEFTSTICK_RIGHT },
+	{"PAD0_LEFTSTICK_UP", K_PAD0_LEFTSTICK_UP },
+	{"PAD0_LEFTSTICK_DOWN", K_PAD0_LEFTSTICK_DOWN },
+	{"PAD0_RIGHTSTICK_LEFT", K_PAD0_RIGHTSTICK_LEFT },
+	{"PAD0_RIGHTSTICK_RIGHT", K_PAD0_RIGHTSTICK_RIGHT },
+	{"PAD0_RIGHTSTICK_UP", K_PAD0_RIGHTSTICK_UP },
+	{"PAD0_RIGHTSTICK_DOWN", K_PAD0_RIGHTSTICK_DOWN },
+	{"PAD0_LEFTTRIGGER", K_PAD0_LEFTTRIGGER },
+	{"PAD0_RIGHTTRIGGER", K_PAD0_RIGHTTRIGGER },
+
 	{NULL,0}
 };
 
@@ -382,12 +409,12 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 	}
 }
 
-void Field_Draw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape )
+void Field_Draw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape ) 
 {
 	Field_VariableSizeDraw( edit, x, y, width, SMALLCHAR_WIDTH, showCursor, noColorEscape );
 }
 
-void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape )
+void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape ) 
 {
 	Field_VariableSizeDraw( edit, x, y, width, BIGCHAR_WIDTH, showCursor, noColorEscape );
 }
@@ -441,7 +468,7 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 	switch ( key ) {
 		case K_DEL:
 			if ( edit->cursor < len ) {
-				memmove( edit->buffer + edit->cursor,
+				memmove( edit->buffer + edit->cursor, 
 					edit->buffer + edit->cursor + 1, len - edit->cursor );
 			}
 			break;
@@ -504,7 +531,7 @@ void Field_CharEvent( field_t *edit, int ch ) {
 
 	if ( ch == 'h' - 'a' + 1 )	{	// ctrl-h is backspace
 		if ( edit->cursor > 0 ) {
-			memmove( edit->buffer + edit->cursor - 1,
+			memmove( edit->buffer + edit->cursor - 1, 
 				edit->buffer + edit->cursor, len + 1 - edit->cursor );
 			edit->cursor--;
 			if ( edit->cursor < edit->scroll )
@@ -534,7 +561,7 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-	if ( key_overstrikeMode ) {
+	if ( key_overstrikeMode ) {	
 		// - 2 to leave room for the leading slash and trailing \0
 		if ( edit->cursor == MAX_EDIT_LINE - 2 )
 			return;
@@ -545,7 +572,7 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		if ( len == MAX_EDIT_LINE - 2 ) {
 			return; // all full
 		}
-		memmove( edit->buffer + edit->cursor + 1,
+		memmove( edit->buffer + edit->cursor + 1, 
 			edit->buffer + edit->cursor, len + 1 - edit->cursor );
 		edit->buffer[edit->cursor] = ch;
 		edit->cursor++;
@@ -642,7 +669,7 @@ void Console_Key (int key) {
 
 	if ( (key == K_MWHEELUP && keys[K_SHIFT].down) || ( key == K_UPARROW ) || ( key == K_KP_UPARROW ) ||
 		 ( ( tolower(key) == 'p' ) && keys[K_CTRL].down ) ) {
-		if ( nextHistoryLine - historyLine < COMMAND_HISTORY
+		if ( nextHistoryLine - historyLine < COMMAND_HISTORY 
 			&& historyLine > 0 ) {
 			historyLine--;
 		}
@@ -795,7 +822,7 @@ to be configured even if they don't have defined names.
 */
 int Key_StringToKeynum( char *str ) {
 	keyname_t	*kn;
-
+	
 	if ( !str || !str[0] ) {
 		return -1;
 	}
@@ -830,7 +857,7 @@ given keynum.
 ===================
 */
 char *Key_KeynumToString( int keynum ) {
-	keyname_t	*kn;
+	keyname_t	*kn;	
 	static	char	tinystr[5];
 	int			i, j;
 
@@ -884,7 +911,7 @@ void Key_SetBinding( int keynum, const char *binding ) {
 	if ( keys[ keynum ].binding ) {
 		Z_Free( keys[ keynum ].binding );
 	}
-
+		
 	// allocate memory for new binding
 	keys[keynum].binding = CopyString( binding );
 
@@ -907,7 +934,7 @@ char *Key_GetBinding( int keynum ) {
 	return keys[ keynum ].binding;
 }
 
-/*
+/* 
 ===================
 Key_GetKey
 ===================
@@ -940,7 +967,7 @@ void Key_Unbind_f (void)
 		Com_Printf ("unbind <key> : remove commands from a key\n");
 		return;
 	}
-
+	
 	b = Key_StringToKeynum (Cmd_Argv(1));
 	if (b==-1)
 	{
@@ -959,7 +986,7 @@ Key_Unbindall_f
 void Key_Unbindall_f (void)
 {
 	int		i;
-
+	
 	for (i=0 ; i < MAX_KEYS; i++)
 		if (keys[i].binding)
 			Key_SetBinding (i, "");
@@ -975,7 +1002,7 @@ void Key_Bind_f (void)
 {
 	int			i, c, b;
 	char		cmd[1024];
-
+	
 	c = Cmd_Argc();
 
 	if (c < 2)
@@ -998,7 +1025,7 @@ void Key_Bind_f (void)
 			Com_Printf ("\"%s\" is not bound\n", Key_KeynumToString(b) );
 		return;
 	}
-
+	
 // copy the rest of the command line
 	cmd[0] = 0;		// start out with a null string
 	for (i=2 ; i< c ; i++)
@@ -1276,11 +1303,11 @@ void CL_KeyDownEvent( int key, unsigned time )
 	} else if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
 		if ( uivm ) {
 			VM_Call( uivm, UI_KEY_EVENT, key, qtrue );
-		}
+		} 
 	} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME ) {
 		if ( cgvm ) {
 			VM_Call( cgvm, CG_KEY_EVENT, key, qtrue );
-		}
+		} 
 	} else if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE ) {
 		Message_Key( key );
 	} else if ( clc.state == CA_DISCONNECTED ) {
@@ -1361,7 +1388,7 @@ void CL_CharEvent( int key ) {
 	{
 		VM_Call( uivm, UI_KEY_EVENT, key | K_CHAR_FLAG, qtrue );
 	}
-	else if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE )
+	else if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE ) 
 	{
 		Field_CharEvent( &chatField, key );
 	}
@@ -1419,7 +1446,7 @@ void Key_SetCatcher( int catcher ) {
 
 // This must not exceed MAX_CMD_LINE
 #define			MAX_CONSOLE_SAVE_BUFFER	1024
-#define			CONSOLE_HISTORY_FILE    "mfhistory"
+#define			CONSOLE_HISTORY_FILE    "q3history"
 static char	consoleSaveBuffer[ MAX_CONSOLE_SAVE_BUFFER ];
 static int	consoleSaveBufferSize = 0;
 
