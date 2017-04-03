@@ -1611,7 +1611,18 @@ void SP_func_bobbing (gentity_t *ent) {
 	ent->s.pos.trType = TR_SINE;
 
 	// set the axis of bobbing
-	if ( ent->spawnflags & 1 ) {
+	if ( ent->spawnflags & 4 ) {
+		if ( ent->spawnflags & 1) {
+			ent->s.pos.trDelta[0] = height;
+		} else {
+			ent->s.pos.trDelta[0] = -height;
+		}
+		if ( ent->spawnflags & 2) {
+			ent->s.pos.trDelta[1] = height;
+		} else {
+			ent->s.pos.trDelta[1] = -height;
+		}
+	} else if ( ent->spawnflags & 1 ) {
 		ent->s.pos.trDelta[0] = height;
 	} else if ( ent->spawnflags & 2 ) {
 		ent->s.pos.trDelta[1] = height;
