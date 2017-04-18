@@ -1020,6 +1020,67 @@ gentity_t *LaunchItem_Weapon( gitem_t *item, vec3_t origin, vec3_t velocity, int
 
 /*
 ================
+LaunchItem_Ammo
+
+Spawns ammo and tosses it forward
+================
+*/
+gentity_t *LaunchItem_Ammo( gitem_t *item, vec3_t origin, vec3_t velocity, int dropTime, int ammo[AT_NUM_AMMO] ) {
+	gentity_t	*dropped;
+
+	dropped = G_Spawn();
+
+	dropped->s.eType = ET_ITEM;
+	dropped->s.modelindex = item - bg_itemlist; // store item number in modelindex
+	dropped->s.modelindex2 = 1; // This is non-zero is it's a dropped item
+
+	dropped->classname = item->classname;
+	dropped->item = item;
+	VectorSet (dropped->r.mins, -ITEM_RADIUS, -ITEM_RADIUS, -ITEM_RADIUS);
+	VectorSet (dropped->r.maxs, ITEM_RADIUS, ITEM_RADIUS, ITEM_RADIUS);
+	dropped->r.contents = CONTENTS_TRIGGER;
+
+	dropped->touch = Touch_Item;
+
+	G_SetOrigin( dropped, origin );
+	dropped->s.pos.trType = TR_GRAVITY;
+	dropped->s.pos.trTime = level.time;
+	VectorCopy( velocity, dropped->s.pos.trDelta );
+
+	dropped->s.eFlags |= EF_BOUNCE_HALF;
+
+	dropped->think = G_FreeEntity;
+	dropped->nextthink = level.time + 30000;
+
+	dropped->flags = FL_DROPPED_ITEM;
+
+	dropped->pickupDelay = dropTime + 500;
+
+	// remember slot
+	dropped->count = level.currentBackpackSlot;
+
+	// add ammo in backpack
+	// TODO: code this better
+	backpack[level.currentBackpackSlot].shells = ammo[AT_SHELLS];
+	backpack[level.currentBackpackSlot].rockets = ammo[AT_ROCKETS];
+	backpack[level.currentBackpackSlot].cells = ammo[AT_CELLS];
+	backpack[level.currentBackpackSlot].bullets = ammo[AT_BULLETS];
+	backpack[level.currentBackpackSlot].gas = ammo[AT_GAS];
+
+	// move to next backpack slot
+	// TODO: code this better, wtf was i smoking
+	level.currentBackpackSlot++;
+	if ( level.currentBackpackSlot >= MAX_BACKPACK_CONTENTS ) {
+		level.currentBackpackSlot = 0;
+	}
+
+	trap_LinkEntity(dropped);
+
+	return dropped;
+}
+
+/*
+================
 Drop_Item
 
 Spawns an item and tosses it forward
@@ -1048,7 +1109,7 @@ Drop_Item_Weapon
 Spawns an item and tosses it forward
 ================
 */
-//TODO: Switch to next weapon
+//TODO: Switch to next weapon instead of blaster
 
 gentity_t *Drop_Item_Weapon( gentity_t *ent, gitem_t *item, float angle, int weapon ) {
 	vec3_t	velocity;
@@ -1077,6 +1138,78 @@ gentity_t *Drop_Item_Weapon( gentity_t *ent, gitem_t *item, float angle, int wea
 	dropTime = level.time;
 
 	return LaunchItem_Weapon( item, position, velocity, dropTime, weapon );
+}
+
+
+/*
+================
+Drop_Ammo
+
+Spawns an item and tosses it forward
+================
+*/
+
+gentity_t *Drop_Item_Ammo( gentity_t *ent, gitem_t *item, float angle ) {
+	vec3_t	velocity;
+	vec3_t	angles;
+	vec3_t	position;
+	int		ammoCount;
+	int		dropTime;
+	int		ammo[AT_NUM_AMMO];
+	int		i, v;
+	int		total;
+
+	int		ammoDropAmounts[AT_NUM_AMMO] = {
+		0,
+		0, // AT_INFINITY
+
+		5, // AT_SHELLS
+		5, // AT_ROCKETS
+		50, // AT_CELLS
+		50, // AT_BULLETS
+		25 // AT_GAS
+	};
+
+	VectorCopy( ent->s.apos.trBase, angles );
+	angles[YAW] += angle;
+	angles[PITCH] = 0; // always forward
+
+	AngleVectors( angles, velocity, NULL, NULL );
+	VectorScale( velocity, 0, velocity );
+	VectorAdd( velocity, ent->s.pos.trBase, position );
+
+	AngleVectors( angles, velocity, NULL, NULL );
+	VectorScale( velocity, 150, velocity );
+	velocity[2] += 200 + crandom() * 50;
+
+/*	ammoCount = ent->client->ps.ammo[item->giTag];
+
+	ent->client->ps.ammo[item->giTag] = 0;
+	ent->client->ps.stats[STAT_WEAPONS] &= ~( 1 << item->giTag );*/
+
+	total = 0;
+
+	for (i = AT_SHELLS; i <= AT_GAS; i++) {
+		v = ent->client->ps.ammo[i];
+		if ( v < 0)
+			v = 0;
+		else if ( v >= ammoDropAmounts[i] )
+			v = ammoDropAmounts[i];
+
+		total += v; // incase someone decides to throw a dud
+
+		ammo[i] = v;
+		ent->client->ps.ammo[i] -= v;
+		//G_Printf ("^3DEBUG AMMO = %i '%i' '%i'\n", i, ent->client->ps.ammo[i], ammo[i] ); // debug
+	}
+
+	// disregard drops with no ammo
+	if (!total)
+		return NULL; // TODO: is this even safe
+
+	dropTime = level.time;
+
+	return LaunchItem_Ammo( item, position, velocity, dropTime, ammo );
 }
 
 

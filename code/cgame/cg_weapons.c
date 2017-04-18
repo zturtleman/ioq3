@@ -1828,6 +1828,22 @@ void CG_RemoveWeapon( void ) {
 
 }
 
+/*
+================
+CG_RemoveAmmo
+
+Caused by an EV_REMOVE_AMMO event
+
+nothing.
+================
+*/
+
+void CG_RemoveAmmo( void ) {
+
+	// we do nothing for now  :P
+
+}
+
 
 /*
 =================

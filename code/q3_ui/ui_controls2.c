@@ -120,14 +120,17 @@ typedef struct
 
 // all others
 #define ID_TOGGLEMENU		38
-#define ID_FREELOOK			39
-#define ID_INVERTMOUSE		40
-#define ID_ALWAYSRUN		41
-#define ID_AUTOSWITCH		42
-#define ID_MOUSESPEED		43
-#define ID_JOYENABLE		44
-#define ID_JOYTHRESHOLD		45
-#define ID_SMOOTHMOUSE		46
+#define ID_DROPWEAP			39
+#define ID_DROPAMMO			40
+#define ID_DROPOBJ			41
+#define ID_FREELOOK			42
+#define ID_INVERTMOUSE		43
+#define ID_ALWAYSRUN		44
+#define ID_AUTOSWITCH		45
+#define ID_MOUSESPEED		46
+#define ID_JOYENABLE		47
+#define ID_JOYTHRESHOLD		48
+#define ID_SMOOTHMOUSE		49
 
 #define ANIM_IDLE		0
 #define ANIM_RUN		1
@@ -220,6 +223,10 @@ typedef struct
 	menuaction_s		ready;
 	menuaction_s		togglemenu;
 
+	menuaction_s		dropweap;
+	menuaction_s		dropammo;
+	menuaction_s		dropobj;
+
 	menuradiobutton_s	joyenable;
 	menuslider_s		joythreshold;
 	int					section;
@@ -282,6 +289,9 @@ static bind_t g_bindings[] =
 	{"vote no", 		"Vote No:",			ID_VOTENO,		ANIM_IDLE,		K_F2,			-1,		-1, -1},
 	{"ready", 			"Ready:",			ID_READY,		ANIM_IDLE,		K_F3,			-1,		-1, -1},
 	{"togglemenu", 		"Toggle Menu:",		ID_TOGGLEMENU,	ANIM_IDLE,		K_ESCAPE,		-1,		-1, -1},
+	{"dropweapon", 		"Drop Weapon:",		ID_DROPWEAP,	ANIM_IDLE,		-1,				-1,		-1, -1},
+	{"dropammo", 		"Drop Ammo:",		ID_DROPAMMO,	ANIM_IDLE,		-1,				-1,		-1, -1},
+	{"dropobjective", 	"Drop Objective:",	ID_DROPOBJ,		ANIM_IDLE,		-1,				-1,		-1, -1},
 	{(char*)NULL,		(char*)NULL,		0,				0,				-1,				-1,		-1,	-1},
 };
 
@@ -359,6 +369,8 @@ static menucommon_s *g_misc_controls[] = {
 	(menucommon_s *)&s_controls.voteNo,
 	(menucommon_s *)&s_controls.ready,
 	(menucommon_s *)&s_controls.togglemenu,
+	(menucommon_s *)&s_controls.dropweap,
+	(menucommon_s *)&s_controls.dropammo,
 	NULL,
 };
 
@@ -1620,6 +1632,18 @@ static void Controls_MenuInit( void )
 	s_controls.togglemenu.generic.ownerdraw = Controls_DrawKeyBinding;
 	s_controls.togglemenu.generic.id        = ID_TOGGLEMENU;
 
+	s_controls.dropweap.generic.type		= MTYPE_ACTION;
+	s_controls.dropweap.generic.flags		= QMF_LEFT_JUSTIFY|QMF_PULSEIFFOCUS|QMF_GRAYED|QMF_HIDDEN;
+	s_controls.dropweap.generic.callback	= Controls_ActionEvent;
+	s_controls.dropweap.generic.ownerdraw	= Controls_DrawKeyBinding;
+	s_controls.dropweap.generic.id			= ID_DROPWEAP;
+
+	s_controls.dropammo.generic.type		= MTYPE_ACTION;
+	s_controls.dropammo.generic.flags		= QMF_LEFT_JUSTIFY|QMF_PULSEIFFOCUS|QMF_GRAYED|QMF_HIDDEN;
+	s_controls.dropammo.generic.callback	= Controls_ActionEvent;
+	s_controls.dropammo.generic.ownerdraw	= Controls_DrawKeyBinding;
+	s_controls.dropammo.generic.id			= ID_DROPAMMO;
+
 	s_controls.joyenable.generic.type      = MTYPE_RADIOBUTTON;
 	s_controls.joyenable.generic.flags	   = QMF_SMALLFONT;
 	s_controls.joyenable.generic.x	       = SCREEN_WIDTH/2;
@@ -1707,6 +1731,8 @@ static void Controls_MenuInit( void )
 	Menu_AddItem( &s_controls.menu, &s_controls.voteNo );
 	Menu_AddItem( &s_controls.menu, &s_controls.ready );
 	Menu_AddItem( &s_controls.menu, &s_controls.togglemenu );
+	Menu_AddItem( &s_controls.menu, &s_controls.dropweap );
+	Menu_AddItem( &s_controls.menu, &s_controls.dropammo );
 
 	Menu_AddItem( &s_controls.menu, &s_controls.back );
 

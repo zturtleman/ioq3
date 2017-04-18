@@ -580,10 +580,10 @@ typedef enum {
 	EV_JUMP_PAD,			// boing sound at origin, jump sound on player
 
 	EV_JUMP,
-	EV_WATER_TOUCH,		// foot touches
-	EV_WATER_LEAVE,		// foot leaves
-	EV_WATER_UNDER,		// head touches
-	EV_WATER_CLEAR,		// head leaves
+	EV_WATER_TOUCH,			// foot touches
+	EV_WATER_LEAVE,			// foot leaves
+	EV_WATER_UNDER,			// head touches
+	EV_WATER_CLEAR,			// head leaves
 
 	EV_ITEM_PICKUP,			// normal item pickups are predictable
 	EV_GLOBAL_ITEM_PICKUP,	// powerup / team sounds are broadcast to everyone
@@ -593,6 +593,8 @@ typedef enum {
 	EV_CHANGE_WEAPON,
 	EV_FIRE_WEAPON,
 	EV_REMOVE_WEAPON,		// used for dropping weapons
+	EV_REMOVE_AMMO,			// used for dropping ammo
+	EV_REMOVE_OBJECTIVE,	// used for dropping objectives like flags
 
 	EV_USE_ITEM0,
 	EV_USE_ITEM1,

@@ -3401,6 +3401,35 @@ void Cmd_DropWeapon_f( gentity_t *ent ) {
 
 }
 
+/*
+=================
+Cmd_DropAmmo_f
+=================
+*/
+void Cmd_DropAmmo_f( gentity_t *ent ) {
+	gclient_t		*client;
+	gitem_t			*item;
+	gentity_t		*out;
+	int				weapon;
+
+	if ( ent->client->ps.pm_type == PM_DEAD )
+		return;
+
+	// can only be used in matchmodes where weapon-stay is off
+	/*if ( level.rs_matchMode < MM_PICKUP_ALWAYS || level.rs_matchMode > MM_PICKUP_ALWAYS_NOAMMO )
+		return;*/
+
+	//weapon = ent->s.weapon;
+
+	// put weapon in a backpack, and drop it
+	item = BG_FindItemForBackpack();
+	out = Drop_Item_Ammo( ent, item, 0 );
+	client = ent->client;
+	//client->ps.stats[STAT_WEAPONS] ^= ( 1 << weapon );
+	G_AddEvent( ent, EV_REMOVE_AMMO, 0 );
+
+}
+
 
 /*
 =================
@@ -3573,6 +3602,8 @@ void ClientCommand( int clientNum ) {
 
 	else if (Q_stricmp (cmd, "dropWeapon") == 0)
 		Cmd_DropWeapon_f( ent );
+	else if (Q_stricmp (cmd, "dropAmmo") == 0)
+		Cmd_DropAmmo_f( ent );
 
 	else
 		trap_SendServerCommand( clientNum, va("print \"unknown cmd %s\n\"", cmd ) );
