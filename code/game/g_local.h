@@ -316,6 +316,7 @@ typedef struct {
 	int				voteCount;			// to prevent people from constantly calling votes
 	int				teamVoteCount;		// to prevent people from constantly calling votes
 	qboolean		teamInfo;			// send team overlay updates?
+	qboolean		practice;			// practice mode, enables damage for player during warmup
 
 	qboolean		ready;				// player is ready to exit warmup, and start the match
 	int				vote;				// vote

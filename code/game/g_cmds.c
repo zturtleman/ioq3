@@ -171,7 +171,6 @@ Cmd_Ready_f
 =================
 */
 void Cmd_Ready_f( gentity_t *ent ) {
-	int		entNo;
 
 	if ( level.warmupTime != -1 ) {
 		//trap_SendServerCommand( ent-g_entities, "print \"Cannot use this command at this time.\n\"");
@@ -237,6 +236,35 @@ void Cmd_Players_f( gentity_t *ent ) {
 	}
 	trap_SendServerCommand( ent-g_entities, va("print \"%s\"", buffer));
 
+}
+
+/*
+=================
+Cmd_Practice_f
+=================
+*/
+void Cmd_Practice_f( gentity_t *ent ) {
+
+	if ( level.warmupTime != -1 ) {
+		//trap_SendServerCommand( ent-g_entities, "print \"Cannot use this command at this time.\n\"");
+		trap_SendServerCommand( ent-g_entities, va("notify %i\\\"Cannot use this command at this time.\n\"", NF_ERROR) );
+		return;
+	}
+
+	if (ent->client->sess.sessionTeam == TEAM_SPECTATOR){
+		//trap_SendServerCommand( ent-g_entities, "print \"Cannot use this command as a spectator.\n\"");
+		trap_SendServerCommand( ent-g_entities, va("notify %i\\\"Cannot use this command as a spectator.\n\"", NF_ERROR) );
+		return;
+	}
+
+
+	if ( ent->client->pers.practice ) {
+		ent->client->pers.practice = qfalse;
+		trap_SendServerCommand( ent-g_entities, va("notify %i\\\"Practice mode off.\n\"", NF_GAMEINFO) );
+	} else {
+		ent->client->pers.practice = qtrue;
+		trap_SendServerCommand( ent-g_entities, va("notify %i\\\"Practice mode on.\n\"", NF_GAMEINFO) );
+	}
 }
 
 
@@ -3599,6 +3627,8 @@ void ClientCommand( int clientNum ) {
 		Cmd_Players_f( ent );
 	else if (Q_stricmp (cmd, "ruleSet") == 0 || Q_stricmp (cmd, "rs") == 0)
 		Cmd_Print_RuleSet_f( ent );
+	else if (Q_stricmp (cmd, "practice") == 0)
+		Cmd_Practice_f( ent );
 
 	else if (Q_stricmp (cmd, "dropWeapon") == 0)
 		Cmd_DropWeapon_f( ent );

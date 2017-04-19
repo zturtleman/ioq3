@@ -238,6 +238,17 @@ void Add_Ammo (gentity_t *ent, int weapon, int count)
 		return;
 	}
 
+	// if infinite
+	if ( count < 0 ) {
+		ent->client->ps.ammo[weapon] = -1;
+		return;
+	}
+
+	// if already infinite, keep it infinite
+	if ( ent->client->ps.ammo[weapon] < 0 ) {
+		return;
+	}
+
 	// if negative or no ammo, then fuck it
 	/*if ( count <= 0 && !level.warmupTime ) {
 		return;
@@ -280,7 +291,7 @@ int Pickup_Ammo (gentity_t *ent, gentity_t *other)
 	int		quantity;
 
 	// don't add ammo in warmup
-	if ( !level.warmupTime ) {
+	if ( !(level.warmupTime && other->client->pers.practice == qfalse) ) {
 		if ( ent->count ) {
 			quantity = ent->count;
 		} else {
@@ -314,7 +325,7 @@ int Pickup_Weapon (gentity_t *ent, gentity_t *other, int weaponRespawn ) {
 		}
 	}
 
-	if ( level.warmupTime ) {
+	if ( level.warmupTime && other->client->pers.practice == qfalse ) {
 		// don't give a fuck about ammo in warmup
 		quantity = -1;
 	} else {

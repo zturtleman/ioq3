@@ -1503,12 +1503,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 
 	// pentagram of protection protects you from pretty much all damage other than world damage.
 	// however armor still gets chiped away, and also you cannot get telefragged,
-	// but instead they'll be telefragged.
+	// but instead the other person teleporting will be telefragged.
 	if ( client && client->ps.powerups[PW_PENT] && !( /*mod == MOD_CRUSH ||*/ mod == MOD_TRIGGER_HURT || mod == MOD_TELEFRAG ) ) {
 
 		G_AddEvent( targ, EV_POWERUP_PENT, 0 );
 
-		if ( !level.warmupTime ) {
+		if ( !(level.warmupTime && targ->client->pers.practice == qfalse) ) {
 			// chip armor away
 			CheckArmor (targ, take, dflags);
 		}
@@ -1522,7 +1522,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		if ( take > 0 ) {
 			NumPlum(attacker, targ->r.currentOrigin, take);
 		}
-		return;
+
+		if ( targ->client->pers.practice == qfalse )
+			return;
 	}
 
 	// save some from armor
