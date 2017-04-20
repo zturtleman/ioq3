@@ -2330,8 +2330,10 @@ CG_setColor
 */
 void CG_setColor(/*clientInfo_t * ci, */refEntity_t * model, int state, int value){
 
+	/*
   	clientInfo_t *localPlayer;
   	localPlayer = &cgs.clientinfo[cg.clientNum];
+	*/
 
 	if( ( state & EF_DEAD ) ){
 		model->shaderRGBA[0] = model->shaderRGBA[1] = model->shaderRGBA[2] = model->shaderRGBA[3] = 0;

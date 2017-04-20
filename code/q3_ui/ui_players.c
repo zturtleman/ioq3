@@ -281,11 +281,11 @@ static void UI_LegsSequencing( playerInfo_t *pi ) {
 UI_PositionEntityOnTag
 ======================
 */
-static void UI_PositionEntityOnTag( refEntity_t *entity, const refEntity_t *parent, 
+static void UI_PositionEntityOnTag( refEntity_t *entity, const refEntity_t *parent,
 							clipHandle_t parentModel, char *tagName ) {
 	int				i;
 	orientation_t	lerped;
-	
+
 	// lerp the tag
 	trap_CM_LerpTag( &lerped, parentModel, parent->oldframe, parent->frame,
 		1.0 - parent->backlerp, tagName );
@@ -307,7 +307,7 @@ static void UI_PositionEntityOnTag( refEntity_t *entity, const refEntity_t *pare
 UI_PositionRotatedEntityOnTag
 ======================
 */
-static void UI_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_t *parent, 
+static void UI_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_t *parent,
 							clipHandle_t parentModel, char *tagName ) {
 	int				i;
 	orientation_t	lerped;
@@ -479,7 +479,7 @@ static void UI_SwingAngles( float destination, float swingTolerance, float clamp
 	if ( !*swinging ) {
 		return;
 	}
-	
+
 	// modify the speed depending on the delta
 	// so it doesn't seem so linear
 	swing = AngleSubtract( destination, *angle );
@@ -581,7 +581,7 @@ static void UI_PlayerAngles( playerInfo_t *pi, vec3_t legs[3], vec3_t torso[3], 
 	// --------- yaw -------------
 
 	// allow yaw to drift a bit
-	if ( ( pi->legsAnim & ~ANIM_TOGGLEBIT ) != LEGS_IDLE 
+	if ( ( pi->legsAnim & ~ANIM_TOGGLEBIT ) != LEGS_IDLE
 		|| ( pi->torsoAnim & ~ANIM_TOGGLEBIT ) != TORSO_STAND  ) {
 		// if not standing still, always point all in the same direction
 		pi->torso.yawing = qtrue;	// always center
@@ -678,6 +678,49 @@ float	UI_MachinegunSpinAngle( playerInfo_t *pi ) {
 }
 
 
+
+
+typedef struct {
+	int			red; // this is for the color red
+	int			green; // this is for the color green
+	int			blue; // this is for the color three
+} setColor_t;
+
+static setColor_t		setColorTable[] = {
+	{ 255, 255, 255 }, // white
+	{ 255,   0,   0 }, // red
+	{ 255, 128,   0 }, // orange
+	{ 255, 255,   0 }, // yellow
+	{ 128, 255,   0 }, // lime
+	{   0, 255,   0 }, // green
+	{   0, 255, 128 }, // aqua
+	{   0, 255, 255 }, // cyan
+
+	{   0, 128, 255 }, // sky
+	{   0,   0, 255 }, // blue
+	{ 128,   0, 255 }, // purple
+	{ 255,   0, 255 }, // magenta
+	{ 255,   0, 128 }, // rose
+	{ 255, 128, 128 }, // light red
+	{ 128, 255, 128 }, // light green
+	{ 128, 128, 255 }  // light blue
+};
+
+/*
+===============
+UI_setColor
+===============
+*/
+void UI_setColor(refEntity_t * model, int value){
+
+	value &= 15; // don't go out of bounds
+	model->shaderRGBA[0] = setColorTable[value].red;
+	model->shaderRGBA[1] = setColorTable[value].green;
+	model->shaderRGBA[2] = setColorTable[value].blue;
+	model->shaderRGBA[3] = 255; // always visible
+
+}
+
 /*
 ===============
 UI_DrawPlayer
@@ -723,6 +766,11 @@ void UI_DrawPlayer( float x, float y, float w, float h, playerInfo_t *pi, int ti
 	memset( &torso, 0, sizeof(torso) );
 	memset( &head, 0, sizeof(head) );
 
+	//Com_Printf( "debug  %i\n", pi->c3);
+	UI_setColor( &legs, pi->c3 );
+	UI_setColor( &torso, pi->c2 );
+	UI_setColor( &head, pi->c1 );
+
 	refdef.rdflags = RDF_NOWORLDMODEL;
 
 	AxisClear( refdef.viewaxis );
@@ -738,7 +786,7 @@ void UI_DrawPlayer( float x, float y, float w, float h, playerInfo_t *pi, int ti
 	refdef.fov_y *= ( 360 / M_PI );
 
 	// calculate distance so the player nearly fills the box
-	len = 0.7 * ( maxs[2] - mins[2] );		
+	len = 0.7 * ( maxs[2] - mins[2] );
 	origin[0] = len / tan( DEG2RAD(refdef.fov_x) * 0.5 );
 	origin[1] = 0.5 * ( mins[1] + maxs[1] );
 	origin[2] = -0.5 * ( mins[2] + maxs[2] );
@@ -749,7 +797,7 @@ void UI_DrawPlayer( float x, float y, float w, float h, playerInfo_t *pi, int ti
 
 	// get the rotation information
 	UI_PlayerAngles( pi, legs.axis, torso.axis, head.axis );
-	
+
 	// get the animation state (after rotation, to allow feet shuffle)
 	UI_PlayerAnimation( pi, &legs.oldframe, &legs.frame, &legs.backlerp,
 		 &torso.oldframe, &torso.frame, &torso.backlerp );
@@ -1154,30 +1202,37 @@ void UI_PlayerInfo_SetInfo( playerInfo_t *pi, int legsAnim, int torsoAnim, vec3_
 
 	pi->chat = chat;
 
-	c = (int)trap_Cvar_VariableValue( "color1" );
- 
+	c = (int)trap_Cvar_VariableValue( "color1" ) & 15;
+	pi->c1 = c;
 	VectorClear( pi->color1 );
-
-	if( c < 1 || c > 7 ) {
-		VectorSet( pi->color1, 1, 1, 1 );
-	}
-	else {
-		if( c & 1 ) {
-			pi->color1[2] = 1.0f;
-		}
-
-		if( c & 2 ) {
-			pi->color1[1] = 1.0f;
-		}
-
-		if( c & 4 ) {
-			pi->color1[0] = 1.0f;
-		}
-	}
-
+	pi->color1[0] = setColorTable[c].red;
+	pi->color1[1] = setColorTable[c].green;
+	pi->color1[2] = setColorTable[c].blue;
 	pi->c1RGBA[0] = 255 * pi->color1[0];
 	pi->c1RGBA[1] = 255 * pi->color1[1];
 	pi->c1RGBA[2] = 255 * pi->color1[2];
+	pi->c1RGBA[3] = 255;
+
+	c = (int)trap_Cvar_VariableValue( "color2" ) & 15;
+	pi->c2 = c;
+	VectorClear( pi->color2 );
+	pi->color2[0] = setColorTable[c].red;
+	pi->color2[1] = setColorTable[c].green;
+	pi->color2[2] = setColorTable[c].blue;
+	pi->c1RGBA[0] = 255 * pi->color2[0];
+	pi->c1RGBA[1] = 255 * pi->color2[1];
+	pi->c1RGBA[2] = 255 * pi->color2[2];
+	pi->c1RGBA[3] = 255;
+
+	c = (int)trap_Cvar_VariableValue( "color3" ) & 15;
+	pi->c3 = c;
+	VectorClear( pi->color3 );
+	pi->color3[0] = setColorTable[c].red;
+	pi->color3[1] = setColorTable[c].green;
+	pi->color3[2] = setColorTable[c].blue;
+	pi->c1RGBA[0] = 255 * pi->color3[0];
+	pi->c1RGBA[1] = 255 * pi->color3[1];
+	pi->c1RGBA[2] = 255 * pi->color3[2];
 	pi->c1RGBA[3] = 255;
 
 	// view angles

@@ -125,6 +125,7 @@ extern vmCvar_t	ui_ioq3;
 #define MTYPE_MENUTEXT			9
 #define MTYPE_PTEXT				10
 #define MTYPE_BTEXT				11
+#define MTYPE_NOTHING			12 // does nothing
 
 #define QMF_BLINK				((unsigned int) 0x00000001)
 #define QMF_SMALLFONT			((unsigned int) 0x00000002)
@@ -204,7 +205,7 @@ typedef struct
 	mfield_t		field;
 } menufield_s;
 
-typedef struct 
+typedef struct
 {
 	menucommon_s generic;
 
@@ -223,7 +224,7 @@ typedef struct
 	int curvalue;
 	int	numitems;
 	int	top;
-		
+
 	const char **itemnames;
 
 	int width;
@@ -246,7 +247,7 @@ typedef struct
 typedef struct
 {
 	menucommon_s	generic;
-	char*			focuspic;	
+	char*			focuspic;
 	char*			errorpic;
 	qhandle_t		shader;
 	qhandle_t		focusshader;
@@ -302,7 +303,7 @@ extern vec4_t		color_dim;
 extern vec4_t		name_color;
 extern vec4_t		list_color;
 extern vec4_t		listbar_color;
-extern vec4_t		text_color_disabled; 
+extern vec4_t		text_color_disabled;
 extern vec4_t		text_color_normal;
 extern vec4_t		text_color_highlight;
 
@@ -511,8 +512,15 @@ typedef struct {
 	vec3_t			flashDlightColor;
 	int				muzzleFlashTime;
 
+	int				c1;
+	int				c2;
+	int				c3;
 	vec3_t			color1;
+	vec3_t			color2;
+	vec3_t			color3;
 	byte			c1RGBA[4];
+	byte			c2RGBA[4];
+	byte			c3RGBA[4];
 
 	// currently in use drawing parms
 	vec3_t			viewAngles;
@@ -585,7 +593,7 @@ extern void			UI_Refresh( int realtime );
 extern qboolean		UI_ConsoleCommand( int realTime );
 extern float		UI_ClampCvar( float min, float max, float value );
 extern void			UI_DrawNamedPic( float x, float y, float width, float height, const char *picname );
-extern void			UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader ); 
+extern void			UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader );
 extern void			UI_FillRect( float x, float y, float width, float height, const float *color );
 extern void			UI_DrawRect( float x, float y, float width, float height, const float *color );
 extern void			UI_UpdateScreen( void );

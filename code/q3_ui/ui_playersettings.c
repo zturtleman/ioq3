@@ -36,12 +36,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define ART_FX_TEAL			"menu/art/fx_teal"
 #define ART_FX_WHITE		"menu/art/fx_white"
 #define ART_FX_YELLOW		"menu/art/fx_yel"
+#define ART_COLORBAR		"menu/art/colorbar"
+#define ART_COLORBAR_SEL	"menu/art/colorbar_select"
 
 #define ID_NAME			10
 #define ID_HANDICAP		11
-#define ID_EFFECTS		12
-#define ID_BACK			13
-#define ID_MODEL		14
+#define ID_COLOR1		12
+#define ID_COLOR2		13
+#define ID_COLOR3		14
+#define ID_BACK			15
+#define ID_MODEL		16
 
 #define MAX_NAMELENGTH	20
 
@@ -56,14 +60,21 @@ typedef struct {
 
 	menufield_s			name;
 	menulist_s			handicap;
-	menulist_s			effects;
+	menutext_s			colortext;
+	menulist_s			color1;
+	menulist_s			color2;
+	menulist_s			color3;
 
 	menubitmap_s		back;
 	menubitmap_s		model;
 	menubitmap_s		item_null;
 
+	// TODO: remove these 2 items, no longer needed
 	qhandle_t			fxBasePic;
 	qhandle_t			fxPic[7];
+
+	qhandle_t			colorbar;
+	qhandle_t			colorbar_sel;
 	playerInfo_t		playerinfo;
 	int					current_fx;
 	char				playerModel[MAX_QPATH];
@@ -71,6 +82,7 @@ typedef struct {
 
 static playersettings_t	s_playersettings;
 
+// TODO: remove these tables, they're are not used anymore
 static int gamecodetoui[] = {4,2,3,0,5,1,6};
 static int uitogamecode[] = {4,6,2,3,1,5,7};
 
@@ -240,10 +252,49 @@ static void PlayerSettings_DrawEffects( void *self ) {
 		color = text_color_highlight;
 	}
 
-	UI_DrawProportionalString( item->generic.x, item->generic.y, "Effects", style, color );
+	/*
+	UI_DrawProportionalString( item->generic.x, item->generic.y, "Color", style, color );
+	*/
 
+	/*
 	UI_DrawHandlePic( item->generic.x + 64, item->generic.y + PROP_HEIGHT + 8, 128, 8, s_playersettings.fxBasePic );
 	UI_DrawHandlePic( item->generic.x + 64 + item->curvalue * 16 + 8, item->generic.y + PROP_HEIGHT + 6, 16, 12, s_playersettings.fxPic[item->curvalue] );
+	*/
+
+	UI_DrawHandlePic( item->generic.x + 64, item->generic.y, 128, 16, s_playersettings.colorbar );
+	UI_DrawHandlePic( item->generic.x + 64 + item->curvalue * 8 - 4, item->generic.y - 8, 16, 32, s_playersettings.colorbar_sel );
+
+}
+
+/*
+=================
+PlayerSettings_DrawEffectsText
+=================
+*/
+static void PlayerSettings_DrawEffectsText( void *self ) {
+	menulist_s		*item;
+	qboolean		focus;
+	int				style;
+	float			*color;
+
+	item = (menulist_s *)self;
+	//focus = (item->generic.parent->cursor == item->generic.menuPosition);
+
+	style = UI_LEFT|UI_SMALLFONT;
+	color = text_color_normal;
+
+	UI_DrawProportionalString( item->generic.x, item->generic.y, "Color Highlights", style, color );
+
+	UI_DrawProportionalString( 0, SCREEN_HEIGHT * 0.76,
+						"NOTE: Color previews are not working automatically",
+						UI_SMALLFONT, colorWhite );
+	UI_DrawProportionalString( 0, SCREEN_HEIGHT * 0.80,
+						"To see preview of selected colors, please re-enter this menu",
+						UI_SMALLFONT, colorWhite );
+	UI_DrawProportionalString( 0, SCREEN_HEIGHT * 0.84,
+						"Hey, it's \"ALPHA\" brah!!!!1",
+						UI_SMALLFONT, colorWhite );
+
 }
 
 
@@ -291,7 +342,9 @@ static void PlayerSettings_SaveChanges( void ) {
 	//trap_Cvar_SetValue( "handicap", 100 - s_playersettings.handicap.curvalue * 5 );
 
 	// effects color
-	trap_Cvar_SetValue( "color1", uitogamecode[s_playersettings.effects.curvalue] );
+	trap_Cvar_SetValue( "color1", s_playersettings.color1.curvalue );
+	trap_Cvar_SetValue( "color2", s_playersettings.color2.curvalue );
+	trap_Cvar_SetValue( "color3", s_playersettings.color3.curvalue );
 }
 
 
@@ -322,11 +375,12 @@ static void PlayerSettings_SetMenuItems( void ) {
 	Q_strncpyz( s_playersettings.name.field.buffer, UI_Cvar_VariableString("name"), sizeof(s_playersettings.name.field.buffer) );
 
 	// effects color
-	c = trap_Cvar_VariableValue( "color1" ) - 1;
-	if( c < 0 || c > 6 ) {
-		c = 6;
-	}
-	s_playersettings.effects.curvalue = gamecodetoui[c];
+	c = trap_Cvar_VariableValue( "color1" );
+	s_playersettings.color1.curvalue = c & 15;
+	c = trap_Cvar_VariableValue( "color2" );
+	s_playersettings.color2.curvalue = c & 15;
+	c = trap_Cvar_VariableValue( "color3" );
+	s_playersettings.color3.curvalue = c & 15;
 
 	// model/skin
 	memset( &s_playersettings.playerinfo, 0, sizeof(playerInfo_t) );
@@ -444,17 +498,53 @@ static void PlayerSettings_MenuInit( void ) {
 	s_playersettings.handicap.numitems			= 20;
 
 	y += 3 * PROP_HEIGHT;
-	s_playersettings.effects.generic.type		= MTYPE_SPINCONTROL;
-	s_playersettings.effects.generic.flags		= QMF_NODEFAULTINIT;
-	s_playersettings.effects.generic.id			= ID_EFFECTS;
-	s_playersettings.effects.generic.ownerdraw	= PlayerSettings_DrawEffects;
-	s_playersettings.effects.generic.x			= 192;
-	s_playersettings.effects.generic.y			= y;
-	s_playersettings.effects.generic.left		= 192 - 8;
-	s_playersettings.effects.generic.top		= y - 8;
-	s_playersettings.effects.generic.right		= 192 + 200;
-	s_playersettings.effects.generic.bottom		= y + 2* PROP_HEIGHT;
-	s_playersettings.effects.numitems			= 7;
+
+	s_playersettings.colortext.generic.type		= MTYPE_NOTHING;
+	s_playersettings.colortext.generic.flags	= QMF_LEFT_JUSTIFY|QMF_MOUSEONLY|QMF_SILENT;
+	s_playersettings.colortext.generic.ownerdraw	= PlayerSettings_DrawEffectsText;
+	s_playersettings.colortext.generic.x		= 192;
+	s_playersettings.colortext.generic.y		= y;
+
+	//
+
+	y += PROP_HEIGHT;
+	s_playersettings.color1.generic.type		= MTYPE_SPINCONTROL;
+	s_playersettings.color1.generic.flags		= QMF_NODEFAULTINIT;
+	s_playersettings.color1.generic.id			= ID_COLOR1;
+	s_playersettings.color1.generic.ownerdraw	= PlayerSettings_DrawEffects;
+	s_playersettings.color1.generic.x			= 192;
+	s_playersettings.color1.generic.y			= y;
+	s_playersettings.color1.generic.left		= 192 - 8;
+	s_playersettings.color1.generic.top		= y - 8;
+	s_playersettings.color1.generic.right		= 192 + 200;
+	s_playersettings.color1.generic.bottom		= y + PROP_HEIGHT;
+	s_playersettings.color1.numitems			= 16;
+
+	y += PROP_HEIGHT + 8;
+	s_playersettings.color2.generic.type		= MTYPE_SPINCONTROL;
+	s_playersettings.color2.generic.flags		= QMF_NODEFAULTINIT;
+	s_playersettings.color2.generic.id			= ID_COLOR2;
+	s_playersettings.color2.generic.ownerdraw	= PlayerSettings_DrawEffects;
+	s_playersettings.color2.generic.x			= 192;
+	s_playersettings.color2.generic.y			= y;
+	s_playersettings.color2.generic.left		= 192 - 8;
+	s_playersettings.color2.generic.top		= y - 8;
+	s_playersettings.color2.generic.right		= 192 + 200;
+	s_playersettings.color2.generic.bottom		= y + PROP_HEIGHT;
+	s_playersettings.color2.numitems			= 16;
+
+	y += PROP_HEIGHT + 8;
+	s_playersettings.color3.generic.type		= MTYPE_SPINCONTROL;
+	s_playersettings.color3.generic.flags		= QMF_NODEFAULTINIT;
+	s_playersettings.color3.generic.id			= ID_COLOR3;
+	s_playersettings.color3.generic.ownerdraw	= PlayerSettings_DrawEffects;
+	s_playersettings.color3.generic.x			= 192;
+	s_playersettings.color3.generic.y			= y;
+	s_playersettings.color3.generic.left		= 192 - 8;
+	s_playersettings.color3.generic.top		= y - 8;
+	s_playersettings.color3.generic.right		= 192 + 200;
+	s_playersettings.color3.generic.bottom		= y + PROP_HEIGHT;
+	s_playersettings.color3.numitems			= 16;
 
 	s_playersettings.model.generic.type			= MTYPE_BITMAP;
 	s_playersettings.model.generic.name			= ART_MODEL0;
@@ -498,8 +588,11 @@ static void PlayerSettings_MenuInit( void ) {
 	Menu_AddItem( &s_playersettings.menu, &s_playersettings.framer );
 
 	Menu_AddItem( &s_playersettings.menu, &s_playersettings.name );
+	Menu_AddItem( &s_playersettings.menu, &s_playersettings.colortext );
+	Menu_AddItem( &s_playersettings.menu, &s_playersettings.color1 );
+	Menu_AddItem( &s_playersettings.menu, &s_playersettings.color2 );
+	Menu_AddItem( &s_playersettings.menu, &s_playersettings.color3 );
 	/*Menu_AddItem( &s_playersettings.menu, &s_playersettings.handicap );
-	Menu_AddItem( &s_playersettings.menu, &s_playersettings.effects );
 	Menu_AddItem( &s_playersettings.menu, &s_playersettings.model );*/
 	Menu_AddItem( &s_playersettings.menu, &s_playersettings.back );
 
@@ -532,6 +625,9 @@ void PlayerSettings_Cache( void ) {
 	s_playersettings.fxPic[4] = trap_R_RegisterShaderNoMip( ART_FX_BLUE );
 	s_playersettings.fxPic[5] = trap_R_RegisterShaderNoMip( ART_FX_CYAN );
 	s_playersettings.fxPic[6] = trap_R_RegisterShaderNoMip( ART_FX_WHITE );
+
+	s_playersettings.colorbar = trap_R_RegisterShaderNoMip( ART_COLORBAR );
+	s_playersettings.colorbar_sel = trap_R_RegisterShaderNoMip( ART_COLORBAR_SEL );
 }
 
 
