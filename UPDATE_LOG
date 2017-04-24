@@ -1,3 +1,20 @@
+Update 170422 (Alpha 17.0)
+--------------------------
+- Fixed ruleset vote number range, 'rocket maniax' can now be selected
+- Players now swim the same speed regardless of physics mode
+- Changed CTF capturing multiplier amounts down from 25 to 15
+- Limited the range of the super shotgun's 20 damage pellets
+- Added options for enabling and disabling explosions and muzzle flash
+- Players can now set their model's highlight colors in non-team games
+- Reduced health bonuses for some items
+- Changed team player's highlight colors a bit
+- Patch preventing malicious actions from multiplayer servers (OpenArena should follow up as well)
+- Players can now drop ammo
+- New map "MFDM12: Deadly Venture"
+- Maps MFDM02, MFDM05 and MFMASS01 has some minor changes
+- ...And some other additions that's not really worth mentioning
+
+
 Update 160918
 -------------
 - Removed multiplayer option, due to multiplayer browser not working after IOQuake3 update.  However, one still can play on a server, using the "/connect" command, assuming they know the address for that server.

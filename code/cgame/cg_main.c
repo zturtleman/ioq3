@@ -2337,8 +2337,8 @@ void CG_StartMusic( void ) {
 	char	parm1[MAX_QPATH], parm2[MAX_QPATH];
 
 	// start the background music
-	s = (char *)"music/mf00.ogg";
-//	s = (char *)"music/mf00.wav";
+//	s = (char *)"music/mf00.ogg";
+	s = (char *)"music/mf00.wav";
 //	s = (char *)"music/end_match.ogg";
 //	s = (char *)CG_ConfigString( CS_MUSIC );
 
@@ -2359,7 +2359,8 @@ void CG_EndMatchMusic( void ) {
 	char	parm1[MAX_QPATH], parm2[MAX_QPATH];
 
 	// start the background music
-	s = (char *)"music/end_match.ogg";
+	//s = (char *)"music/end_match.ogg";
+	s = (char *)"music/end_match.wav";
 
 	Q_strncpyz( parm1, COM_Parse( &s ), sizeof( parm1 ) );
 	Q_strncpyz( parm2, COM_Parse( &s ), sizeof( parm2 ) );
