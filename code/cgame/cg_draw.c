@@ -2807,70 +2807,74 @@ vvvvvvvvvvvvvvvvvvvvv
 							hud_digitalClock_color.string );
 
 				// TODO: ok, the following is stupid, and needs to be merged back to hud_megadraw
-				if ( hud_briefScore_show.integer ) {
-					if ( cgs.gametype < GT_TEAM ) {
 
-						s1 = cgs.scores1;
-						s2 = cgs.scores2;
-						score = cg.snap->ps.persistant[PERS_SCORE];
-						spectator = ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR );
+				if ( cgs.gametype != GT_SINGLE_PLAYER ) {
+					if ( hud_briefScore_show.integer ) {
+						if ( cgs.gametype < GT_TEAM ) {
 
-						// 2nd place
-						if ( !spectator && score == s2 && score != s1 ) {
-							HUD_MegaDrawBriefScoreGrad ( hud_briefScore_xPos.integer,
-										alignTable[hud_briefScore_xAlign.integer & 3],
-										hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
-										hud_briefScore_align.integer, hud_briefScore_style.integer,
-										hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-										1, colorDirtBlue );
+							s1 = cgs.scores1;
+							s2 = cgs.scores2;
+							score = cg.snap->ps.persistant[PERS_SCORE];
+							spectator = ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR );
+
+							// 2nd place
+							if ( !spectator && score == s2 && score != s1 ) {
+								HUD_MegaDrawBriefScoreGrad ( hud_briefScore_xPos.integer,
+											alignTable[hud_briefScore_xAlign.integer & 3],
+											hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
+											hud_briefScore_align.integer, hud_briefScore_style.integer,
+											hud_briefScore_xScale.value, hud_briefScore_yScale.value,
+											1, colorDirtBlue );
+							} else {
+								HUD_MegaDrawBriefScoreGrad ( hud_briefScore_xPos.integer,
+											alignTable[hud_briefScore_xAlign.integer & 3],
+											hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
+											hud_briefScore_align.integer, hud_briefScore_style.integer,
+											hud_briefScore_xScale.value, hud_briefScore_yScale.value,
+											1, colorBrown );
+							}
+
+							// 1st place
+							if ( !spectator && score == s1 ) {
+								HUD_MegaDrawBriefScoreGrad ( hud_briefScore_xPos.integer,
+											alignTable[hud_briefScore_xAlign.integer & 3],
+											hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
+											hud_briefScore_align.integer, hud_briefScore_style.integer,
+											hud_briefScore_xScale.value, hud_briefScore_yScale.value,
+											0, colorDirtBlue );
+							} else {
+								HUD_MegaDrawBriefScoreGrad ( hud_briefScore_xPos.integer,
+											alignTable[hud_briefScore_xAlign.integer & 3],
+											hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
+											hud_briefScore_align.integer, hud_briefScore_style.integer,
+											hud_briefScore_xScale.value, hud_briefScore_yScale.value,
+											0, colorBrown );
+							}
+
 						} else {
 							HUD_MegaDrawBriefScoreGrad ( hud_briefScore_xPos.integer,
 										alignTable[hud_briefScore_xAlign.integer & 3],
 										hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
 										hud_briefScore_align.integer, hud_briefScore_style.integer,
 										hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-										1, colorBrown );
-						}
+										0, colorRed );
 
-						// 1st place
-						if ( !spectator && score == s1 ) {
 							HUD_MegaDrawBriefScoreGrad ( hud_briefScore_xPos.integer,
 										alignTable[hud_briefScore_xAlign.integer & 3],
 										hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
 										hud_briefScore_align.integer, hud_briefScore_style.integer,
 										hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-										0, colorDirtBlue );
-						} else {
-							HUD_MegaDrawBriefScoreGrad ( hud_briefScore_xPos.integer,
-										alignTable[hud_briefScore_xAlign.integer & 3],
-										hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
-										hud_briefScore_align.integer, hud_briefScore_style.integer,
-										hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-										0, colorBrown );
+										1, colorBlue );
 						}
-
-					} else {
-						HUD_MegaDrawBriefScoreGrad ( hud_briefScore_xPos.integer,
-									alignTable[hud_briefScore_xAlign.integer & 3],
-									hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
-									hud_briefScore_align.integer, hud_briefScore_style.integer,
-									hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-									0, colorRed );
-
-						HUD_MegaDrawBriefScoreGrad ( hud_briefScore_xPos.integer,
-									alignTable[hud_briefScore_xAlign.integer & 3],
-									hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
-									hud_briefScore_align.integer, hud_briefScore_style.integer,
-									hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-									1, colorBlue );
 					}
-				}
 
-				HUD_MegaDrawBriefScore( hud_briefScore_xPos.integer, alignTable[hud_briefScore_xAlign.integer & 3],
-						hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
-						hud_briefScore_align.integer, hud_briefScore_style.integer,
-						hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-						colorWhite );
+					HUD_MegaDrawBriefScore( hud_briefScore_xPos.integer, alignTable[hud_briefScore_xAlign.integer & 3],
+							hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
+							hud_briefScore_align.integer, hud_briefScore_style.integer,
+							hud_briefScore_xScale.value, hud_briefScore_yScale.value,
+							colorWhite );
+
+				}
 
 				HUD_MegaDrawMatchInfo( hud_matchInfo_xPos.integer, alignTable[hud_matchInfo_xAlign.integer & 3],
 							hud_matchInfo_yPos.integer, hud_matchInfo_posLock.integer,

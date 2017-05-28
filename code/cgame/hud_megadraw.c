@@ -317,6 +317,10 @@ void HUD_MegaMiniMap( int xpos, int xoff, int ypos, int posLock, int align, floa
 
 	float		mapXScale, mapYScale;
 
+	// map doesn't get displayed in single player
+	if ( cgs.gametype == GT_SINGLE_PLAYER )
+		return;
+
 	// position lock
 		if ( posLock > 0 && posLock <= HUD_POS_LOCK_TYPES ) {
 		/*
@@ -780,6 +784,10 @@ void HUD_MegaDrawMatchInfo( int xpos, int xoff, int ypos, int posLock, int align
 
 	vec4_t		color;
 
+	// match info doesn't get displayed in single player
+	if ( cgs.gametype == GT_SINGLE_PLAYER )
+		return;
+
 	if ( !hud_matchInfo_show.integer ) {
 		return;
 	}
@@ -883,9 +891,9 @@ void HUD_MegaDrawBriefScore( /*int xpos, int ypos, int layout, int style, float 
 
 	/*vec4_t		color;*/
 
-	if ( !hud_briefScore_show.integer ) {
+	/*if ( !hud_briefScore_show.integer ) {
 		return;
-	}
+	}*/
 
 	/*HUD_FuncColorGet ( colorStr1, color1 );
 	HUD_FuncColorGet ( colorStr2, color2 );

@@ -29,8 +29,8 @@ void UI_SPArena_Start( const char *arenaInfo ) {
 	char	*txt;
 
 	n = (int)trap_Cvar_VariableValue( "sv_maxclients" );
-	if ( n < 8 ) {
-		trap_Cvar_SetValue( "sv_maxclients", 8 );
+	if ( n < 16 ) {
+		trap_Cvar_SetValue( "sv_maxclients", 16 );
 	}
 
 	level = atoi( Info_ValueForKey( arenaInfo, "num" ) );
@@ -45,6 +45,11 @@ void UI_SPArena_Start( const char *arenaInfo ) {
 	}
 	trap_Cvar_SetValue( "ui_spSelection", level );
 
-	map = Info_ValueForKey( arenaInfo, "map" );
-	trap_Cmd_ExecuteText( EXEC_APPEND, va( "spmap %s\n", map ) );
+	// recode this when single player maps get made
+	// until then, use a test map
+
+	/*map = Info_ValueForKey( arenaInfo, "map" );
+	trap_Cmd_ExecuteText( EXEC_APPEND, va( "spmap %s\n", map ) );*/
+
+	trap_Cmd_ExecuteText( EXEC_APPEND, va( "spmap mfdm02\n" ) ); // test
 }

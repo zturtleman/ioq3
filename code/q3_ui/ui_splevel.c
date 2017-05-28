@@ -602,7 +602,7 @@ static void UI_SPLevelMenu_MenuDraw( void ) {
 		}
 	}
 
-	UI_DrawProportionalString( 18, 38, va( "Tier %i", selectedArenaSet + 1 ), UI_LEFT|UI_SMALLFONT, color_orange );
+	UI_DrawProportionalString( 18, 38, va( "Episode %i", selectedArenaSet + 1 ), UI_LEFT|UI_SMALLFONT, color_orange ); // was "Tier %i"
 
 	for ( n = 0; n < levelMenuInfo.numMaps; n++ ) {
 		x = levelMenuInfo.item_maps[n].generic.x;
@@ -916,7 +916,7 @@ static void UI_SPLevelMenu_Init( void ) {
 	}
 	Menu_AddItem( &levelMenuInfo.menu, &levelMenuInfo.item_back );
 	Menu_AddItem( &levelMenuInfo.menu, &levelMenuInfo.item_reset );
-	Menu_AddItem( &levelMenuInfo.menu, &levelMenuInfo.item_custom );
+	//Menu_AddItem( &levelMenuInfo.menu, &levelMenuInfo.item_custom );
 	Menu_AddItem( &levelMenuInfo.menu, &levelMenuInfo.item_next );
 	Menu_AddItem( &levelMenuInfo.menu, &levelMenuInfo.item_null );
 

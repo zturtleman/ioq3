@@ -751,6 +751,9 @@ qboolean HUD_MegaDrawScoreBoard( int posCenter, int ty ) {
 	else
 		filterColor = qfalse;
 
+	if ( cgs.gametype == GT_SINGLE_PLAYER )
+		return;
+
 	// current rank
 	if ( cgs.gametype < GT_TEAM) {
 		/*if (cg.snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR ) {

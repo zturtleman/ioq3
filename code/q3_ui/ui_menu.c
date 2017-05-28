@@ -112,8 +112,8 @@ void Main_MenuEvent (void* ptr, int event) {
 
 	switch( ((menucommon_s*)ptr)->id ) {
 	case ID_SINGLEPLAYER:
-//		UI_SPLevelMenu();
-		UI_StartServerMenu( qfalse );
+		UI_SPLevelMenu();
+//		UI_StartServerMenu( qfalse );
 		break;
 
 	case ID_PRACTICE:
@@ -370,7 +370,7 @@ void UI_MainMenu( void ) {
 	x = 64;
 	y = 134;
 	s_main.singleplayer.generic.type		= MTYPE_PTEXT;
-	s_main.singleplayer.generic.flags		= QMF_LEFT_JUSTIFY|QMF_PULSEIFFOCUS|QMF_GRAYED;
+	s_main.singleplayer.generic.flags		= QMF_LEFT_JUSTIFY|QMF_PULSEIFFOCUS;
 	s_main.singleplayer.generic.x			= x;
 	s_main.singleplayer.generic.y			= y;
 	s_main.singleplayer.generic.id			= ID_SINGLEPLAYER;
