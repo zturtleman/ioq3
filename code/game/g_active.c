@@ -995,12 +995,18 @@ void ClientThink_real( gentity_t *ent ) {
 			// forcerespawn is to prevent users from waiting out powerups
 			if ( g_forcerespawn.integer > 0 && 
 				( level.time - client->respawnTime ) > g_forcerespawn.integer * 1000 ) {
+				if ( ent->r.svFlags & SVF_BOT)
+					Com_Printf( "DEBUG: Forced bot %d to respawn\n", (int)(client - level.clients) );
+
 				ClientRespawn( ent );
 				return;
 			}
 		
 			// pressing attack or use is the normal respawn method
 			if ( ucmd->buttons & ( BUTTON_ATTACK | BUTTON_USE_HOLDABLE ) ) {
+				if ( ent->r.svFlags & SVF_BOT)
+					Com_Printf( "DEBUG: Bot %d requested respawn\n", (int)(client - level.clients) );
+
 				ClientRespawn( ent );
 			}
 		}

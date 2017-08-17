@@ -205,6 +205,8 @@ void EA_Respawn(int client)
 	bi = &botinputs[client];
 
 	bi->actionflags |= ACTION_RESPAWN;
+
+	Com_Printf( "DEBUG: Bot %d set ACTION_RESPAWN\n", client );
 } //end of the function EA_Respawn
 //===========================================================================
 //

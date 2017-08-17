@@ -1248,6 +1248,7 @@ void AIEnter_Respawn(bot_state_t *bs, char *s) {
 		bs->respawn_time = FloatTime() + 1 + random();
 		bs->respawnchat_time = 0;
 	}
+	Com_Printf( "DEBUG: Bot %d needs to respawn; current time %f, respawn time %f\n", bs->client, FloatTime(), bs->respawn_time );
 	//set respawn state
 	bs->respawn_wait = qfalse;
 	bs->ainode = AINode_Respawn;
@@ -1262,13 +1263,16 @@ int AINode_Respawn(bot_state_t *bs) {
 	// if waiting for the actual respawn
 	if (bs->respawn_wait) {
 		if (!BotIsDead(bs)) {
+			Com_Printf( "DEBUG: Bot %d has respawned; current time %f\n", bs->client, FloatTime() );
 			AIEnter_Seek_LTG(bs, "respawn: respawned");
 		}
 		else {
+			Com_Printf( "DEBUG: Bot %d waiting for game to respawn player; current time %f\n", bs->client, FloatTime() );
 			trap_EA_Respawn(bs->client);
 		}
 	}
 	else if (bs->respawn_time < FloatTime()) {
+		Com_Printf( "DEBUG: Bot %d wants to respawn; current time %f, respawn time %f\n", bs->client, FloatTime(), bs->respawn_time );
 		// wait until respawned
 		bs->respawn_wait = qtrue;
 		// elementary action respawn
