@@ -1381,6 +1381,7 @@ typedef struct playerState_s {
 
 //mmp
 #define BUTTON_PHYSICS		4096			// physics select (button 12)
+#define BUTTON_PHYSICS_HOLD	8192			// physics select hold (button 13)
 
 #define	MOVE_RUN			120			// if forwardmove or rightmove are >= MOVE_RUN,
 										// then BUTTON_WALKING should be set

@@ -370,6 +370,7 @@ typedef enum {
 #define	PMSC_250_HEALTH_CAP			0x0080	// might just do away with this flag
 #define	PMSC_SLOW_RELOAD			0x0100	// mainly for all against one gametype
 #define PMSC_PARKOUR_PHYSICS		0x0200
+#define	PMSC_PHYSICS_HOLD_DEPRESS	0x0400 // for use with the physics hold button
 
 // entityState_t->eFlags
 #define	EF_DEAD				0x00000001		// don't draw a foe marker over players with EF_DEAD

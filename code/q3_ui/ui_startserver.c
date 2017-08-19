@@ -786,7 +786,7 @@ static void ServerOptions_Start( void ) {
 		maxclients++;
 	}
 	*/
-	maxclients = 16;
+	maxclients = 20;
 
 	switch( s_serveroptions.gametype ) {
 	case GT_FFA:
@@ -813,7 +813,7 @@ static void ServerOptions_Start( void ) {
 		break;
 	}
 
-	trap_Cvar_SetValue( "sv_maxclients", Com_Clamp( 0, 12, maxclients ) );
+	trap_Cvar_SetValue( "sv_maxclients", Com_Clamp( 0, 21, maxclients ) );
 	trap_Cvar_SetValue( "dedicated", Com_Clamp( 0, 2, dedicated ) );
 	trap_Cvar_SetValue ("timelimit", Com_Clamp( 0, timelimit, timelimit ) );
 	trap_Cvar_SetValue ("scorelimit", Com_Clamp( 0, scorelimit, scorelimit ) );

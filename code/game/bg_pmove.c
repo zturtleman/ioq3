@@ -2263,6 +2263,18 @@ void PmoveSingle (pmove_t *pmove) {
 		} else {
 			pm->ps->persistant[PERS_MISC] &= ~PMSC_PHYSICS_DEPRESS; // button was let go, so toggle is unlocked
 		}
+
+		if ( pm->cmd.buttons & BUTTON_PHYSICS_HOLD ) {
+			if ( !(pm->ps->persistant[PERS_MISC] & PMSC_PHYSICS_HOLD_DEPRESS)) {
+				pm->ps->persistant[PERS_MISC] ^= PMSC_PHYSICS_SELECTION;
+				pm->ps->persistant[PERS_MISC] |= PMSC_PHYSICS_HOLD_DEPRESS; // lock toggle until button is let go
+			}
+		} else {
+			if ( pm->ps->persistant[PERS_MISC] & PMSC_PHYSICS_HOLD_DEPRESS) {
+				pm->ps->persistant[PERS_MISC] ^= PMSC_PHYSICS_SELECTION;
+			}
+			pm->ps->persistant[PERS_MISC] &= ~PMSC_PHYSICS_HOLD_DEPRESS; // button was let go, so toggle is unlocked
+		}
 	}
 
 	// set key display of button presses
