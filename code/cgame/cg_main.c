@@ -672,11 +672,11 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_gun_y, "cg_gunY", "0", CVAR_CHEAT },
 	{ &cg_gun_z, "cg_gunZ", "0", CVAR_CHEAT },
 	{ &cg_centertime, "cg_centertime", "3", /*CVAR_CHEAT*/ 0 }, // 3
-	{ &cg_runpitch, "cg_runpitch", "0.002", CVAR_ARCHIVE}, // 0.002
-	{ &cg_runroll, "cg_runroll", "0.005", CVAR_ARCHIVE }, // 0.005
-	{ &cg_bobup , "cg_bobup", "0.005", /*CVAR_CHEAT*/ 0 }, // 0.005
-	{ &cg_bobpitch, "cg_bobpitch", "0.002", CVAR_ARCHIVE }, // 0.002
-	{ &cg_bobroll, "cg_bobroll", "0.002", CVAR_ARCHIVE }, // 0.002
+	{ &cg_runpitch, "cg_runpitch", "0", CVAR_ARCHIVE}, // 0.002
+	{ &cg_runroll, "cg_runroll", "0", CVAR_ARCHIVE }, // 0.005
+	{ &cg_bobup , "cg_bobup", "0", CVAR_ARCHIVE /*CVAR_CHEAT*/ 0 }, // 0.005
+	{ &cg_bobpitch, "cg_bobpitch", "0", CVAR_ARCHIVE }, // 0.002
+	{ &cg_bobroll, "cg_bobroll", "0", CVAR_ARCHIVE }, // 0.002
 	{ &cg_swingSpeed, "cg_swingSpeed", "0.3", /*CVAR_CHEAT*/ 0 },
 	{ &cg_animSpeed, "cg_animspeed", "1", CVAR_CHEAT },
 	{ &cg_debugAnim, "cg_debuganim", "0", CVAR_CHEAT },
