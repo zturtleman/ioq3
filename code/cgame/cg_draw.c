@@ -3034,7 +3034,7 @@ vvvvvvvvvvvvvvvvvvvvv
 
 		}
 
-		if ( /*cg_drawClientNum.integer &&*/ (cg.snap->ps.pm_flags & PMF_FOLLOW) )
+		if ( hud_drawClientNum.integer && (cg.snap->ps.pm_flags & PMF_FOLLOW) )
 			HUD_MegaDrawClientNum ( 4, 480 - 20 );
 
 	}

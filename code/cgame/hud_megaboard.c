@@ -752,7 +752,7 @@ qboolean HUD_MegaDrawScoreBoard( int posCenter, int ty ) {
 		filterColor = qfalse;
 
 	if ( cgs.gametype == GT_SINGLE_PLAYER )
-		return;
+		return qtrue; // TODO: might want to change this
 
 	// current rank
 	if ( cgs.gametype < GT_TEAM) {

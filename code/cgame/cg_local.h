@@ -1921,6 +1921,7 @@ extern	vmCvar_t		hud_pickUpInfo_style;
 extern	vmCvar_t		hud_pickUpInfo_time;
 extern	vmCvar_t		hud_pickUpInfo_scale;
 
+extern	vmCvar_t		hud_drawClientNum;
 extern	vmCvar_t		hud_filterColors;
 extern	vmCvar_t		hud_aspectRatioScale;
 extern	vmCvar_t		hud_autoRatioScale;

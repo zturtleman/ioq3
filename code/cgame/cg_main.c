@@ -583,6 +583,7 @@ vmCvar_t	hud_pickUpInfo_style;
 vmCvar_t	hud_pickUpInfo_time;
 vmCvar_t	hud_pickUpInfo_scale;
 
+vmCvar_t	hud_drawClientNum;
 vmCvar_t	hud_filterColors;
 vmCvar_t	hud_aspectRatioScale;
 vmCvar_t	hud_autoRatioScale;
@@ -674,7 +675,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_centertime, "cg_centertime", "3", /*CVAR_CHEAT*/ 0 }, // 3
 	{ &cg_runpitch, "cg_runpitch", "0", CVAR_ARCHIVE}, // 0.002
 	{ &cg_runroll, "cg_runroll", "0", CVAR_ARCHIVE }, // 0.005
-	{ &cg_bobup , "cg_bobup", "0", CVAR_ARCHIVE /*CVAR_CHEAT*/ 0 }, // 0.005
+	{ &cg_bobup , "cg_bobup", "0", CVAR_ARCHIVE /*CVAR_CHEAT*/ }, // 0.005
 	{ &cg_bobpitch, "cg_bobpitch", "0", CVAR_ARCHIVE }, // 0.002
 	{ &cg_bobroll, "cg_bobroll", "0", CVAR_ARCHIVE }, // 0.002
 	{ &cg_swingSpeed, "cg_swingSpeed", "0.3", /*CVAR_CHEAT*/ 0 },
@@ -1162,6 +1163,8 @@ static cvarTable_t cvarTable[] = {
 	{ &hud_pickUpInfo_style, "hud_pickUpInfo_style", "1", CVAR_ARCHIVE},
 	{ &hud_pickUpInfo_time, "hud_pickUpInfo_time", "3", CVAR_ARCHIVE},
 	{ &hud_pickUpInfo_scale, "hud_pickUpInfo_scale", "0.5", CVAR_ARCHIVE},
+
+	{ &hud_drawClientNum, "hud_drawClientNum", "1", CVAR_ARCHIVE},
 
 	{ &hud_filterColors, "hud_filterColors", "0", CVAR_ARCHIVE},
 
