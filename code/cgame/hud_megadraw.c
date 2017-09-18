@@ -2403,6 +2403,71 @@ void HUD_MegaDrawClientNum( int xpos, int ypos ) {
 	UI_DrawCustomProportionalString( xpos + 16 , ypos + 1, s, 0, 1.0, color, qtrue );
 }
 
+
+
+/*
+=================
+HUD_MegaDrawFollow
+
+display client spectator is following
+=================
+*/
+#define	FPS_FRAMES	4
+void HUD_MegaDrawFollow( int xpos, int xoff, int ypos, int posLock, int align, int style,
+						float scaleX, float scaleY ) {
+
+	char        *s;
+	vec_t       *vel;
+	int         speed;
+	centity_t	*cent;
+	playerState_t	*ps;
+
+	vec4_t		color;
+	vec4_t		colorLAmber;
+	const char	*name;
+	int			team;
+
+	if ( !hud_followInfo_show.integer ) {
+		return;
+	}
+
+	if ( !(cg.snap->ps.pm_flags & PMF_FOLLOW) ) {
+		return;
+	}
+
+	//HUD_FuncColorGet ( colorStr, color );
+	color[0] = color[1] = color[2] = color[3] = 1;
+
+	colorLAmber[0] = colorLAmber[3] = 1.0;
+	colorLAmber[1] = 0.8;
+	colorLAmber[2] = 0.0;
+
+	style = HUD_FuncStyleSet ( align, style );
+
+	team = cg.snap->ps.persistant[PERS_TEAM];
+
+	if ( team == TEAM_RED ) {
+		name = va( S_COLOR_RED"[R]"S_COLOR_WHITE"%s", cgs.clientinfo[ cg.snap->ps.clientNum ].name );
+	} else if ( team == TEAM_BLUE ) {
+		name = va( S_COLOR_BLUE"[B]"S_COLOR_WHITE"%s", cgs.clientinfo[ cg.snap->ps.clientNum ].name );
+	} else {
+		name = cgs.clientinfo[ cg.snap->ps.clientNum ].name;
+	}
+
+	if ( posLock >= 4 ) {
+		HUD_FuncPosLock( name, posLock, xpos, xoff, ypos, 16, style, scaleX, scaleY, color, qfalse );
+		HUD_FuncPosLock( "STALKING", posLock, xpos, xoff, ypos, 8, style, scaleX * 0.5f, scaleY * 0.5f, colorLAmber, qfalse );
+	} else if ( posLock ) {
+		HUD_FuncPosLock( "STALKING", posLock, xpos, xoff, ypos, 8, style, scaleX * 0.5f, scaleY * 0.5f, colorLAmber, qfalse );
+		HUD_FuncPosLock( name, posLock, xpos, xoff, ypos, 16, style, scaleX, scaleY, color, qfalse );
+	} else {
+		// i don't like this, but text will overlap since more than one string is used
+		HUD_FuncPosLock( "STALKING", 0, xpos, xoff, ypos, 0, style, scaleX * 0.5f, scaleY * 0.5f, colorLAmber, qfalse );
+		HUD_FuncPosLock( name, 0, xpos, xoff, ypos+8, 0, style, scaleX, scaleY, color, qfalse );
+	}
+
+}
+
 /*
 =========
 LAGOMETER

@@ -3016,6 +3016,11 @@ vvvvvvvvvvvvvvvvvvvvv
 				HUD_MegaDrawFragInfo(posRight - 4, 480 - 48, 240, CHAT_HEIGHT, 1, UI_DROPSHADOW, 0.50, color);
 				*/
 
+				HUD_MegaDrawFollow( hud_followInfo_xPos.integer, alignTable[hud_followInfo_xAlign.integer & 3],
+								hud_followInfo_yPos.integer, hud_followInfo_posLock.integer,
+								hud_followInfo_align.integer, hud_followInfo_style.integer,
+								hud_followInfo_xScale.value, hud_followInfo_yScale.value );
+
 			}
 
 		} else {

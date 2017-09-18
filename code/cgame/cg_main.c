@@ -583,6 +583,16 @@ vmCvar_t	hud_pickUpInfo_style;
 vmCvar_t	hud_pickUpInfo_time;
 vmCvar_t	hud_pickUpInfo_scale;
 
+vmCvar_t	hud_followInfo_show;
+vmCvar_t	hud_followInfo_xPos;
+vmCvar_t	hud_followInfo_xAlign;
+vmCvar_t	hud_followInfo_yPos;
+vmCvar_t	hud_followInfo_posLock;
+vmCvar_t	hud_followInfo_align;
+vmCvar_t	hud_followInfo_style;
+vmCvar_t	hud_followInfo_xScale;
+vmCvar_t	hud_followInfo_yScale;
+
 vmCvar_t	hud_drawClientNum;
 vmCvar_t	hud_filterColors;
 vmCvar_t	hud_aspectRatioScale;
@@ -1163,6 +1173,16 @@ static cvarTable_t cvarTable[] = {
 	{ &hud_pickUpInfo_style, "hud_pickUpInfo_style", "1", CVAR_ARCHIVE},
 	{ &hud_pickUpInfo_time, "hud_pickUpInfo_time", "3", CVAR_ARCHIVE},
 	{ &hud_pickUpInfo_scale, "hud_pickUpInfo_scale", "0.5", CVAR_ARCHIVE},
+
+	{ &hud_followInfo_show, "hud_followInfo_show", "1", CVAR_ARCHIVE},
+	{ &hud_followInfo_xPos, "hud_followInfo_xPos", "0", CVAR_ARCHIVE},
+	{ &hud_followInfo_xAlign, "hud_followInfo_xAlign", "1", CVAR_ARCHIVE},
+	{ &hud_followInfo_yPos, "hud_followInfo_yPos", "4", CVAR_ARCHIVE},
+	{ &hud_followInfo_posLock, "hud_followInfo_posLock", "2", CVAR_ARCHIVE},
+	{ &hud_followInfo_align, "hud_followInfo_align", "1", CVAR_ARCHIVE},
+	{ &hud_followInfo_style, "hud_followInfo_style", "1", CVAR_ARCHIVE},
+	{ &hud_followInfo_xScale, "hud_followInfo_xScale", "1.0", CVAR_ARCHIVE},
+	{ &hud_followInfo_yScale, "hud_followInfo_yScale", "1.0", CVAR_ARCHIVE},
 
 	{ &hud_drawClientNum, "hud_drawClientNum", "1", CVAR_ARCHIVE},
 

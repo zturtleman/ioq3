@@ -1921,6 +1921,16 @@ extern	vmCvar_t		hud_pickUpInfo_style;
 extern	vmCvar_t		hud_pickUpInfo_time;
 extern	vmCvar_t		hud_pickUpInfo_scale;
 
+extern	vmCvar_t		hud_followInfo_show;
+extern	vmCvar_t		hud_followInfo_xPos;
+extern	vmCvar_t		hud_followInfo_xAlign;
+extern	vmCvar_t		hud_followInfo_yPos;
+extern	vmCvar_t		hud_followInfo_posLock;
+extern	vmCvar_t		hud_followInfo_align;
+extern	vmCvar_t		hud_followInfo_style;
+extern	vmCvar_t		hud_followInfo_xScale;
+extern	vmCvar_t		hud_followInfo_yScale;
+
 extern	vmCvar_t		hud_drawClientNum;
 extern	vmCvar_t		hud_filterColors;
 extern	vmCvar_t		hud_aspectRatioScale;
