@@ -313,7 +313,7 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_noArenaGrenades, "g_noArenaGrenades", "0", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // no spamming
 	{ &g_noArenaLightningGun, "g_noArenaLightningGun", "0", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse },
 	{ &g_enemyAttackLevel, "g_enemyAttackLevel", "0.5", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // for aa1 gametype
-	{ &g_powerUps, "g_powerUps", "1", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse },
+	{ &g_powerUps, "g_powerUps", "2", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse },
 	{ &g_armor, "g_armor", "1", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // enable/disable armor spawns
 	{ &g_allowGhost, "g_allowGhost", "0", 0, 0, qtrue }, // incomplete, please don't abuse, or it'll become cheat protected
 	{ &g_shortGame, "g_shortGame", "0", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // halves timelimit by half
@@ -1281,12 +1281,11 @@ Besure to update 'g_client.c' at "send ruleset info to client" part in ClientBeg
 void G_TeamSizeRuleSet ( void ) {
 
 	if ( g_teamSize.integer > 0 && g_teamSize.integer < 4 ) {
-		// match is no bigger than a 3on3 match
+		// 1on1, 2on2, and 3on3 matches have a timelimit of 10 minutes
 		level.rs_timelimit = 10;
 
-		// no powerups on 2on2 matches
-		if ( g_teamSize.integer < 3 ) {
-			level.rs_powerUps = 0;
+		if ( g_teamSize.integer < 2 ) {
+			level.rs_powerUps = 0; // no powerups on 1on1 matches
 		} else {
 			level.rs_powerUps = 1;
 		}
@@ -1299,7 +1298,7 @@ void G_TeamSizeRuleSet ( void ) {
 		}
 
 		// enable powerups based on team count
-		if (g_redTeamCount.integer > 2 && g_blueTeamCount.integer > 2) {
+		if (g_redTeamCount.integer > 1 && g_blueTeamCount.integer > 1) {
 			level.rs_powerUps = 1;
 		} else {
 			level.rs_powerUps = 0;
@@ -1307,8 +1306,8 @@ void G_TeamSizeRuleSet ( void ) {
 
 	} else {
 		// match is at least a 4on4 match
-		level.rs_timelimit = 20;
-		level.rs_powerUps = 1;
+		level.rs_timelimit = 20; // timelimit of 20 minutes
+		level.rs_powerUps = 1; // power ups available of course
 	}
 
 }
@@ -1354,7 +1353,7 @@ void G_RuleSetUpdate ( void ) {
 		level.rs_friendlyFire = 1;
 		level.rs_weaponRespawn = 1;
 		level.rs_forceRespawn = 10;
-		level.rs_powerUps = 1;
+		level.rs_powerUps = 2;
 
 		level.rs_warmup = 0;
 

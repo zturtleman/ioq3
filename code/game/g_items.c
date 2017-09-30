@@ -47,10 +47,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	RESPAWN_HOLDABLE		120 // 2 minutes, is 60 seconds in q3a
 #define	RESPAWN_MEGAHEALTH		20 // 35 in q3a, and was at one point 120  :/
 								   // was 30 in earlier mfa proto releases
+
+// normal power up respawn
 #define	RESPAWN_QUAD			150 // 2.5 minutes, is 120 in q3a, and 60 in qw
 #define	RESPAWN_PENT			300 // 5 minutes
 #define	RESPAWN_RING			300 // 5 minutes
-
 
 
 //======================================================================
