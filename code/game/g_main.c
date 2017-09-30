@@ -313,7 +313,7 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_noArenaGrenades, "g_noArenaGrenades", "0", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // no spamming
 	{ &g_noArenaLightningGun, "g_noArenaLightningGun", "0", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse },
 	{ &g_enemyAttackLevel, "g_enemyAttackLevel", "0.5", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // for aa1 gametype
-	{ &g_powerUps, "g_powerUps", "2", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse },
+	{ &g_powerUps, "g_powerUps", "1", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse },
 	{ &g_armor, "g_armor", "1", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // enable/disable armor spawns
 	{ &g_allowGhost, "g_allowGhost", "0", 0, 0, qtrue }, // incomplete, please don't abuse, or it'll become cheat protected
 	{ &g_shortGame, "g_shortGame", "0", CVAR_ARCHIVE | CVAR_RULESET, 0, qfalse }, // halves timelimit by half
@@ -1353,7 +1353,7 @@ void G_RuleSetUpdate ( void ) {
 		level.rs_friendlyFire = 1;
 		level.rs_weaponRespawn = 1;
 		level.rs_forceRespawn = 10;
-		level.rs_powerUps = 2;
+		level.rs_powerUps = 1;
 
 		level.rs_warmup = 0;
 
