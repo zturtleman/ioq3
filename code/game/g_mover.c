@@ -953,6 +953,7 @@ NOMONSTER	monsters will not trigger this door
 "light"		constantLight radius
 "health"	if set, the door must be shot open
 "keycard"	requires either a (1) blue, (2) red or (4) yellow keycard
+"sound"		if set, door will make a sound when opened
 */
 void SP_func_door (gentity_t *ent) {
 	vec3_t	abs_movedir;
@@ -960,9 +961,17 @@ void SP_func_door (gentity_t *ent) {
 	vec3_t	size;
 	float	lip;
 	int		comboflags;
+	int		sound;
 
-	ent->sound1to2 = ent->sound2to1 = G_SoundIndex("sound/movers/doors/dr1_strt.wav");
-	ent->soundPos1 = ent->soundPos2 = G_SoundIndex("sound/movers/doors/dr1_end.wav");
+	G_SpawnInt( "sound", "1", &sound );
+
+	if ( sound >= 1 && sound <= 9 ) {
+		ent->sound1to2 = ent->sound2to1 = G_SoundIndex(va("sound/movers/doors/dr%i_strt.wav", sound));
+		ent->soundPos1 = ent->soundPos2 = G_SoundIndex(va("sound/movers/doors/dr%i_end.wav", sound));
+	} else {
+		ent->sound1to2 = ent->sound2to1 = G_SoundIndex("sound/misc/silence.wav");
+		ent->soundPos1 = ent->soundPos2 = G_SoundIndex("sound/misc/silence.wav");
+	}
 
 	ent->blocked = Blocked_Door;
 
