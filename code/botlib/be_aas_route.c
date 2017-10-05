@@ -1620,6 +1620,14 @@ int AAS_AreaRouteToGoalArea(int areanum, vec3_t origin, int goalareanum, int tra
 		} //end if
 		return qfalse;
 	} //end if
+	//
+	clusternum = aasworld.areasettings[areanum].cluster;
+	goalclusternum = aasworld.areasettings[goalareanum].cluster;
+	//check if cluster is invalid
+	if (clusternum == 0 || goalclusternum == 0)
+	{
+		return qfalse;
+	} //end if
 	// make sure the routing cache doesn't grow to large
 	while(AvailableMemory() < 1 * 1024 * 1024) {
 		if (!AAS_FreeOldestCache()) break;
@@ -1639,9 +1647,6 @@ int AAS_AreaRouteToGoalArea(int areanum, vec3_t origin, int goalareanum, int tra
 		return 0;
 	} //end if
 	*/
-	//
-	clusternum = aasworld.areasettings[areanum].cluster;
-	goalclusternum = aasworld.areasettings[goalareanum].cluster;
 	//check if the area is a portal of the goal area cluster
 	if (clusternum < 0 && goalclusternum > 0)
 	{
