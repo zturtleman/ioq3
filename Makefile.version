@@ -5,8 +5,8 @@
 #
 
 # Update version string when a release is made
-VERSION = 170422
+VERSION = 1710XX
 
 # server info version, each cannot be more than a byte's value
 SVINFO_VERSION_YR = 17
-SVINFO_VERSION_SV = 0
+SVINFO_VERSION_SV = 1
