@@ -795,7 +795,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_hitSound, "cg_hitSound", "1", CVAR_ARCHIVE},
 	{ &cg_killSound, "cg_killSound", "1", CVAR_ARCHIVE},
 	{ &cg_teamKillSound, "cg_teamKillSound", "2", CVAR_ARCHIVE},
-	{ &cg_lumOverlay, "cg_lumOverlay", "1", CVAR_ARCHIVE},
+	{ &cg_lumOverlay, "cg_lumOverlay", "1", 0}, // no longer used
 	{ &cg_connectionTone, "cg_connectionTone", "1", CVAR_ARCHIVE}, // plays tone when a player connects or drops a connection, setting to 2 only plays the tone when spectating
 
 	{ &cg_weaponCycleSkipsBlaster, "cg_weaponCycleSkipsBlaster", "1", CVAR_ARCHIVE},

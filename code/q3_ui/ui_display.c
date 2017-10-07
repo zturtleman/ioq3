@@ -38,11 +38,12 @@ DISPLAY OPTIONS MENU
 
 #define ID_GRAPHICS			10
 #define ID_DISPLAY			11
-#define ID_SOUND			12
-#define ID_NETWORK			13
-#define ID_BRIGHTNESS		14
-#define ID_SCREENSIZE		15
-#define ID_BACK				16
+#define ID_EFFECTS			12
+#define ID_SOUND			13
+#define ID_NETWORK			14
+#define ID_BRIGHTNESS		15
+#define ID_SCREENSIZE		16
+#define ID_BACK				17
 
 
 typedef struct {
@@ -54,6 +55,7 @@ typedef struct {
 
 	menutext_s		graphics;
 	menutext_s		display;
+	menutext_s		effects;
 	menutext_s		sound;
 	menutext_s		network;
 
@@ -85,6 +87,11 @@ static void UI_DisplayOptionsMenu_Event( void* ptr, int event ) {
 	case ID_DISPLAY:
 		break;
 
+	case ID_EFFECTS:
+		UI_PopMenu();
+		UI_EffectsOptionsMenu();
+		break;
+
 	case ID_SOUND:
 		UI_PopMenu();
 		UI_SoundOptionsMenu();
@@ -98,7 +105,7 @@ static void UI_DisplayOptionsMenu_Event( void* ptr, int event ) {
 	case ID_BRIGHTNESS:
 		trap_Cvar_SetValue( "r_gamma", displayOptionsInfo.brightness.curvalue / 10.0f );
 		break;
-	
+
 	case ID_SCREENSIZE:
 		trap_Cvar_SetValue( "cg_viewsize", displayOptionsInfo.screensize.curvalue * 10 );
 		break;
@@ -135,7 +142,7 @@ static void UI_DisplayOptionsMenu_Init( void ) {
 	displayOptionsInfo.framel.generic.type		= MTYPE_BITMAP;
 	displayOptionsInfo.framel.generic.name		= ART_FRAMEL;
 	displayOptionsInfo.framel.generic.flags		= QMF_INACTIVE;
-	displayOptionsInfo.framel.generic.x			= 0;  
+	displayOptionsInfo.framel.generic.x			= 0;
 	displayOptionsInfo.framel.generic.y			= 78;
 	displayOptionsInfo.framel.width				= 256;
 	displayOptionsInfo.framel.height			= 329;
@@ -148,42 +155,57 @@ static void UI_DisplayOptionsMenu_Init( void ) {
 	displayOptionsInfo.framer.width				= 256;
 	displayOptionsInfo.framer.height			= 334;
 
+	y = 240 - ((BIGCHAR_HEIGHT / 2) * 5);
 	displayOptionsInfo.graphics.generic.type		= MTYPE_PTEXT;
 	displayOptionsInfo.graphics.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	displayOptionsInfo.graphics.generic.id			= ID_GRAPHICS;
 	displayOptionsInfo.graphics.generic.callback	= UI_DisplayOptionsMenu_Event;
 	displayOptionsInfo.graphics.generic.x			= 136; //216;
-	displayOptionsInfo.graphics.generic.y			= 240 - 2 * PROP_HEIGHT;
+	displayOptionsInfo.graphics.generic.y			= y;
 	displayOptionsInfo.graphics.string				= "GRAPHICS";
 	displayOptionsInfo.graphics.style				= UI_RIGHT;
 	displayOptionsInfo.graphics.color				= color_red;
 
+	y += BIGCHAR_HEIGHT;
 	displayOptionsInfo.display.generic.type			= MTYPE_PTEXT;
 	displayOptionsInfo.display.generic.flags		= QMF_RIGHT_JUSTIFY;
 	displayOptionsInfo.display.generic.id			= ID_DISPLAY;
 	displayOptionsInfo.display.generic.callback		= UI_DisplayOptionsMenu_Event;
 	displayOptionsInfo.display.generic.x			= 136;
-	displayOptionsInfo.display.generic.y			= 240 - PROP_HEIGHT;
+	displayOptionsInfo.display.generic.y			= y;
 	displayOptionsInfo.display.string				= "DISPLAY";
 	displayOptionsInfo.display.style				= UI_RIGHT;
 	displayOptionsInfo.display.color				= color_red;
 
+	y += BIGCHAR_HEIGHT;
+	displayOptionsInfo.effects.generic.type			= MTYPE_PTEXT;
+	displayOptionsInfo.effects.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
+	displayOptionsInfo.effects.generic.id			= ID_EFFECTS;
+	displayOptionsInfo.effects.generic.callback		= UI_DisplayOptionsMenu_Event;
+	displayOptionsInfo.effects.generic.x			= 136;
+	displayOptionsInfo.effects.generic.y			= y;
+	displayOptionsInfo.effects.string				= "EFFECTS";
+	displayOptionsInfo.effects.style				= UI_RIGHT;
+	displayOptionsInfo.effects.color				= color_red;
+
+	y += BIGCHAR_HEIGHT;
 	displayOptionsInfo.sound.generic.type			= MTYPE_PTEXT;
 	displayOptionsInfo.sound.generic.flags			= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	displayOptionsInfo.sound.generic.id				= ID_SOUND;
 	displayOptionsInfo.sound.generic.callback		= UI_DisplayOptionsMenu_Event;
 	displayOptionsInfo.sound.generic.x				= 136;
-	displayOptionsInfo.sound.generic.y				= 240;
+	displayOptionsInfo.sound.generic.y				= y;
 	displayOptionsInfo.sound.string					= "SOUND";
 	displayOptionsInfo.sound.style					= UI_RIGHT;
 	displayOptionsInfo.sound.color					= color_red;
 
+	y += BIGCHAR_HEIGHT;
 	displayOptionsInfo.network.generic.type			= MTYPE_PTEXT;
 	displayOptionsInfo.network.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	displayOptionsInfo.network.generic.id			= ID_NETWORK;
 	displayOptionsInfo.network.generic.callback		= UI_DisplayOptionsMenu_Event;
 	displayOptionsInfo.network.generic.x			= 136;
-	displayOptionsInfo.network.generic.y			= 240 + PROP_HEIGHT;
+	displayOptionsInfo.network.generic.y			= y;
 	displayOptionsInfo.network.string				= "NETWORK";
 	displayOptionsInfo.network.style				= UI_RIGHT;
 	displayOptionsInfo.network.color				= color_red;
@@ -229,6 +251,7 @@ static void UI_DisplayOptionsMenu_Init( void ) {
 	Menu_AddItem( &displayOptionsInfo.menu, ( void * ) &displayOptionsInfo.framer );
 	Menu_AddItem( &displayOptionsInfo.menu, ( void * ) &displayOptionsInfo.graphics );
 	Menu_AddItem( &displayOptionsInfo.menu, ( void * ) &displayOptionsInfo.display );
+	Menu_AddItem( &displayOptionsInfo.menu, ( void * ) &displayOptionsInfo.effects );
 	Menu_AddItem( &displayOptionsInfo.menu, ( void * ) &displayOptionsInfo.sound );
 	Menu_AddItem( &displayOptionsInfo.menu, ( void * ) &displayOptionsInfo.network );
 	Menu_AddItem( &displayOptionsInfo.menu, ( void * ) &displayOptionsInfo.brightness );

@@ -37,9 +37,10 @@ SYSTEM CONFIGURATION MENU
 
 #define ID_GRAPHICS			10
 #define ID_DISPLAY			11
-#define ID_SOUND			12
-#define ID_NETWORK			13
-#define ID_BACK				14
+#define ID_EFFECTS			12
+#define ID_SOUND			13
+#define ID_NETWORK			14
+#define ID_BACK				15
 
 #define VERTICAL_SPACING	34
 
@@ -52,6 +53,7 @@ typedef struct {
 
 	menutext_s		graphics;
 	menutext_s		display;
+	menutext_s		effects;
 	menutext_s		sound;
 	menutext_s		network;
 	menubitmap_s	back;
@@ -77,6 +79,10 @@ static void Options_Event( void* ptr, int event ) {
 
 	case ID_DISPLAY:
 		UI_DisplayOptionsMenu();
+		break;
+
+	case ID_EFFECTS:
+		UI_EffectsOptionsMenu();
 		break;
 
 	case ID_SOUND:
@@ -141,7 +147,7 @@ void Options_MenuInit( void ) {
 	s_options.framel.generic.type  = MTYPE_BITMAP;
 	s_options.framel.generic.name  = ART_FRAMEL;
 	s_options.framel.generic.flags = QMF_INACTIVE;
-	s_options.framel.generic.x	   = 8;  
+	s_options.framel.generic.x	   = 8;
 	s_options.framel.generic.y	   = 76;
 	s_options.framel.width  	   = 256;
 	s_options.framel.height  	   = 334;
@@ -154,7 +160,7 @@ void Options_MenuInit( void ) {
 	s_options.framer.width  	   = 256;
 	s_options.framer.height  	   = 334;
 
-	y = 168;
+	y = 240 - ((VERTICAL_SPACING / 2) * 5);
 	s_options.graphics.generic.type		= MTYPE_PTEXT;
 	s_options.graphics.generic.flags	= QMF_CENTER_JUSTIFY|QMF_PULSEIFFOCUS;
 	s_options.graphics.generic.callback	= Options_Event;
@@ -175,6 +181,17 @@ void Options_MenuInit( void ) {
 	s_options.display.string			= "DISPLAY";
 	s_options.display.color				= color_red;
 	s_options.display.style				= UI_CENTER;
+
+	y += VERTICAL_SPACING;
+	s_options.effects.generic.type		= MTYPE_PTEXT;
+	s_options.effects.generic.flags		= QMF_CENTER_JUSTIFY|QMF_PULSEIFFOCUS;
+	s_options.effects.generic.callback	= Options_Event;
+	s_options.effects.generic.id		= ID_EFFECTS;
+	s_options.effects.generic.x			= 320;
+	s_options.effects.generic.y			= y;
+	s_options.effects.string			= "EFFECTS";
+	s_options.effects.color				= color_red;
+	s_options.effects.style				= UI_CENTER;
 
 	y += VERTICAL_SPACING;
 	s_options.sound.generic.type		= MTYPE_PTEXT;
@@ -214,6 +231,7 @@ void Options_MenuInit( void ) {
 	Menu_AddItem( &s_options.menu, ( void * ) &s_options.framer );
 	Menu_AddItem( &s_options.menu, ( void * ) &s_options.graphics );
 	Menu_AddItem( &s_options.menu, ( void * ) &s_options.display );
+	Menu_AddItem( &s_options.menu, ( void * ) &s_options.effects );
 	Menu_AddItem( &s_options.menu, ( void * ) &s_options.sound );
 	Menu_AddItem( &s_options.menu, ( void * ) &s_options.network );
 	Menu_AddItem( &s_options.menu, ( void * ) &s_options.back );

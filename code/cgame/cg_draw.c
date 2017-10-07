@@ -2624,6 +2624,17 @@ static void CG_Draw2D(stereoFrame_t stereoFrame)
 		}
 	}
 
+	// remove / testing overlay
+/*		colorOverlay[0] = colorOverlay[1] = colorOverlay[2] = 0;
+		colorOverlay[3] = cg_powerupOverlay.value;
+				colorOverlay[2] = 1.0;
+			trap_R_SetColor( colorOverlay );
+			trap_R_DrawStretchPic( 0, 0, (float)cgs.glconfig.vidWidth, (float)cgs.glconfig.vidHeight,
+						0, 0, 0, 0, cgs.media.whiteShader );
+			trap_R_SetColor( NULL );
+*/
+	//
+
 /*
 #ifdef MISSIONPACK
 	if (cgs.orderPending && cg.time > cgs.orderTime) {

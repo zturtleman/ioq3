@@ -38,10 +38,11 @@ NETWORK OPTIONS MENU
 
 #define ID_GRAPHICS			10
 #define ID_DISPLAY			11
-#define ID_SOUND			12
-#define ID_NETWORK			13
-#define ID_RATE				14
-#define ID_BACK				15
+#define ID_EFFECTS			12
+#define ID_SOUND			13
+#define ID_NETWORK			14
+#define ID_RATE				15
+#define ID_BACK				16
 
 
 static const char *rate_items[] = {
@@ -62,6 +63,7 @@ typedef struct {
 
 	menutext_s		graphics;
 	menutext_s		display;
+	menutext_s		effects;
 	menutext_s		sound;
 	menutext_s		network;
 
@@ -92,6 +94,11 @@ static void UI_NetworkOptionsMenu_Event( void* ptr, int event ) {
 	case ID_DISPLAY:
 		UI_PopMenu();
 		UI_DisplayOptionsMenu();
+		break;
+
+	case ID_EFFECTS:
+		UI_PopMenu();
+		UI_EffectsOptionsMenu();
 		break;
 
 	case ID_SOUND:
@@ -153,7 +160,7 @@ static void UI_NetworkOptionsMenu_Init( void ) {
 	networkOptionsInfo.framel.generic.type		= MTYPE_BITMAP;
 	networkOptionsInfo.framel.generic.name		= ART_FRAMEL;
 	networkOptionsInfo.framel.generic.flags		= QMF_INACTIVE;
-	networkOptionsInfo.framel.generic.x			= 0;  
+	networkOptionsInfo.framel.generic.x			= 0;
 	networkOptionsInfo.framel.generic.y			= 78;
 	networkOptionsInfo.framel.width				= 256;
 	networkOptionsInfo.framel.height			= 329;
@@ -166,42 +173,57 @@ static void UI_NetworkOptionsMenu_Init( void ) {
 	networkOptionsInfo.framer.width				= 256;
 	networkOptionsInfo.framer.height			= 334;
 
+	y = 240 - ((BIGCHAR_HEIGHT / 2) * 5);
 	networkOptionsInfo.graphics.generic.type		= MTYPE_PTEXT;
 	networkOptionsInfo.graphics.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	networkOptionsInfo.graphics.generic.id			= ID_GRAPHICS;
 	networkOptionsInfo.graphics.generic.callback	= UI_NetworkOptionsMenu_Event;
 	networkOptionsInfo.graphics.generic.x			= 136;
-	networkOptionsInfo.graphics.generic.y			= 240 - 2 * PROP_HEIGHT;
+	networkOptionsInfo.graphics.generic.y			= y;
 	networkOptionsInfo.graphics.string				= "GRAPHICS";
 	networkOptionsInfo.graphics.style				= UI_RIGHT;
 	networkOptionsInfo.graphics.color				= color_red;
 
+	y += BIGCHAR_HEIGHT;
 	networkOptionsInfo.display.generic.type			= MTYPE_PTEXT;
 	networkOptionsInfo.display.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	networkOptionsInfo.display.generic.id			= ID_DISPLAY;
 	networkOptionsInfo.display.generic.callback		= UI_NetworkOptionsMenu_Event;
 	networkOptionsInfo.display.generic.x			= 136;
-	networkOptionsInfo.display.generic.y			= 240 - PROP_HEIGHT;
+	networkOptionsInfo.display.generic.y			= y;
 	networkOptionsInfo.display.string				= "DISPLAY";
 	networkOptionsInfo.display.style				= UI_RIGHT;
 	networkOptionsInfo.display.color				= color_red;
 
+	y += BIGCHAR_HEIGHT;
+	networkOptionsInfo.effects.generic.type			= MTYPE_PTEXT;
+	networkOptionsInfo.effects.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
+	networkOptionsInfo.effects.generic.id			= ID_EFFECTS;
+	networkOptionsInfo.effects.generic.callback		= UI_NetworkOptionsMenu_Event;
+	networkOptionsInfo.effects.generic.x			= 136;
+	networkOptionsInfo.effects.generic.y			= y;
+	networkOptionsInfo.effects.string				= "EFFECTS";
+	networkOptionsInfo.effects.style				= UI_RIGHT;
+	networkOptionsInfo.effects.color				= color_red;
+
+	y += BIGCHAR_HEIGHT;
 	networkOptionsInfo.sound.generic.type			= MTYPE_PTEXT;
 	networkOptionsInfo.sound.generic.flags			= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	networkOptionsInfo.sound.generic.id				= ID_SOUND;
 	networkOptionsInfo.sound.generic.callback		= UI_NetworkOptionsMenu_Event;
 	networkOptionsInfo.sound.generic.x				= 136;
-	networkOptionsInfo.sound.generic.y				= 240;
+	networkOptionsInfo.sound.generic.y				= y;
 	networkOptionsInfo.sound.string					= "SOUND";
 	networkOptionsInfo.sound.style					= UI_RIGHT;
 	networkOptionsInfo.sound.color					= color_red;
 
+	y += BIGCHAR_HEIGHT;
 	networkOptionsInfo.network.generic.type			= MTYPE_PTEXT;
 	networkOptionsInfo.network.generic.flags		= QMF_RIGHT_JUSTIFY;
 	networkOptionsInfo.network.generic.id			= ID_NETWORK;
 	networkOptionsInfo.network.generic.callback		= UI_NetworkOptionsMenu_Event;
 	networkOptionsInfo.network.generic.x			= 136;
-	networkOptionsInfo.network.generic.y			= 240 + PROP_HEIGHT;
+	networkOptionsInfo.network.generic.y			= y;
 	networkOptionsInfo.network.string				= "NETWORK";
 	networkOptionsInfo.network.style				= UI_RIGHT;
 	networkOptionsInfo.network.color				= color_red;
@@ -232,6 +254,7 @@ static void UI_NetworkOptionsMenu_Init( void ) {
 	Menu_AddItem( &networkOptionsInfo.menu, ( void * ) &networkOptionsInfo.framer );
 	Menu_AddItem( &networkOptionsInfo.menu, ( void * ) &networkOptionsInfo.graphics );
 	Menu_AddItem( &networkOptionsInfo.menu, ( void * ) &networkOptionsInfo.display );
+	Menu_AddItem( &networkOptionsInfo.menu, ( void * ) &networkOptionsInfo.effects );
 	Menu_AddItem( &networkOptionsInfo.menu, ( void * ) &networkOptionsInfo.sound );
 	Menu_AddItem( &networkOptionsInfo.menu, ( void * ) &networkOptionsInfo.network );
 	Menu_AddItem( &networkOptionsInfo.menu, ( void * ) &networkOptionsInfo.rate );

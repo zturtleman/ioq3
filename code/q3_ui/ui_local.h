@@ -751,6 +751,12 @@ void UI_DisplayOptionsMenu_Cache( void );
 void UI_DisplayOptionsMenu( void );
 
 //
+// ui_effects.c
+//
+void UI_EffectsOptionsMenu_Cache( void );
+void UI_EffectsOptionsMenu( void );
+
+//
 // ui_sound.c
 //
 void UI_SoundOptionsMenu_Cache( void );

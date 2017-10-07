@@ -38,7 +38,7 @@ DRIVER INFORMATION MENU
 #define DRIVERINFO_BACK0	"menu/art/back_0"
 #define DRIVERINFO_BACK1	"menu/art/back_1"
 
-static char* driverinfo_artlist[] = 
+static char* driverinfo_artlist[] =
 {
 	DRIVERINFO_FRAMEL,
 	DRIVERINFO_FRAMER,
@@ -245,9 +245,10 @@ GRAPHICS OPTIONS MENU
 #define ID_DRIVERINFO	105
 #define ID_GRAPHICS		106
 #define ID_DISPLAY		107
-#define ID_SOUND		108
-#define ID_NETWORK		109
-#define ID_RATIO		110
+#define ID_EFFECTS		108
+#define ID_SOUND		109
+#define ID_NETWORK		110
+#define ID_RATIO		111
 
 typedef struct {
 	menuframework_s	menu;
@@ -258,6 +259,7 @@ typedef struct {
 
 	menutext_s		graphics;
 	menutext_s		display;
+	menutext_s		effects;
 	menutext_s		sound;
 	menutext_s		network;
 
@@ -294,7 +296,7 @@ typedef struct
 } InitialVideoOptions_s;
 
 static InitialVideoOptions_s	s_ivo;
-static graphicsoptions_t		s_graphicsoptions;	
+static graphicsoptions_t		s_graphicsoptions;
 
 static InitialVideoOptions_s s_ivo_templates[] =
 {
@@ -477,8 +479,8 @@ static void GraphicsOptions_GetAspectRatios( void )
 			ratioToRes[i] = r;
 		}
 
-		ratios[r] = ratioBuf[r]; 
-		resToRatio[r] = i; 
+		ratios[r] = ratioBuf[r];
+		resToRatio[r] = i;
 	}
 
 	ratios[r] = NULL;
@@ -632,7 +634,7 @@ static void GraphicsOptions_UpdateMenuItems( void )
 	}
 
 	GraphicsOptions_CheckConfig();
-}	
+}
 
 /*
 =================
@@ -737,7 +739,7 @@ static void GraphicsOptions_Event( void* ptr, int event ) {
 		s_graphicsoptions.mode.curvalue =
 			ratioToRes[ s_graphicsoptions.ratio.curvalue ];
 		// fall through to apply mode constraints
-		
+
 	case ID_MODE:
 		// clamp 3dfx video modes
 		if ( s_graphicsoptions.driver.curvalue == 1 )
@@ -779,6 +781,11 @@ static void GraphicsOptions_Event( void* ptr, int event ) {
 	case ID_DISPLAY:
 		UI_PopMenu();
 		UI_DisplayOptionsMenu();
+		break;
+
+	case ID_EFFECTS:
+		UI_PopMenu();
+		UI_EffectsOptionsMenu();
 		break;
 
 	case ID_SOUND:
@@ -986,7 +993,7 @@ void GraphicsOptions_MenuInit( void )
 
 	GraphicsOptions_GetResolutions();
 	GraphicsOptions_GetAspectRatios();
-	
+
 	GraphicsOptions_Cache();
 
 	s_graphicsoptions.menu.wrapAround = qtrue;
@@ -1016,42 +1023,57 @@ void GraphicsOptions_MenuInit( void )
 	s_graphicsoptions.framer.width  	   = 256;
 	s_graphicsoptions.framer.height  	   = 334;
 
+	y = 240 - ((BIGCHAR_HEIGHT / 2) * 5);
 	s_graphicsoptions.graphics.generic.type		= MTYPE_PTEXT;
 	s_graphicsoptions.graphics.generic.flags	= QMF_RIGHT_JUSTIFY;
 	s_graphicsoptions.graphics.generic.id		= ID_GRAPHICS;
 	s_graphicsoptions.graphics.generic.callback	= GraphicsOptions_Event;
 	s_graphicsoptions.graphics.generic.x		= 136;
-	s_graphicsoptions.graphics.generic.y		= 240 - 2 * PROP_HEIGHT;
+	s_graphicsoptions.graphics.generic.y		= y;
 	s_graphicsoptions.graphics.string			= "GRAPHICS";
 	s_graphicsoptions.graphics.style			= UI_RIGHT;
 	s_graphicsoptions.graphics.color			= color_red;
 
+	y += BIGCHAR_HEIGHT;
 	s_graphicsoptions.display.generic.type		= MTYPE_PTEXT;
 	s_graphicsoptions.display.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	s_graphicsoptions.display.generic.id		= ID_DISPLAY;
 	s_graphicsoptions.display.generic.callback	= GraphicsOptions_Event;
 	s_graphicsoptions.display.generic.x			= 136;
-	s_graphicsoptions.display.generic.y			= 240 - PROP_HEIGHT;
+	s_graphicsoptions.display.generic.y			= y;
 	s_graphicsoptions.display.string			= "DISPLAY";
 	s_graphicsoptions.display.style				= UI_RIGHT;
 	s_graphicsoptions.display.color				= color_red;
 
+	y += BIGCHAR_HEIGHT;
+	s_graphicsoptions.effects.generic.type		= MTYPE_PTEXT;
+	s_graphicsoptions.effects.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
+	s_graphicsoptions.effects.generic.id		= ID_EFFECTS;
+	s_graphicsoptions.effects.generic.callback	= GraphicsOptions_Event;
+	s_graphicsoptions.effects.generic.x			= 136;
+	s_graphicsoptions.effects.generic.y			= y;
+	s_graphicsoptions.effects.string			= "EFFECTS";
+	s_graphicsoptions.effects.style				= UI_RIGHT;
+	s_graphicsoptions.effects.color				= color_red;
+
+	y += BIGCHAR_HEIGHT;
 	s_graphicsoptions.sound.generic.type		= MTYPE_PTEXT;
 	s_graphicsoptions.sound.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	s_graphicsoptions.sound.generic.id			= ID_SOUND;
 	s_graphicsoptions.sound.generic.callback	= GraphicsOptions_Event;
 	s_graphicsoptions.sound.generic.x			= 136;
-	s_graphicsoptions.sound.generic.y			= 240;
+	s_graphicsoptions.sound.generic.y			= y;
 	s_graphicsoptions.sound.string				= "SOUND";
 	s_graphicsoptions.sound.style				= UI_RIGHT;
 	s_graphicsoptions.sound.color				= color_red;
 
+	y += BIGCHAR_HEIGHT;
 	s_graphicsoptions.network.generic.type		= MTYPE_PTEXT;
 	s_graphicsoptions.network.generic.flags		= QMF_RIGHT_JUSTIFY|QMF_PULSEIFFOCUS;
 	s_graphicsoptions.network.generic.id		= ID_NETWORK;
 	s_graphicsoptions.network.generic.callback	= GraphicsOptions_Event;
 	s_graphicsoptions.network.generic.x			= 136;
-	s_graphicsoptions.network.generic.y			= 240 + PROP_HEIGHT;
+	s_graphicsoptions.network.generic.y			= y;
 	s_graphicsoptions.network.string			= "NETWORK";
 	s_graphicsoptions.network.style				= UI_RIGHT;
 	s_graphicsoptions.network.color				= color_red;
@@ -1209,6 +1231,7 @@ void GraphicsOptions_MenuInit( void )
 
 	Menu_AddItem( &s_graphicsoptions.menu, ( void * ) &s_graphicsoptions.graphics );
 	Menu_AddItem( &s_graphicsoptions.menu, ( void * ) &s_graphicsoptions.display );
+	Menu_AddItem( &s_graphicsoptions.menu, ( void * ) &s_graphicsoptions.effects );
 	Menu_AddItem( &s_graphicsoptions.menu, ( void * ) &s_graphicsoptions.sound );
 	Menu_AddItem( &s_graphicsoptions.menu, ( void * ) &s_graphicsoptions.network );
 
