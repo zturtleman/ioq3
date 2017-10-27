@@ -161,8 +161,10 @@ vmCvar_t	sv_fps; // this is for convenience - using "sv_fps.integer" is nice :)
 //
 
 //unlagged - lagNudge
-vmCvar_t     g_delagprojectiles;
+vmCvar_t	g_delagprojectiles;
 //unlagged - lagNudge
+
+vmCvar_t	g_demonstrationMode;
 
 vmCvar_t	g_rankings;
 vmCvar_t	g_listEntity;
@@ -291,6 +293,8 @@ static cvarTable_t		gameCvarTable[] = {
 //unlagged - lagNudge
 	{ &g_delagprojectiles, "g_delagprojectiles", "100", CVAR_SYSTEMINFO, 0, qfalse },
 //unlagged - lagNudge
+
+	{ &g_demonstrationMode, "g_demonstrationMode", "0", CVAR_CHEAT, 0, qfalse },
 
 // mmp - cvar add
 

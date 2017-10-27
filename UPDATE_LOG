@@ -1,3 +1,17 @@
+Update 171027 (Alpha 17.1)
+--------------------------
+- Wobble vision now disabled by default (sorry Quake 2 players)
+- Following information when spectating
+- Power ups are back in 2on2 matches
+- Different door sounds were added
+- Added menu options for effects
+- Re-added map MFDM01, added new platform with two lifts by green armor, which has a chaingun
+- MFDM04 had some minor tweeks that won't effect gameplay much, however made things look a bit better
+- MFDM07 went through the same tweeks, and the super shotgun room is all bloody now, among with something else...
+- MFDM10 got some minor changes to the items, namely more rocket ammo in Team and FFA modes
+- ...Forgot the rest, sorry
+
+
 Update 170422 (Alpha 17.0)
 --------------------------
 - Fixed ruleset vote number range, 'rocket maniax' can now be selected

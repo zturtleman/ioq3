@@ -781,94 +781,98 @@ qboolean HUD_MegaDrawScoreBoard( int posCenter, int ty ) {
 		colorCus[0] = colorCus[1] = colorCus[2] = 0.5;
 		colorCus[3] = 1.0;
 
-		y = 8;
+		if ( !cg.warmup ) {
 
-		trap_R_DrawStretchPic( (float)(posCenter - 192) * cgs.screenXScale + cgs.screenXOffset,
-						(float)(y + 16) * cgs.screenYScale + cgs.screenYOffset,
-						(float)192.0 * cgs.screenXScale, (float)48.0 * cgs.screenYScale,
-						(float) 0.25, (float) 0.25,
-						(float) 1.0, (float) 1.0, cgs.media.hudTopScoreEfx );
+			y = 8;
 
-		trap_R_DrawStretchPic( (float)(posCenter) * cgs.screenXScale + cgs.screenXOffset,
-						(float)(y + 16) * cgs.screenYScale + cgs.screenYOffset,
-						(float)192.0 * cgs.screenXScale, (float)48.0 * cgs.screenYScale,
-						(float) 1.0, (float) 1.0,
-						(float) 0.25, (float) 0.25, cgs.media.hudTopScoreEfx );
+			trap_R_DrawStretchPic( (float)(posCenter - 192) * cgs.screenXScale + cgs.screenXOffset,
+							(float)(y + 16) * cgs.screenYScale + cgs.screenYOffset,
+							(float)192.0 * cgs.screenXScale, (float)48.0 * cgs.screenYScale,
+							(float) 0.25, (float) 0.25,
+							(float) 1.0, (float) 1.0, cgs.media.hudTopScoreEfx );
 
-		// -----
+			trap_R_DrawStretchPic( (float)(posCenter) * cgs.screenXScale + cgs.screenXOffset,
+							(float)(y + 16) * cgs.screenYScale + cgs.screenYOffset,
+							(float)192.0 * cgs.screenXScale, (float)48.0 * cgs.screenYScale,
+							(float) 1.0, (float) 1.0,
+							(float) 0.25, (float) 0.25, cgs.media.hudTopScoreEfx );
 
-		trap_R_DrawStretchPic( (float)(posCenter - 64) * cgs.screenXScale + cgs.screenXOffset,
-						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
-						(float)128.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
-						(float) 0.25, (float) 0.0,
-						(float) 0.75, (float) 1.0, cgs.media.hudTopScore );
+			// -----
 
-		// -----
+			trap_R_DrawStretchPic( (float)(posCenter - 64) * cgs.screenXScale + cgs.screenXOffset,
+							(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+							(float)128.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+							(float) 0.25, (float) 0.0,
+							(float) 0.75, (float) 1.0, cgs.media.hudTopScore );
 
-		trap_R_DrawStretchPic( (float)(posCenter - 136) * cgs.screenXScale + cgs.screenXOffset,
-						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
-						(float)72.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
-						(float) 0.25, (float) 0.0,
-						(float) 0.27, (float) 1.0, cgs.media.hudTopScore );
+			// -----
 
-		trap_R_DrawStretchPic( (float)(posCenter - 168) * cgs.screenXScale + cgs.screenXOffset,
-						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
-						(float)32.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
-						(float) 0.125, (float) 0.0,
-						(float) 0.25, (float) 1.0, cgs.media.hudTopScore );
+			trap_R_DrawStretchPic( (float)(posCenter - 136) * cgs.screenXScale + cgs.screenXOffset,
+							(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+							(float)72.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+							(float) 0.25, (float) 0.0,
+							(float) 0.27, (float) 1.0, cgs.media.hudTopScore );
 
-		trap_R_DrawStretchPic( (float)(posCenter - 288) * cgs.screenXScale + cgs.screenXOffset,
-						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
-						(float)120.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
-						(float) 0.1, (float) 0.0,
-						(float) 0.125, (float) 1.0, cgs.media.hudTopScore );
+			trap_R_DrawStretchPic( (float)(posCenter - 168) * cgs.screenXScale + cgs.screenXOffset,
+							(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+							(float)32.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+							(float) 0.125, (float) 0.0,
+							(float) 0.25, (float) 1.0, cgs.media.hudTopScore );
 
-		trap_R_DrawStretchPic( (float)(posCenter - 320) * cgs.screenXScale + cgs.screenXOffset,
-						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
-						(float)32.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
-						(float) 0.0, (float) 0.0,
-						(float) 0.125, (float) 1.0, cgs.media.hudTopScore );
+			trap_R_DrawStretchPic( (float)(posCenter - 288) * cgs.screenXScale + cgs.screenXOffset,
+							(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+							(float)120.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+							(float) 0.1, (float) 0.0,
+							(float) 0.125, (float) 1.0, cgs.media.hudTopScore );
 
-		// -----
+			trap_R_DrawStretchPic( (float)(posCenter - 320) * cgs.screenXScale + cgs.screenXOffset,
+							(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+							(float)32.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+							(float) 0.0, (float) 0.0,
+							(float) 0.125, (float) 1.0, cgs.media.hudTopScore );
 
-		trap_R_DrawStretchPic( (float)(posCenter + 64) * cgs.screenXScale + cgs.screenXOffset,
-						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
-						(float)72.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
-						(float) 0.73, (float) 0.0,
-						(float) 0.75, (float) 1.0, cgs.media.hudTopScore );
+			// -----
 
-		trap_R_DrawStretchPic( (float)(posCenter + 136) * cgs.screenXScale + cgs.screenXOffset,
-						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
-						(float)32.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
-						(float) 0.75, (float) 0.0,
-						(float) 0.875, (float) 1.0, cgs.media.hudTopScore );
+			trap_R_DrawStretchPic( (float)(posCenter + 64) * cgs.screenXScale + cgs.screenXOffset,
+							(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+							(float)72.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+							(float) 0.73, (float) 0.0,
+							(float) 0.75, (float) 1.0, cgs.media.hudTopScore );
 
-		trap_R_DrawStretchPic( (float)(posCenter + 168) * cgs.screenXScale + cgs.screenXOffset,
-						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
-						(float)120.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
-						(float) 0.875, (float) 0.0,
-						(float) 0.9, (float) 1.0, cgs.media.hudTopScore );
+			trap_R_DrawStretchPic( (float)(posCenter + 136) * cgs.screenXScale + cgs.screenXOffset,
+							(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+							(float)32.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+							(float) 0.75, (float) 0.0,
+							(float) 0.875, (float) 1.0, cgs.media.hudTopScore );
 
-		trap_R_DrawStretchPic( (float)(posCenter + 288) * cgs.screenXScale + cgs.screenXOffset,
-						(float)(y) * cgs.screenYScale + cgs.screenYOffset,
-						(float)32.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
-						(float) 0.875, (float) 0.0,
-						(float) 1.0, (float) 1.0, cgs.media.hudTopScore );
+			trap_R_DrawStretchPic( (float)(posCenter + 168) * cgs.screenXScale + cgs.screenXOffset,
+							(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+							(float)120.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+							(float) 0.875, (float) 0.0,
+							(float) 0.9, (float) 1.0, cgs.media.hudTopScore );
 
-		// -----
+			trap_R_DrawStretchPic( (float)(posCenter + 288) * cgs.screenXScale + cgs.screenXOffset,
+							(float)(y) * cgs.screenYScale + cgs.screenYOffset,
+							(float)32.0 * cgs.screenXScale, (float)64.0 * cgs.screenYScale,
+							(float) 0.875, (float) 0.0,
+							(float) 1.0, (float) 1.0, cgs.media.hudTopScore );
 
-		if ( ty == PM_INTERMISSION ) {
-			s = "FINAL";
-		} else {
-			s = "SCORE";
+			// -----
+
+			if ( ty == PM_INTERMISSION ) {
+				s = "FINAL";
+			} else {
+				s = "SCORE";
+			}
+			UI_DrawCustomProportionalString( posCenter, y + 8, s, UI_CENTER, 0.75, colorBlk, colorYel, qfalse );
+
+			s = va("%i",cg.teamScores[0]);
+			UI_DrawBigNumString( posCenter - 84, y + 27, 32, s, colorCus, UI_CENTER, qtrue );
+
+			s = va("%i",cg.teamScores[1]);
+			UI_DrawBigNumString( posCenter + 84, y + 27, 32, s, colorCus, UI_CENTER, qtrue );
+
 		}
-		UI_DrawCustomProportionalString( posCenter, y + 8, s, UI_CENTER, 0.75, colorBlk, colorYel, qfalse );
-
-		s = va("%i",cg.teamScores[0]);
-		UI_DrawBigNumString( posCenter - 84, y + 27, 32, s, colorCus, UI_CENTER, qtrue );
-
-		s = va("%i",cg.teamScores[1]);
-		UI_DrawBigNumString( posCenter + 84, y + 27, 32, s, colorCus, UI_CENTER, qtrue );
 
 	}
 

@@ -1054,11 +1054,23 @@ void ClientUserinfoChanged( int clientNum ) {
 	// print scoreboards, display models, and play custom sounds
 	if (ent->r.svFlags & SVF_BOT)
 	{
-		s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\hc\\%i\\w\\%i\\l\\%i\\skill\\%s\\tt\\%d\\tl\\%d\\c1\\%s\\c2\\%s\\c3\\%s",
-			client->pers.netname, team, model, headModel,
-			client->pers.maxHealth, client->sess.wins, client->sess.losses,
-			Info_ValueForKey( userinfo, "skill" ), teamTask, teamLeader,
-			c1, c2, c3 );
+		if ( g_demonstrationMode.integer ) {
+			s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\hc\\666\\w\\%i\\l\\%i\\skill\\%s\\tt\\%d\\tl\\%d\\c1\\%i\\c2\\%i\\c3\\%i",
+				client->pers.netname, team, model, headModel,
+				client->sess.wins, client->sess.losses,
+				Info_ValueForKey( userinfo, "skill" ), teamTask, teamLeader,
+				random() * 16, random() * 16, random() * 16 );
+				// note: there's no need to check for out of bounds ranges since it's checked in CG_setColor of cg_players
+
+				//G_Printf( "^3COLORS %i, %i, %i\n", c1, c2, c3 ); // debug
+		} else {
+			s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\hc\\%i\\w\\%i\\l\\%i\\skill\\%s\\tt\\%d\\tl\\%d\\c1\\%s\\c2\\%s\\c3\\%s",
+				client->pers.netname, team, model, headModel,
+				client->pers.maxHealth, client->sess.wins, client->sess.losses,
+				Info_ValueForKey( userinfo, "skill" ), teamTask, teamLeader,
+				c1, c2, c3 );
+		}
+
 /*		s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\c1\\%s\\c2\\%s\\hc\\%i\\w\\%i\\l\\%i\\skill\\%s\\tt\\%d\\tl\\%d",
 			client->pers.netname, team, model, headModel, c1, c2,
 			client->pers.maxHealth, client->sess.wins, client->sess.losses,

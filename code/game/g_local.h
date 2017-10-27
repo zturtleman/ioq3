@@ -1230,6 +1230,8 @@ extern	vmCvar_t	sv_fps; // this is for convenience - using "sv_fps.integer" is n
 extern	vmCvar_t	g_delagprojectiles;
 //unlagged - lagNudge
 
+extern	vmCvar_t	g_demonstrationMode;
+
 extern	vmCvar_t	g_rankings;
 extern	vmCvar_t	g_enableDust;
 extern	vmCvar_t	g_enableBreath;

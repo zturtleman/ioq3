@@ -2806,7 +2806,7 @@ vvvvvvvvvvvvvvvvvvvvv
 
 			if ( !cg.scoreBoardShowing ) {
 
-				HUD_MegaDrawWarmup(posCenter, 24, 1.0);
+				//HUD_MegaDrawWarmup(posCenter, 24, 1.0);
 
 				HUD_MegaRuleSet(posCenter, 56, 1.0);
 				HUD_MegaObjective(posCenter, 320, 1.0, team);
@@ -3033,6 +3033,8 @@ vvvvvvvvvvvvvvvvvvvvv
 								hud_followInfo_xScale.value, hud_followInfo_yScale.value );
 
 			}
+
+			HUD_MegaDrawWarmup(posCenter, 24, 1.0);
 
 		} else {
 

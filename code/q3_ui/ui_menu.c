@@ -370,12 +370,12 @@ void UI_MainMenu( void ) {
 	x = 64;
 	y = 134;
 	s_main.singleplayer.generic.type		= MTYPE_PTEXT;
-	s_main.singleplayer.generic.flags		= QMF_LEFT_JUSTIFY|QMF_PULSEIFFOCUS;
+	s_main.singleplayer.generic.flags		= QMF_LEFT_JUSTIFY|QMF_PULSEIFFOCUS|QMF_GRAYED;
 	s_main.singleplayer.generic.x			= x;
 	s_main.singleplayer.generic.y			= y;
 	s_main.singleplayer.generic.id			= ID_SINGLEPLAYER;
 	s_main.singleplayer.generic.callback	= Main_MenuEvent;
-	s_main.singleplayer.string				= "SINGLE PLAYER";
+	s_main.singleplayer.string				= "SINGLE PLAYER  (SOON)";
 	s_main.singleplayer.color				= color_red;
 	s_main.singleplayer.style				= style;
 
@@ -397,7 +397,7 @@ void UI_MainMenu( void ) {
 	s_main.multiplayer.generic.y			= y;
 	s_main.multiplayer.generic.id			= ID_MULTIPLAYER;
 	s_main.multiplayer.generic.callback		= Main_MenuEvent;
-	s_main.multiplayer.string				= "MULTIPLAYER";
+	s_main.multiplayer.string				= "MULTIPLAYER  (BROWSER NOT WORKING)";
 	s_main.multiplayer.color				= color_red;
 	s_main.multiplayer.style				= style;
 
@@ -504,7 +504,7 @@ void UI_MainMenu( void ) {
 
 	Menu_AddItem( &s_main.menu,	&s_main.singleplayer );
 	Menu_AddItem( &s_main.menu,	&s_main.practice );
-	/*Menu_AddItem( &s_main.menu,	&s_main.multiplayer );*/
+	Menu_AddItem( &s_main.menu,	&s_main.multiplayer );
 	Menu_AddItem( &s_main.menu,	&s_main.setup );
 	Menu_AddItem( &s_main.menu,	&s_main.demos );
 	/*Menu_AddItem( &s_main.menu,	&s_main.cinematics );
