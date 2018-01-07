@@ -707,6 +707,9 @@ void CG_RegisterWeapon( int weaponNum ) {
 		cgs.media.sfx_lghit1 = trap_S_RegisterSound( "sound/weapons/lightning/lg_hit.wav", qfalse );
 		cgs.media.sfx_lghit2 = trap_S_RegisterSound( "sound/weapons/lightning/lg_hit2.wav", qfalse );
 		cgs.media.sfx_lghit3 = trap_S_RegisterSound( "sound/weapons/lightning/lg_hit3.wav", qfalse );
+		cgs.media.sfx_damage1 = trap_S_RegisterSound( "sound/weapons/lightning/lg_damage.wav", qfalse );
+		cgs.media.sfx_damage2 = trap_S_RegisterSound( "sound/weapons/lightning/lg_damage2.wav", qfalse );
+		cgs.media.sfx_damage3 = trap_S_RegisterSound( "sound/weapons/lightning/lg_damage3.wav", qfalse );
 
 		break;
 
@@ -1899,7 +1902,7 @@ void CG_MissileHitWall( int weapon, int clientNum, vec3_t origin, vec3_t dir, im
 #endif
 	case WP_LIGHTNING:
 		// no explosion at LG impact, it is added with the beam
-		r = rand() & 3;
+		r = rand() % 3;
 		if ( r < 2 ) {
 			sfx = cgs.media.sfx_lghit2;
 		} else if ( r == 2 ) {
@@ -2121,6 +2124,9 @@ CG_MissileHitPlayer
 =================
 */
 void CG_MissileHitPlayer( int weapon, vec3_t origin, vec3_t dir, int entityNum ) {
+	sfxHandle_t		sfx;
+	int				r;
+
 	CG_Bleed( origin, entityNum );
 
 	// some weapons will make an explosion with the blood, while
@@ -2137,6 +2143,19 @@ void CG_MissileHitPlayer( int weapon, vec3_t origin, vec3_t dir, int entityNum )
 #endif
 		CG_MissileHitWall( weapon, 0, origin, dir, IMPACTSOUND_FLESH );
 		break;
+
+	case WP_LIGHTNING:
+		r = rand() % 3;
+		if ( r < 2 ) {
+			sfx = cgs.media.sfx_damage2;
+		} else if ( r == 2 ) {
+			sfx = cgs.media.sfx_damage1;
+		} else {
+			sfx = cgs.media.sfx_damage3;
+		}
+		trap_S_StartSound( origin, ENTITYNUM_WORLD, CHAN_AUTO, sfx );
+		break;
+
 	default:
 		break;
 	}

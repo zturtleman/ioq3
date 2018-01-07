@@ -351,6 +351,7 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 	}
 
 	// health changes of more than -1 should make pain sounds
+	// the reason, health decay will otherwise make a grunting sound at least every second
 	if ( ps->stats[STAT_HEALTH] < ops->stats[STAT_HEALTH] - 1 || ps->stats[STAT_ARMOR] < ops->stats[STAT_ARMOR] ) {
 		if ( ps->stats[STAT_HEALTH] > 0 ) {
 			CG_PainEvent( &cg.predictedPlayerEntity, ps->stats[STAT_HEALTH] );

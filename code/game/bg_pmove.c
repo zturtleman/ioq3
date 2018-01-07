@@ -1955,7 +1955,7 @@ static void PM_Weapon( void ) {
 		addTime = 50; // mmp - was 400 in vq3
 		break;
 	case WP_LIGHTNING:
-		addTime = 50; // we're not going to alter the rate
+		addTime = 75;
 		break;
 	case WP_SHOTGUN:
 		addTime = 600 / GAME_SPEED_MULTIPLIER; // is 1000 in vq3

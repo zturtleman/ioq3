@@ -1313,15 +1313,15 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		attackingClient = attacker->client;
 		lastHit = level.time - attackingClient->lightningLastHit;
 		//G_Printf( "^3DEBUG: listHit=%i\n", lastHit ); // debug
-		if ( lastHit < 100 ) {
-			damage += 4 * GetDamageLevel( attacker ) * quadFactor;
+		if ( lastHit < 150 ) {
+			damage += 6 * GetDamageLevel( attacker ) * quadFactor;
 			attackingClient->lightningLastHit = level.time;
 		} else
-		if ( lastHit < 200 ) {
-			damage += 2 * GetDamageLevel( attacker ) * quadFactor;
+		if ( lastHit < 300 ) {
+			damage += 3 * GetDamageLevel( attacker ) * quadFactor;
 			attackingClient->lightningLastHit = level.time;
 		} else {
-			attackingClient->lightningLastHit = level.time - 100;
+			attackingClient->lightningLastHit = level.time - 150;
 		}
 	}
 

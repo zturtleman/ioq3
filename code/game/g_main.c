@@ -2056,11 +2056,11 @@ void G_DisableLameServer( void ) {
 
 	// this is a prototype demo, mods should not be made yet
 	// will be removed when game becomes beta
-	if ( gameMod[0] != '\0' ) {
+	/*if ( gameMod[0] != '\0' ) {
 		trap_Cvar_Set( "dedicated", "1" );
 		G_Printf ("WARNING: This is a prototype demo, mods should not be made yet, dedicated has been set to 1\n");
 		return;
-	}
+	}*/
 
 	// if you're not running a mod, leave 'fs_game' blank ffs
 	if ( !strcmp( gameMod, "basemf") ) {
@@ -2114,10 +2114,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	memset( &stats, 0, sizeof( stats ) );
 
 	if (g_dedicated.integer > 1) {
-		// mmp - this is a prototype, so disable broadcasting to some master server
-		/*trap_Cvar_Set( "dedicated", "1" );
-		G_Printf ("WARNING: This game is a demo, and not meant to be ran as a server, sorry.  'dedicated' has been set to 1\n");*/
-
 		G_DisableLameServer(); // check if server admin is a n00b
 	}
 	// mmp - this is a prototype, we will disable downloading, so basemf is not filled with unwanted material

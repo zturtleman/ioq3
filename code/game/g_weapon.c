@@ -863,7 +863,7 @@ void Weapon_LightningFire( gentity_t *ent ) {
 	gentity_t	*traceEnt, *tent;
 	int			damage, i, passent;
 
-	damage = 10 * s_quadFactor * GetDamageLevel( ent );// is 8 in vq3
+	damage = 15 * s_quadFactor * GetDamageLevel( ent );// is 8 in vq3
 
 	passent = ent->s.number;
 	// TODO - remove the loop, since we're not using the invulnerability sphere
