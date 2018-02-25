@@ -1553,6 +1553,7 @@ extern	vmCvar_t		cg_placebo;
 extern	vmCvar_t		cg_weaponBobbing;
 extern	vmCvar_t		cg_muzzleFlash;
 extern	vmCvar_t		cg_drawExplosion;
+extern	vmCvar_t		cg_teamFlash;
 
 
 // hud

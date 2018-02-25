@@ -50,7 +50,8 @@ GAME OPTIONS MENU
 #define ID_FORCEMODEL			135
 #define ID_DRAWTEAMOVERLAY		136
 #define ID_ALLOWDOWNLOAD		137
-#define ID_BACK					138
+#define ID_TEAMFLASH			138
+#define ID_BACK					139
 
 #define	NUM_CROSSHAIRS			10
 
@@ -73,6 +74,7 @@ typedef struct {
 	menuradiobutton_s	forcemodel;
 	menulist_s			drawteamoverlay;
 	menuradiobutton_s	allowdownload;
+	menulist_s			teamFlash;
 	menubitmap_s		back;
 
 	qhandle_t			crosshairShader[NUM_CROSSHAIRS];
@@ -89,6 +91,15 @@ static const char *teamoverlay_names[] =
 	NULL
 };
 
+static const char *teamFlash_types[] =
+{
+	"off",
+	"friends",
+	"enemies",
+	"both (why?)",
+	NULL
+};
+
 static void Preferences_SetMenuItems( void ) {
 	s_preferences.crosshair.curvalue		= (int)trap_Cvar_VariableValue( "cg_drawCrosshair" ) % NUM_CROSSHAIRS;
 	s_preferences.simpleitems.curvalue		= trap_Cvar_VariableValue( "cg_simpleItems" ) != 0;
@@ -101,6 +112,7 @@ static void Preferences_SetMenuItems( void ) {
 	s_preferences.forcemodel.curvalue		= trap_Cvar_VariableValue( "cg_forcemodel" ) != 0;
 	s_preferences.drawteamoverlay.curvalue	= Com_Clamp( 0, 3, trap_Cvar_VariableValue( "cg_drawTeamOverlay" ) );
 	s_preferences.allowdownload.curvalue	= trap_Cvar_VariableValue( "cl_allowDownload" ) != 0;
+	s_preferences.teamFlash.curvalue		= Com_Clamp( 0, 3, trap_Cvar_VariableValue( "cg_teamFlash" ) );
 }
 
 
@@ -135,7 +147,7 @@ static void Preferences_Event( void* ptr, int notification ) {
 
 	case ID_DYNAMICLIGHTS:
 		trap_Cvar_SetValue( "r_dynamiclight", s_preferences.dynamiclights.curvalue );
-		break;		
+		break;
 
 	case ID_IDENTIFYTARGET:
 		trap_Cvar_SetValue( "cg_drawCrosshairNames", s_preferences.identifytarget.curvalue );
@@ -156,6 +168,10 @@ static void Preferences_Event( void* ptr, int notification ) {
 	case ID_ALLOWDOWNLOAD:
 		trap_Cvar_SetValue( "cl_allowDownload", s_preferences.allowdownload.curvalue );
 		trap_Cvar_SetValue( "sv_allowDownload", s_preferences.allowdownload.curvalue );
+		break;
+
+	case ID_TEAMFLASH:
+		trap_Cvar_SetValue( "cg_teamFlash", s_preferences.teamFlash.curvalue );
 		break;
 
 	case ID_BACK:
@@ -202,7 +218,7 @@ static void Crosshair_Draw( void *self ) {
 	if ( focus )
 	{
 		// draw cursor
-		UI_FillRect( s->generic.left, s->generic.top, s->generic.right-s->generic.left+1, s->generic.bottom-s->generic.top+1, listbar_color ); 
+		UI_FillRect( s->generic.left, s->generic.top, s->generic.right-s->generic.left+1, s->generic.bottom-s->generic.top+1, listbar_color );
 		UI_DrawChar( x, y, 13, UI_CENTER|UI_BLINK|UI_SMALLFONT, color);
 	}
 
@@ -264,7 +280,7 @@ static void Preferences_MenuInit( void ) {
 	s_preferences.crosshair.numitems			= NUM_CROSSHAIRS;
 
 	y += BIGCHAR_HEIGHT+2;*/
-	s_preferences.simpleitems.generic.type        = MTYPE_RADIOBUTTON;
+	/*s_preferences.simpleitems.generic.type        = MTYPE_RADIOBUTTON;
 	s_preferences.simpleitems.generic.name	      = "Simple Items:";
 	s_preferences.simpleitems.generic.flags	      = QMF_PULSEIFFOCUS|QMF_SMALLFONT;
 	s_preferences.simpleitems.generic.callback    = Preferences_Event;
@@ -272,7 +288,7 @@ static void Preferences_MenuInit( void ) {
 	s_preferences.simpleitems.generic.x	          = PREFERENCES_X_POS;
 	s_preferences.simpleitems.generic.y	          = y;
 
-	y += BIGCHAR_HEIGHT+2;
+	y += BIGCHAR_HEIGHT+2;*/
 	s_preferences.wallmarks.generic.type          = MTYPE_RADIOBUTTON;
 	s_preferences.wallmarks.generic.name	      = "Marks on Walls:";
 	s_preferences.wallmarks.generic.flags	      = QMF_PULSEIFFOCUS|QMF_SMALLFONT;
@@ -346,6 +362,16 @@ static void Preferences_MenuInit( void ) {
 	s_preferences.drawteamoverlay.itemnames			= teamoverlay_names;*/
 
 	y += BIGCHAR_HEIGHT+2;
+	s_preferences.teamFlash.generic.type		= MTYPE_SPINCONTROL;
+	s_preferences.teamFlash.generic.name		= "Flash team:";
+	s_preferences.teamFlash.generic.flags		= QMF_PULSEIFFOCUS|QMF_SMALLFONT;
+	s_preferences.teamFlash.generic.callback	= Preferences_Event;
+	s_preferences.teamFlash.generic.id			= ID_TEAMFLASH;
+	s_preferences.teamFlash.generic.x			= PREFERENCES_X_POS;
+	s_preferences.teamFlash.generic.y			= y;
+	s_preferences.teamFlash.itemnames			= teamFlash_types;
+
+	y += BIGCHAR_HEIGHT+2;
 	s_preferences.allowdownload.generic.type     = MTYPE_RADIOBUTTON;
 	s_preferences.allowdownload.generic.name	   = "Automatic Downloading:";
 	s_preferences.allowdownload.generic.flags	   = QMF_PULSEIFFOCUS|QMF_SMALLFONT;
@@ -370,7 +396,7 @@ static void Preferences_MenuInit( void ) {
 	Menu_AddItem( &s_preferences.menu, &s_preferences.framer );
 
 	/*Menu_AddItem( &s_preferences.menu, &s_preferences.crosshair );*/
-	Menu_AddItem( &s_preferences.menu, &s_preferences.simpleitems );
+	/*Menu_AddItem( &s_preferences.menu, &s_preferences.simpleitems );*/
 	Menu_AddItem( &s_preferences.menu, &s_preferences.wallmarks );
 	Menu_AddItem( &s_preferences.menu, &s_preferences.brass );
 	Menu_AddItem( &s_preferences.menu, &s_preferences.dynamiclights );
@@ -379,6 +405,7 @@ static void Preferences_MenuInit( void ) {
 	Menu_AddItem( &s_preferences.menu, &s_preferences.synceveryframe );
 	//Menu_AddItem( &s_preferences.menu, &s_preferences.forcemodel );
 	//Menu_AddItem( &s_preferences.menu, &s_preferences.drawteamoverlay );
+	Menu_AddItem( &s_preferences.menu, &s_preferences.teamFlash );
 	Menu_AddItem( &s_preferences.menu, &s_preferences.allowdownload );
 
 	Menu_AddItem( &s_preferences.menu, &s_preferences.back );

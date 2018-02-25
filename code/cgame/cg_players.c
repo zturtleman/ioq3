@@ -2385,6 +2385,8 @@ void CG_setColor(/*clientInfo_t * ci, */refEntity_t * model, int state, int valu
 
 }
 
+static int			setPulseRate[] = {64, 32, 16, 255};
+
 /*
 ===============
 CG_Player
@@ -2407,6 +2409,7 @@ void CG_Player( centity_t *cent ) {
 	float			angle;
 	vec3_t			dir, angles;
 #endif
+	int				teamFlash, pRate;
 
 	// the client number is stored in clientNum.  It can't be derived
 	// from the entity number, because a single client may have
@@ -2439,15 +2442,31 @@ void CG_Player( centity_t *cent ) {
 	memset( &torso, 0, sizeof(torso) );
 	memset( &head, 0, sizeof(head) );
 
+	teamFlash = cg_teamFlash.integer;
+
 	if( ci->team == TEAM_RED ){
-		CG_setColor( &legs, cent->currentState.eFlags, 1 );
-		CG_setColor( &torso, cent->currentState.eFlags, 2 );
-		CG_setColor( &head, cent->currentState.eFlags, 3 );
+		pRate = (teamFlash >> 2) & 3;
+		if ( (cg.time & setPulseRate[pRate]) && ( ( teamFlash & 1 && cg.snap->ps.persistant[PERS_TEAM] == TEAM_RED) || ( teamFlash & 2 && cg.snap->ps.persistant[PERS_TEAM] == TEAM_BLUE) ) ) {
+			CG_setColor( &legs, cent->currentState.eFlags, 0 );
+			CG_setColor( &torso, cent->currentState.eFlags, 0 );
+			CG_setColor( &head, cent->currentState.eFlags, 0 );
+		} else {
+			CG_setColor( &legs, cent->currentState.eFlags, 1 );
+			CG_setColor( &torso, cent->currentState.eFlags, 2 );
+			CG_setColor( &head, cent->currentState.eFlags, 3 );
+		}
 	}
 	else if( ci->team == TEAM_BLUE ){
-		CG_setColor( &legs, cent->currentState.eFlags, 9 );
-		CG_setColor( &torso, cent->currentState.eFlags, 8 );
-		CG_setColor( &head, cent->currentState.eFlags, 7 );
+		pRate = (teamFlash >> 2) & 3;
+		if ( (cg.time & setPulseRate[pRate]) && ( ( teamFlash & 1 && cg.snap->ps.persistant[PERS_TEAM] == TEAM_BLUE) || ( teamFlash & 2 && cg.snap->ps.persistant[PERS_TEAM] == TEAM_RED) ) ) {
+			CG_setColor( &legs, cent->currentState.eFlags, 0 );
+			CG_setColor( &torso, cent->currentState.eFlags, 0 );
+			CG_setColor( &head, cent->currentState.eFlags, 0 );
+		} else {
+			CG_setColor( &legs, cent->currentState.eFlags, 9 );
+			CG_setColor( &torso, cent->currentState.eFlags, 8 );
+			CG_setColor( &head, cent->currentState.eFlags, 7 );
+		}
 	} else {
 		CG_setColor( &legs, cent->currentState.eFlags, ci->color3 );
 		CG_setColor( &torso, cent->currentState.eFlags, ci->color2 );

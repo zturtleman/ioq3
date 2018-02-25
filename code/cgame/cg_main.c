@@ -213,6 +213,7 @@ vmCvar_t	cg_placebo;
 vmCvar_t	cg_weaponBobbing;
 vmCvar_t	cg_muzzleFlash;
 vmCvar_t	cg_drawExplosion;
+vmCvar_t	cg_teamFlash;
 
 // hud
 vmCvar_t	hud_scoreboard_pingType;
@@ -804,6 +805,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_weaponBobbing, "cg_weaponBobbing", "1", CVAR_ARCHIVE},
 	{ &cg_muzzleFlash, "cg_muzzleFlash", "1", CVAR_ARCHIVE},
 	{ &cg_drawExplosion, "cg_drawExplosion", "1", CVAR_ARCHIVE},
+	{ &cg_teamFlash, "cg_teamFlash", "0", CVAR_ARCHIVE},
 
 
 // hud
