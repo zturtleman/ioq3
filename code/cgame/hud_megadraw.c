@@ -802,7 +802,7 @@ void HUD_MegaDrawMatchInfo( int xpos, int xoff, int ypos, int posLock, int align
 		s = va( "OVERTIME" );
 	} else {
 		if ( cgs.roundBasedMatches ) {
-			s = va( "ROUND %i", cgs.currentRound + 1 );
+			s = va( "ROUND %i OF 2", cgs.currentRound + 1 );
 		} else {
 			s = va( "SINGLE ROUND" );
 		}

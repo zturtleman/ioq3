@@ -512,10 +512,13 @@ static qboolean PM_CheckJump( void ) {
 	pm->ps->groundEntityNum = ENTITYNUM_NONE;
 
 	// jump physics
-	if ( (pm->ps->persistant[PERS_MISC] & PMSC_PHYSICS_SELECTION) ||
-			(pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) ) {
+	if (pm->ps->persistant[PERS_MISC] & PMSC_PHYSICS_SELECTION){
 		// vq3 style jumping
 		pm->ps->velocity[2] = JUMP_VELOCITY;
+	} else if (pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) {
+		// restricted jumping
+		pm->ps->velocity[2] = JUMP_VELOCITY;
+		pm->ps->stats[STAT_JUMPTIME] = 800;
 	} else {
 		// ramp jumping
 		if (pm->ps->velocity[2] > 0) {
@@ -1431,9 +1434,12 @@ static void PM_GroundTrace( void ) {
 		}
 
 		PM_CrashLand();
+		//Com_Printf("^3DEBUG: %i\n", pm->ps->stats[STAT_JUMPTIME]);
 		if ( (pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) ) {
-			for (i=0 ; i<3 ; i++) {
-				pm->ps->velocity[i] *= 0.75; // discourage strafe jumping attempts
+			if (pm->ps->stats[STAT_JUMPTIME] > 0) {
+				for (i=0 ; i<3 ; i++) {
+					pm->ps->velocity[i] *= 0.75; // discourage strafe jumping attempts
+				}
 			}
 		}
 
