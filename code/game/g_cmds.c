@@ -3443,6 +3443,10 @@ void Cmd_DropAmmo_f( gentity_t *ent ) {
 	if ( ent->client->ps.pm_type == PM_DEAD )
 		return;
 
+	// can only be used in matchmodes that are not fixed set weapons (MM_ALLWEAPONS_MAXAMMO, MM_ALLWEAPONS, MM_ROCKET_MANIAX)
+	if ( level.rs_matchMode > MM_PICKUP_ALWAYS_NOAMMO )
+		return;
+
 	// can only be used in matchmodes where weapon-stay is off
 	/*if ( level.rs_matchMode < MM_PICKUP_ALWAYS || level.rs_matchMode > MM_PICKUP_ALWAYS_NOAMMO )
 		return;*/
