@@ -59,8 +59,7 @@ float	pm_alt_aircontrol = 150.0f;
 float	pm_alt_strafeaccelerate = 70.0f;
 float	pm_alt_wishspeed = 30.0f * GAME_SPEED_MULTIPLIER;
 float	pm_alt_friction = 4.0f * GAME_SPEED_MULTIPLIER; // based on friction from quakeworld
-
-float	pm_pro_friction_strain = 0.5f;
+float	pm_alt_crouchfriction = 2.0f * GAME_SPEED_MULTIPLIER; // based on nothing
 
 
 /*
@@ -215,8 +214,13 @@ static void PM_Friction( void ) {
 				if ( (pm->ps->persistant[PERS_MISC] & PMSC_PHYSICS_SELECTION) ||
 						(pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) )
 					drop += control*pm_friction*pml.frametime;
-				else
-					drop += control*pm_alt_friction*pml.frametime;
+				else {
+					if ( pm->ps->pm_flags & PMF_DUCKED ) {
+						drop += control*pm_alt_crouchfriction*pml.frametime;
+					} else {
+						drop += control*pm_alt_friction*pml.frametime;
+					}
+				}
 			}
 		}
 	}
