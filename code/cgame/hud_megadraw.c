@@ -1563,7 +1563,7 @@ void HUD_MegaDrawWeaponBarVert(int xPos, int xoff, int yPos, int align, int cPos
 
 	for ( i = WP_BLASTER ; i <= WP_FLAMETHROWER ; i++ ) {
 		if ( !( bits & ( 1 << i ) ) ) {
-			CG_FillRect( x, y, HUD_BAR_VERT_WIDTH, HUD_BAR_VERT_HEIGHT, black );
+			CG_RoundRect( x, y, HUD_BAR_VERT_WIDTH, HUD_BAR_VERT_HEIGHT, black, 1 );
 			y += jumpAdd;
 		} else {
 
@@ -1582,13 +1582,13 @@ void HUD_MegaDrawWeaponBarVert(int xPos, int xoff, int yPos, int align, int cPos
 			}
 
 			if (ammo == 0) {
-				CG_FillRect( x, y, HUD_BAR_VERT_WIDTH, HUD_BAR_VERT_HEIGHT, black );
+				CG_RoundRect( x, y, HUD_BAR_VERT_WIDTH, HUD_BAR_VERT_HEIGHT, black, 1 );
 			}
 			else if (ammo < 0 || ammo>=max || cg.time&128) {
-				CG_FillRect( x, y, HUD_BAR_VERT_WIDTH, HUD_BAR_VERT_HEIGHT, blue );
+				CG_RoundRect( x, y, HUD_BAR_VERT_WIDTH, HUD_BAR_VERT_HEIGHT, blue, 1 );
 			}
 			else {
-				CG_FillRect( x, y, HUD_BAR_VERT_WIDTH, HUD_BAR_VERT_HEIGHT, red );
+				CG_RoundRect( x, y, HUD_BAR_VERT_WIDTH, HUD_BAR_VERT_HEIGHT, red, 1 );
 			}
 
 			// draw weapon icon
@@ -1608,9 +1608,9 @@ void HUD_MegaDrawWeaponBarVert(int xPos, int xoff, int yPos, int align, int cPos
 
 			if ( i == currentWeapon ) {
 				if (cg.time & 256)
-					CG_DrawRect( x, y, HUD_BAR_VERT_WIDTH ,HUD_BAR_VERT_HEIGHT ,2, dkcyan);
+					CG_RoundRect( x, y, HUD_BAR_VERT_WIDTH ,HUD_BAR_VERT_HEIGHT, dkcyan ,0);
 				else
-					CG_DrawRect( x, y, HUD_BAR_VERT_WIDTH ,HUD_BAR_VERT_HEIGHT ,2, white);
+					CG_RoundRect( x, y, HUD_BAR_VERT_WIDTH ,HUD_BAR_VERT_HEIGHT, white ,0);
 			}
 
 			y += jumpAdd;
@@ -1768,13 +1768,13 @@ void HUD_MegaDrawAmmoBarVert(int xPos, int xoff, int yPos, int align, int cPos, 
 		}
 
 		if (ammo == 0 || low < 0) {
-			CG_FillRect( x, boxYPos, HUD_AMMOBAR_VERT_WIDTH, curYSize, black );
+			CG_RoundRect( x, boxYPos, HUD_AMMOBAR_VERT_WIDTH, curYSize, black, 1 );
 		}
 		else if (ammo < 0 || ammo>=low || cg.time&128) {
-			CG_FillRect( x, boxYPos, HUD_AMMOBAR_VERT_WIDTH, curYSize, blue );
+			CG_RoundRect( x, boxYPos, HUD_AMMOBAR_VERT_WIDTH, curYSize, blue, 1 );
 		}
 		else {
-			CG_FillRect( x, boxYPos, HUD_AMMOBAR_VERT_WIDTH, curYSize, red );
+			CG_RoundRect( x, boxYPos, HUD_AMMOBAR_VERT_WIDTH, curYSize, red, 1 );
 		}
 
 		// draw weapon icon
@@ -1796,9 +1796,9 @@ void HUD_MegaDrawAmmoBarVert(int xPos, int xoff, int yPos, int align, int cPos, 
 
 		if ( i == currentWeapon ) {
 			if (cg.time & 256)
-				CG_DrawRect( x, boxYPos, HUD_AMMOBAR_VERT_WIDTH ,curYSize ,2, dkcyan);
+				CG_RoundRect( x, boxYPos, HUD_AMMOBAR_VERT_WIDTH ,curYSize, dkcyan, 0);
 			else
-				CG_DrawRect( x, boxYPos, HUD_AMMOBAR_VERT_WIDTH ,curYSize ,2, white);
+				CG_RoundRect( x, boxYPos, HUD_AMMOBAR_VERT_WIDTH ,curYSize, white, 0);
 		}
 
 		if (!(cPos & 2))

@@ -209,13 +209,14 @@ static void PM_Friction( void ) {
 	if ( pm->waterlevel <= 1 ) {
 		if ( pml.walking && !(pml.groundTrace.surfaceFlags & SURF_SLICK) ) {
 			// if getting knocked back, no friction
+			control = speed < pm_stopspeed ? pm_stopspeed : speed;
 			if ( ! (pm->ps->pm_flags & PMF_TIME_KNOCKBACK) ) {
-				control = speed < pm_stopspeed ? pm_stopspeed : speed;
 				if ( (pm->ps->persistant[PERS_MISC] & PMSC_PHYSICS_SELECTION) ||
-						(pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) )
+						(pm->ps->persistant[PERS_MISC] & PMSC_RESTRICTED_PHYSICS) ) {
 					drop += control*pm_friction*pml.frametime;
-				else {
+				} else {
 					if ( pm->ps->pm_flags & PMF_DUCKED ) {
+						/*drop += speed*pm_alt_crouchfriction*pml.frametime;*/
 						drop += control*pm_alt_crouchfriction*pml.frametime;
 					} else {
 						drop += control*pm_alt_friction*pml.frametime;
@@ -931,6 +932,9 @@ static void PM_WalkMove( void ) {
 	usercmd_t	cmd;
 	float		accelerate;
 	float		vel;
+
+	float		accel; // mmp
+	float		wishspeed2; // mmp
 
 	if ( pm->waterlevel > 2 && DotProduct( pml.forward, pml.groundTrace.plane.normal ) > 0 ) {
 		// begin swimming

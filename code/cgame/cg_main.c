@@ -1900,6 +1900,9 @@ static void CG_RegisterGraphics( void ) {
 	cgs.media.rulesBG256 = trap_R_RegisterShaderNoMip( "gfx/hud/rule256.tga" );
 	cgs.media.rulesBG064 = trap_R_RegisterShaderNoMip( "gfx/hud/rule064.tga" );
 
+	cgs.media.box0 = trap_R_RegisterShaderNoMip( "gfx/hud/box0" );
+	cgs.media.box1 = trap_R_RegisterShaderNoMip( "gfx/hud/box1" );
+
 //	trap_R_RegisterShaderNoMip
 
 	// this is not used anymore

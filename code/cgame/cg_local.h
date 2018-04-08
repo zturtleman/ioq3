@@ -908,6 +908,9 @@ typedef struct {
 	qhandle_t	rulesBG256; // ruleset background
 	qhandle_t	rulesBG064; // objective background
 
+	qhandle_t	box0; // hud box
+	qhandle_t	box1; // hud outlined box
+
 	// button press
 	qhandle_t	hudButtonPress;
 
@@ -2034,6 +2037,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 //
 void CG_AdjustFrom640( float *x, float *y, float *w, float *h );
 void CG_FillRect( float x, float y, float width, float height, const float *color );
+void CG_RoundRect( float x, float y, float width, float height, const float *color, int fill );
 void CG_DrawPic( float x, float y, float width, float height, qhandle_t hShader );
 void CG_DrawPicExt( float x, float y, float width, float height, float tx1, float ty1, float tx2, float ty2, qhandle_t hShader );
 void CG_DrawString( float x, float y, const char *string,

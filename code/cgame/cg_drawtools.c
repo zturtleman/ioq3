@@ -73,6 +73,63 @@ void CG_FillRect( float x, float y, float width, float height, const float *colo
 
 /*
 ================
+CG_RoundRect
+
+Coordinates are 640*480 virtual values
+=================
+*/
+void CG_RoundRect( float x, float y, float width, float height, const float *color, int fill ) {
+	float		x2, y2, w2, h2;
+	float		x3, y3, w3, h3;
+	float		w4, h4;
+	qhandle_t	hShader;
+
+	// do some corrections
+	x--;
+	y--;
+	width+=2;
+	height+=2;
+
+	trap_R_SetColor( color );
+
+	// determine if round rectangle should be filled in
+	if ( fill )
+		hShader = cgs.media.box1;
+	else
+		hShader = cgs.media.box0;
+
+	x2 = y2 = 8;
+	w2 = h2 = 8;
+	CG_AdjustFrom640( &x, &y, &width, &height );
+	CG_AdjustFrom640( &x2, &y2, &w2, &h2 );
+
+	// math
+	w3 = width - w2;
+	h3 = height - h2;
+	w4 = w3 - w2;
+	h4 = h3 - h2;
+
+	// draw corners
+	trap_R_DrawStretchPic( x, y, w2, h2, 0, 0, 0.25, 0.25, hShader);
+	trap_R_DrawStretchPic( x+w3, y, w2, h2, 0.75, 0, 1, 0.25, hShader );
+	trap_R_DrawStretchPic( x, y+h3, w2, h2, 0, 0.75, 0.25, 1, hShader );
+	trap_R_DrawStretchPic( x+w3, y+h3, w2, h2, 0.75, 0.75, 1, 1, hShader );
+
+	// draw sides
+	trap_R_DrawStretchPic( x+w2, y, w4, h2, 0.25, 0, 0.75, 0.25, hShader );
+	trap_R_DrawStretchPic( x+w2, y+h3, w4, h2, 0.25, 0.75, 0.75, 1, hShader );
+	trap_R_DrawStretchPic( x, y+h2, w2, h4, 0, 0.25, 0.25, 0.75, hShader );
+	trap_R_DrawStretchPic( x+w3, y+h2, w2, h4, 0.75, 0.25, 1, 0.75, hShader );
+
+	// draw the creamy center (assuming it's to be filled)
+	if ( fill )
+		trap_R_DrawStretchPic( x+w2, y+h2, w4, h4, 0.25, 0.25, 0.75, 0.75, hShader );
+
+	trap_R_SetColor( NULL );
+}
+
+/*
+================
 CG_DrawSides
 
 Coords are virtual 640x480
