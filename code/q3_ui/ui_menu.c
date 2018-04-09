@@ -392,12 +392,12 @@ void UI_MainMenu( void ) {
 
 	y += MAIN_MENU_VERTICAL_SPACING;
 	s_main.multiplayer.generic.type			= MTYPE_PTEXT;
-	s_main.multiplayer.generic.flags		= QMF_LEFT_JUSTIFY|QMF_PULSEIFFOCUS/*|QMF_GRAYED*/;
+	s_main.multiplayer.generic.flags		= QMF_LEFT_JUSTIFY|QMF_PULSEIFFOCUS;
 	s_main.multiplayer.generic.x			= x;
 	s_main.multiplayer.generic.y			= y;
 	s_main.multiplayer.generic.id			= ID_MULTIPLAYER;
 	s_main.multiplayer.generic.callback		= Main_MenuEvent;
-	s_main.multiplayer.string				= "MULTIPLAYER  (BROWSER NOT WORKING)";
+	s_main.multiplayer.string				= "MULTIPLAYER";
 	s_main.multiplayer.color				= color_red;
 	s_main.multiplayer.style				= style;
 

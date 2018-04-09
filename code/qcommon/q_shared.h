@@ -35,13 +35,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
 //  #define STEAMPATH_NAME			"MFArena"
 //  #define STEAMPATH_APPID         ""
-#define GAMENAME_FOR_MASTER			"Quake3Arena"	// must NOT contain whitespace
+#define GAMENAME_FOR_MASTER			"MFArena"	// must NOT contain whitespace
 #define CINEMATICS_LOGO				"mmplogo.roq"
 #define CINEMATICS_INTRO			"intro.roq"
 #define LEGACY_PROTOCOL								// You probably don't need this for your standalone game
 
 // Heartbeat for dpmaster protocol. You shouldn't change this unless you know what you're doing
-#define HEARTBEAT_FOR_MASTER		"QuakeArena-1"
+#define HEARTBEAT_FOR_MASTER		"DarkPlaces"
 #define LEGACY_PROTOCOL // this line must exist to show all servers
 
 // When com_gamename is LEGACY_MASTER_GAMENAME, use quake3 master protocol.
