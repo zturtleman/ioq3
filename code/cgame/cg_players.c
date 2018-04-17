@@ -2444,8 +2444,8 @@ void CG_Player( centity_t *cent ) {
 
 	teamFlash = cg_teamFlash.integer;
 
+	pRate = (teamFlash >> 2) & 3;
 	if( ci->team == TEAM_RED ){
-		pRate = (teamFlash >> 2) & 3;
 		if ( (cg.time & setPulseRate[pRate]) && ( ( teamFlash & 1 && cg.snap->ps.persistant[PERS_TEAM] == TEAM_RED) || ( teamFlash & 2 && cg.snap->ps.persistant[PERS_TEAM] == TEAM_BLUE) ) ) {
 			CG_setColor( &legs, cent->currentState.eFlags, 0 );
 			CG_setColor( &torso, cent->currentState.eFlags, 0 );
@@ -2457,7 +2457,6 @@ void CG_Player( centity_t *cent ) {
 		}
 	}
 	else if( ci->team == TEAM_BLUE ){
-		pRate = (teamFlash >> 2) & 3;
 		if ( (cg.time & setPulseRate[pRate]) && ( ( teamFlash & 1 && cg.snap->ps.persistant[PERS_TEAM] == TEAM_BLUE) || ( teamFlash & 2 && cg.snap->ps.persistant[PERS_TEAM] == TEAM_RED) ) ) {
 			CG_setColor( &legs, cent->currentState.eFlags, 0 );
 			CG_setColor( &torso, cent->currentState.eFlags, 0 );
@@ -2468,9 +2467,15 @@ void CG_Player( centity_t *cent ) {
 			CG_setColor( &head, cent->currentState.eFlags, 7 );
 		}
 	} else {
-		CG_setColor( &legs, cent->currentState.eFlags, ci->color3 );
-		CG_setColor( &torso, cent->currentState.eFlags, ci->color2 );
-		CG_setColor( &head, cent->currentState.eFlags, ci->color1 );
+		if ( cent->currentState.number != cg.snap->ps.clientNum && (cg.time & setPulseRate[pRate]) && (teamFlash & 2) ) {
+			CG_setColor( &legs, cent->currentState.eFlags, 0 );
+			CG_setColor( &torso, cent->currentState.eFlags, 0 );
+			CG_setColor( &head, cent->currentState.eFlags, 0 );
+		} else {
+			CG_setColor( &legs, cent->currentState.eFlags, ci->color3 );
+			CG_setColor( &torso, cent->currentState.eFlags, ci->color2 );
+			CG_setColor( &head, cent->currentState.eFlags, ci->color1 );
+		}
 	}
 
 	// CG_setColor( ci, &legs, cent->currentState.eFlags, ci->color3 ); <-- old reference

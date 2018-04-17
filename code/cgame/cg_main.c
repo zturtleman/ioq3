@@ -1081,13 +1081,13 @@ static cvarTable_t cvarTable[] = {
 	{ &hud_weaponBar_yPos, "hud_weaponBar_yPos", "151", CVAR_ARCHIVE}, // 128 when the spreadshot was a regular weapon
 	//{ &hud_weaponBar_xScale, "", "1.0", CVAR_ARCHIVE},
 	//{ &hud_weaponBar_yScale, "", "1.0", CVAR_ARCHIVE},
-	{ &hud_weaponBar_colorNormal, "hud_weaponBar_colorNormal", "0000FF66", CVAR_ARCHIVE},
+	{ &hud_weaponBar_colorNormal, "hud_weaponBar_colorNormal", "80808066", CVAR_ARCHIVE}, // was 0000FF66
 	{ &hud_weaponBar_colorLow, "hud_weaponBar_colorLow", "FF000066", CVAR_ARCHIVE},
 	{ &hud_weaponBar_colorDead, "hud_weaponBar_colorDead", "00000066", CVAR_ARCHIVE},
 //	{ &hud_weaponBar_colorText, "hud_weaponBar_colorText", "FFFFFFFF", CVAR_ARCHIVE},
 //	{ &hud_weaponBar_colorTextDead, "hud_weaponBar_colorTextDead", "FF0000FF", CVAR_ARCHIVE},
 	{ &hud_weaponBar_colorFlash1, "hud_weaponBar_colorFlash1", "FFFFFFFF", CVAR_ARCHIVE},
-	{ &hud_weaponBar_colorFlash2, "hud_weaponBar_colorFlash2", "00B0FFFF", CVAR_ARCHIVE},
+	{ &hud_weaponBar_colorFlash2, "hud_weaponBar_colorFlash2", "808080FF", CVAR_ARCHIVE}, // was 00B0FFFF
 
 	{ &hud_ammoBar_show, "hud_ammoBar_show", "1", CVAR_ARCHIVE},
 	{ &hud_ammoBar_align, "hud_ammoBar_align", "0", CVAR_ARCHIVE},
@@ -1096,13 +1096,13 @@ static cvarTable_t cvarTable[] = {
 	{ &hud_ammoBar_xPos, "hud_ammoBar_xPos", "24", CVAR_ARCHIVE},
 	{ &hud_ammoBar_xAlign, "hud_ammoBar_xAlign", "0", CVAR_ARCHIVE},
 	{ &hud_ammoBar_yPos, "hud_ammoBar_yPos", "151", CVAR_ARCHIVE}, // 128 when the spreadshot was a regular weapon
-	{ &hud_ammoBar_colorNormal, "hud_ammoBar_colorNormal", "0000FF66", CVAR_ARCHIVE},
+	{ &hud_ammoBar_colorNormal, "hud_ammoBar_colorNormal", "80808066", CVAR_ARCHIVE}, // was 0000FF66
 	{ &hud_ammoBar_colorLow, "hud_ammoBar_colorLow", "FF000066", CVAR_ARCHIVE},
 	{ &hud_ammoBar_colorDead, "hud_ammoBar_colorDead", "00000066", CVAR_ARCHIVE},
 	{ &hud_ammoBar_colorText, "hud_ammoBar_colorText", "FFFFFFFF", CVAR_ARCHIVE},
 	{ &hud_ammoBar_colorTextDead, "hud_ammoBar_colorTextDead", "FF0000FF", CVAR_ARCHIVE},
 	{ &hud_ammoBar_colorFlash1, "hud_ammoBar_colorFlash1", "FFFFFFFF", CVAR_ARCHIVE},
-	{ &hud_ammoBar_colorFlash2, "hud_ammoBar_colorFlash2", "00B0FFFF", CVAR_ARCHIVE},
+	{ &hud_ammoBar_colorFlash2, "hud_ammoBar_colorFlash2", "808080FF", CVAR_ARCHIVE}, // was 00B0FFFF
 
 	{ &hud_voteStatus_show, "hud_voteStatus_show", "1", CVAR_ARCHIVE},
 	{ &hud_voteStatus_align, "hud_voteStatus_align", "1", CVAR_ARCHIVE},

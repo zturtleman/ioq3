@@ -52,7 +52,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define BASETA				"missionpack"
 
 #ifndef PRODUCT_VERSION //  FIXME: get this working via makefile, for some reason, the set variable is not making it here
-  #define PRODUCT_VERSION	"180000.h"
+  #define PRODUCT_VERSION	"180420.h"
 #endif
 
 #define SVINFO_VERSION_YR	18

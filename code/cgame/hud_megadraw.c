@@ -1518,9 +1518,18 @@ void HUD_MegaDrawWeaponBarVert(int xPos, int xoff, int yPos, int align, int cPos
 	//float whiteFont[4];
 	//float redFont[4];
 
+	vec4_t		hcolorBlk;
+	vec4_t		hcolor;
+
+
 	if ( !hud_weaponBar_show.integer ) {
 		return;
 	}
+
+	hcolor[0] = hcolor[1] = hcolor[2] = hcolor[3] = 1.0f;
+
+	hcolorBlk[0] = hcolorBlk[1] = hcolorBlk[2] = 0.0f;
+	hcolorBlk[3] = 1.0f;
 
 	HUD_FuncColorGet ( hud_weaponBar_colorFlash2.string, dkcyan );
 	HUD_FuncColorGet ( hud_weaponBar_colorFlash1.string, white );
@@ -1592,6 +1601,12 @@ void HUD_MegaDrawWeaponBarVert(int xPos, int xoff, int yPos, int align, int cPos
 			}
 
 			// draw weapon icon
+			trap_R_SetColor( hcolorBlk );
+			//CG_DrawPic( x+2, y+2, 16, 16, cg_weapons[i].weaponIcon );
+			trap_R_DrawStretchPic( (float)(x+1) * cgs.screenXScale + 1, (float)(y+1) * cgs.screenYScale + 1 + cgs.screenYOffset,
+						(float)16 * cgs.screenXScale, (float)16 * cgs.screenYScale,
+						0.0, 0.0, 1.0, 1.0, cg_weapons[i].weaponIcon );
+			trap_R_SetColor( hcolor );
 			CG_DrawPic( x+1, y+1, 16, 16, cg_weapons[i].weaponIcon );
 
 			/** Draw Weapon Ammo **/

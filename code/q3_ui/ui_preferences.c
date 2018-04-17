@@ -86,28 +86,28 @@ static preferences_t s_preferences;
 
 static const char *teamoverlay_names[] =
 {
-	"off",
-	"upper right",
-	"lower right",
-	"lower left",
+	"Off",
+	"Upper right",
+	"Lower right",
+	"Lower left",
 	NULL
 };
 
 static const char *teamFlash_types[] =
 {
-	"off",
-	"friends",
-	"enemies",
-	"both (why?)",
+	"Off",
+	"Friends",
+	"Enemies",
+	"Both (why?)",
 	NULL
 };
 
 static const char *teamFlashRate_types[] =
 {
-	"slow",
-	"medium",
-	"fast",
-	"solid",
+	"Slow",
+	"Medium",
+	"Fast",
+	"Solid",
 	NULL
 };
 

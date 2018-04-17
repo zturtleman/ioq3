@@ -3764,8 +3764,17 @@ void CheckIntermissionExit( void ) {
 	if ( playerCount > 0 ) {
 		// if nobody wants to go, clear timer
 		if ( !ready ) {
-			level.readyToExit = qfalse;
-			return;
+
+			// prevent intermission from going on too long
+			if ( level.time >= level.intermissiontime + 105000 ) {
+				if ( level.readyToExit == qfalse ) {
+					level.readyToExit = qtrue;
+					level.exitTime = level.time;
+				}
+			} else {
+				level.readyToExit = qfalse;
+				return;
+			}
 		}
 
 		// if everyone wants to go, go now

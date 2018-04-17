@@ -2523,7 +2523,7 @@ CG_Draw2D
 
 static void CG_Draw2D(stereoFrame_t stereoFrame)
 {
-	vec4_t		color;
+	vec4_t		color, colorGray;
 	vec4_t		color1, color2;
 	vec4_t		colorMagenta, colorGreen, colorDirtBlue, colorMapColor;
 	vec4_t		colorRed, colorBlue;
@@ -2670,6 +2670,9 @@ vvvvvvvvvvvvvvvvvvvvv
 	color[3] = 1.0; // alpha
 
 	colorWhite[0] = colorWhite[1] = colorWhite[2] = colorWhite[3] = 1.0;
+
+	colorGray[0] = colorGray[1] = colorGray[2] = 0.5;
+	colorGray[3] = 1.0;
 
 	colorMagenta[0] = colorMagenta[2] = colorMagenta[3] = color[0];
 	colorMagenta[1] = 0.0;
@@ -2835,14 +2838,14 @@ vvvvvvvvvvvvvvvvvvvvv
 											hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
 											hud_briefScore_align.integer, hud_briefScore_style.integer,
 											hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-											1, colorDirtBlue );
+											1, colorBlue );
 							} else {
 								HUD_MegaDrawBriefScoreGrad ( hud_briefScore_xPos.integer,
 											alignTable[hud_briefScore_xAlign.integer & 3],
 											hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
 											hud_briefScore_align.integer, hud_briefScore_style.integer,
 											hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-											1, colorBrown );
+											1, colorGray );
 							}
 
 							// 1st place
@@ -2852,14 +2855,14 @@ vvvvvvvvvvvvvvvvvvvvv
 											hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
 											hud_briefScore_align.integer, hud_briefScore_style.integer,
 											hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-											0, colorDirtBlue );
+											0, colorBlue );
 							} else {
 								HUD_MegaDrawBriefScoreGrad ( hud_briefScore_xPos.integer,
 											alignTable[hud_briefScore_xAlign.integer & 3],
 											hud_briefScore_yPos.integer, hud_briefScore_posLock.integer,
 											hud_briefScore_align.integer, hud_briefScore_style.integer,
 											hud_briefScore_xScale.value, hud_briefScore_yScale.value,
-											0, colorBrown );
+											0, colorGray );
 							}
 
 						} else {
