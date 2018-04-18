@@ -1256,7 +1256,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	}
 
 	// disable player damage when in ghost mode
-	if ( targ->client->ps.pm_type == PM_GHOST || attacker->client->ps.pm_type == PM_GHOST ) {
+	if ( ( targ->client && targ->client->ps.pm_type == PM_GHOST )
+		|| ( attacker->client && attacker->client->ps.pm_type == PM_GHOST ) ) {
 		return;
 	}
 
@@ -1302,14 +1303,14 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	}
 
 	// check if attacker has quad damage
-	if (attacker->client->ps.powerups[PW_QUAD] || level.rs_quadMode ) {
+	if ( ( attacker->client && attacker->client->ps.powerups[PW_QUAD] ) || level.rs_quadMode ) {
 		quadFactor = g_quadfactor.value;
 	} else {
 		quadFactor = 1;
 	}
 
 	// increase lightning gun damage with consistant hits
-	if ( mod == MOD_LIGHTNING ) {
+	if ( mod == MOD_LIGHTNING && attacker->client ) {
 		attackingClient = attacker->client;
 		lastHit = level.time - attackingClient->lightningLastHit;
 		//G_Printf( "^3DEBUG: listHit=%i\n", lastHit ); // debug
@@ -1346,12 +1347,13 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	if ( targ->flags & FL_NO_KNOCKBACK ) {
 		knockback = 0;
 	}
-	/*if ( dflags & DAMAGE_NO_KNOCKBACK ) {
+	/* Disabling this required checking that dir is not NULL below
+	if ( dflags & DAMAGE_NO_KNOCKBACK ) {
 		knockback = 0;
 	}*/
 
 	// figure momentum add, even if the damage won't be taken
-	if ( knockback && targ->client ) {
+	if ( knockback && targ->client && dir ) {
 		vec3_t	kvel;
 		float	mass;
 
