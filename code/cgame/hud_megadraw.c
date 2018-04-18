@@ -50,7 +50,7 @@ HUD_FuncColorGet
 #define	HUD_NUM_OF_COLOR_FIELDS		4
 #define	HUD_SIZE_OF_HEX_COLORS		6
 
-void HUD_FuncColorGet ( const char* s, vec4_t color ) {
+static void HUD_FuncColorGet ( const char* s, vec4_t color ) {
 
 	int	cfield = 0;
 	int	hexPos;
@@ -196,7 +196,7 @@ HUD_FuncStyleSet
 
 #define HUD_SHADOW		0x00000001
 
-static HUD_FuncStyleSet( int align, int style ) {
+static int HUD_FuncStyleSet( int align, int style ) {
 	int	styleOut = 0;
 
 	if ( style & HUD_SHADOW ) {
@@ -517,7 +517,7 @@ void HUD_MegaDrawFPS( int xpos, int xoff, int ypos, int posLock, int align, int 
 HUD_MegaDrawTimer
 =================
 */
-static HUD_MegaDrawTimer( int xpos, int ypos, int style, float scale, vec4_t color ) {
+int HUD_MegaDrawTimer( int xpos, int ypos, int style, float scale, vec4_t color ) {
 
 	char		*s;
 	int			mins, seconds, tens;
@@ -824,7 +824,7 @@ If so, the score for that player/team will/should flash...
 =================
 */
 
-int HUD_MegaDrawBriefScoreLimitFlash( int a, int b, int lim ) {
+static int HUD_MegaDrawBriefScoreLimitFlash( int a, int b, int lim ) {
 
 	int		c;
 
@@ -1168,7 +1168,7 @@ HUD_MegaDrawFragInfo
 #define	MDHUDFragTextHeight			16
 #define	MDHUDFragTextIconSize		16
 
-static void HUD_MegaDrawFragInfo( int xpos, int ypos, int xsize, int ysize, int ydir, int align, int style, float scale ) {
+void HUD_MegaDrawFragInfo( int xpos, int ypos, int xsize, int ysize, int ydir, int align, int style, float scale ) {
 
 	int			w, h;
 	int			i, len;
@@ -1283,7 +1283,7 @@ HUD_MegaDrawHUDInfo
 */
 #define	MDHUDTextHeight			16
 
-static void HUD_MegaDrawHUDInfo( int xpos, int ypos, int xsize, int ysize, int ydir, int hudBox, int style, float scale ) {
+void HUD_MegaDrawHUDInfo( int xpos, int ypos, int xsize, int ysize, int ydir, int hudBox, int style, float scale ) {
 
 	int			w, h;
 	int			i, len;
@@ -1343,7 +1343,7 @@ TODO: Remove this
 */
 #define	MDCharHeight			16
 
-static void HUD_MegaDrawChat( int xpos, int ypos, int xsize, int ysize, int ydir, int style, float scale, vec4_t hcolor ) {
+void HUD_MegaDrawChat( int xpos, int ypos, int xsize, int ysize, int ydir, int style, float scale, vec4_t hcolor ) {
 
 	int			w, h;
 	int			i, len;
@@ -1392,7 +1392,7 @@ HUD_MegaDrawCrosshair
 =================
 */
 
-static void HUD_MegaDrawCrosshair( float xpos, float ypos, float xsize, float ysize ) {
+void HUD_MegaDrawCrosshair( float xpos, float ypos, float xsize, float ysize ) {
 	qhandle_t	hShader;
 	vec4_t		color;
 	int			typeA;
@@ -1434,7 +1434,7 @@ HUD parts are divided into 16 pieces from a 4x4 grid texture
 
 #define HUD_PART_SIZE		0.25
 
-static void HUD_MegaDrawHudPart( float xpos, float ypos, float xsize, float ysize, qhandle_t hShader, int fcol, int frow, int fcol2, int frow2, vec4_t color) {
+void HUD_MegaDrawHudPart( float xpos, float ypos, float xsize, float ysize, qhandle_t hShader, int fcol, int frow, int fcol2, int frow2, vec4_t color) {
 //	qhandle_t	hShader;
 	float		fcolStart, frowStart, fcolSize, frowSize;
 
@@ -1459,7 +1459,7 @@ HUD_MegaDrawBorder
 =================
 */
 
-static void HUD_MegaDrawBorder( float xpos, float ypos, float xsize, float ysize, int ptype, vec4_t color) {
+void HUD_MegaDrawBorder( float xpos, float ypos, float xsize, float ysize, int ptype, vec4_t color) {
 
 	HUD_MegaDrawHudPart((float)xpos-8, (float)ypos-8, (float)8, (float)8,
 						cgs.media.hudBorderShaders [ ptype ], 0, 0, 0, 0, color);
@@ -2548,7 +2548,7 @@ HUD_DrawDisconnect
 Should we draw something differnet for long lag vs no packets?
 ==============
 */
-static void HUD_DrawDisconnect( void ) {
+void HUD_DrawDisconnect( void ) {
 	float		x, y;
 	int			cmdNum;
 	usercmd_t	cmd;
@@ -2593,7 +2593,7 @@ static void HUD_DrawDisconnect( void ) {
 HUD_DrawLagometer
 ==============
 */
-static void HUD_DrawLagometer( int x, int y, int w, int h, int align, vec4_t bgColor1, vec4_t bgColor2 ) {
+void HUD_DrawLagometer( int x, int y, int w, int h, int align, vec4_t bgColor1, vec4_t bgColor2 ) {
 	int		a, i, h2, alx, aly;
 	float	v;
 	float	ax, ay, aw, ah, mid, range;
@@ -3957,7 +3957,7 @@ void HUD_MegaDrawStatusItem( int xpos, int xoff, int ypos, int posLock, int alig
 CG_DrawVote
 =================
 */
-static void HUD_MegaDrawVote( int xpos, int xoff, int ypos, int posLock, int align, int style,
+void HUD_MegaDrawVote( int xpos, int xoff, int ypos, int posLock, int align, int style,
 									float scaleX, float scaleY ) {
 	char		*s;
 	int			sec;
@@ -4067,7 +4067,7 @@ HUD_MegaRuleSet
 =================
 */
 
-void HUD_MegaRuleSet_BooleanStats( int x, int y, float scale, int result, vec4_t color ) {
+static void HUD_MegaRuleSet_BooleanStats( int x, int y, float scale, int result, vec4_t color ) {
 	char		*s;
 	if ( result > 0 ) {
 		s = "Yes";
@@ -4077,7 +4077,7 @@ void HUD_MegaRuleSet_BooleanStats( int x, int y, float scale, int result, vec4_t
 	UI_DrawCustomProportionalString( x, y, s, UI_DROPSHADOW | UI_RIGHT, 0.5 * scale, color, qfalse );
 }
 
-void HUD_MegaRuleSet_FloatValueStats( int x, int y, float scale, float result, const char *afterString, vec4_t color ) {
+static void HUD_MegaRuleSet_FloatValueStats( int x, int y, float scale, float result, const char *afterString, vec4_t color ) {
 	char		*s;
 	char		*sf;
 	int			r;
@@ -4103,7 +4103,7 @@ void HUD_MegaRuleSet_FloatValueStats( int x, int y, float scale, float result, c
 	UI_DrawCustomProportionalString( x, y, s, UI_DROPSHADOW | UI_RIGHT, 0.5 * scale, color, qfalse );
 }
 
-void HUD_MegaRuleSet_ValueStats( int x, int y, float scale, int result, const char *afterString, vec4_t color ) {
+static void HUD_MegaRuleSet_ValueStats( int x, int y, float scale, int result, const char *afterString, vec4_t color ) {
 	char		*s;
 	if ( result > 1 ) {
 		s = va("%i %ss", result, afterString );
@@ -4115,7 +4115,7 @@ void HUD_MegaRuleSet_ValueStats( int x, int y, float scale, int result, const ch
 	UI_DrawCustomProportionalString( x, y, s, UI_DROPSHADOW | UI_RIGHT, 0.5 * scale, color, qfalse );
 }
 
-static void HUD_MegaRuleSet( int xpos, int ypos, float scale ) {
+void HUD_MegaRuleSet( int xpos, int ypos, float scale ) {
 	char		*s;
 	int			sec;
 	vec4_t		color;
@@ -4411,7 +4411,7 @@ HUD_MegaObjective
 =================
 */
 
-static void HUD_MegaObjective( int xpos, int ypos, float scale, int team ) {
+void HUD_MegaObjective( int xpos, int ypos, float scale, int team ) {
 	char		*s;
 	int			sec;
 	vec4_t		color;
@@ -4708,7 +4708,7 @@ TODO: clean up this mess
 #define	MDHUDPickUpHeight			MDHUDPickUpIconSize / 2
 #define	MDHUDPickUpTextOffset		MDHUDPickUpIconSize / 4
 
-static void HUD_DrawPickupInfo( int xpos, int ypos, int align, int style, float scale ) {
+void HUD_DrawPickupInfo( int xpos, int ypos, int align, int style, float scale ) {
 	int			value;
 	int			w, h;
 	int			i, len;

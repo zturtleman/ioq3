@@ -1456,7 +1456,7 @@ static void UI_DrawProportionalString2( int x, int y, const char* str, vec4_t co
 	trap_R_SetColor( NULL );
 }
 
-static void UI_DrawProportionalStringColor( int x, int y, const char* str, vec4_t startColor,
+void UI_DrawProportionalStringColor( int x, int y, const char* str, vec4_t startColor,
 						float sizeScale, qhandle_t charset, int dshadow, qboolean dcolor )
 {
 	vec4_t		color;
