@@ -284,17 +284,6 @@ static void PlayerSettings_DrawEffectsText( void *self ) {
 	color = text_color_normal;
 
 	UI_DrawProportionalString( item->generic.x, item->generic.y, "Color Highlights", style, color );
-
-	UI_DrawProportionalString( 0, SCREEN_HEIGHT * 0.76,
-						"NOTE: Color previews are not working automatically",
-						UI_SMALLFONT, colorWhite );
-	UI_DrawProportionalString( 0, SCREEN_HEIGHT * 0.80,
-						"To see preview of selected colors, please re-enter this menu",
-						UI_SMALLFONT, colorWhite );
-	UI_DrawProportionalString( 0, SCREEN_HEIGHT * 0.84,
-						"Hey, it's \"ALPHA\" brah!!!!1",
-						UI_SMALLFONT, colorWhite );
-
 }
 
 
@@ -419,6 +408,13 @@ static void PlayerSettings_MenuEvent( void* ptr, int event ) {
 		//trap_Cvar_Set( "handicap", va( "%i", 100 - 25 * s_playersettings.handicap.curvalue ) );
 		break;
 
+	case ID_COLOR1:
+	case ID_COLOR2:
+	case ID_COLOR3:
+		UI_PlayerInfo_SetColors( &s_playersettings.playerinfo, s_playersettings.color1.curvalue,
+			s_playersettings.color2.curvalue, s_playersettings.color3.curvalue );
+		break;
+
 	case ID_MODEL:
 		PlayerSettings_SaveChanges();
 		UI_PlayerModelMenu();
@@ -512,6 +508,7 @@ static void PlayerSettings_MenuInit( void ) {
 	s_playersettings.color1.generic.flags		= QMF_NODEFAULTINIT;
 	s_playersettings.color1.generic.id			= ID_COLOR1;
 	s_playersettings.color1.generic.ownerdraw	= PlayerSettings_DrawEffects;
+	s_playersettings.color1.generic.callback	= PlayerSettings_MenuEvent;
 	s_playersettings.color1.generic.x			= 192;
 	s_playersettings.color1.generic.y			= y;
 	s_playersettings.color1.generic.left		= 192 - 8;
@@ -525,6 +522,7 @@ static void PlayerSettings_MenuInit( void ) {
 	s_playersettings.color2.generic.flags		= QMF_NODEFAULTINIT;
 	s_playersettings.color2.generic.id			= ID_COLOR2;
 	s_playersettings.color2.generic.ownerdraw	= PlayerSettings_DrawEffects;
+	s_playersettings.color2.generic.callback	= PlayerSettings_MenuEvent;
 	s_playersettings.color2.generic.x			= 192;
 	s_playersettings.color2.generic.y			= y;
 	s_playersettings.color2.generic.left		= 192 - 8;
@@ -538,6 +536,7 @@ static void PlayerSettings_MenuInit( void ) {
 	s_playersettings.color3.generic.flags		= QMF_NODEFAULTINIT;
 	s_playersettings.color3.generic.id			= ID_COLOR3;
 	s_playersettings.color3.generic.ownerdraw	= PlayerSettings_DrawEffects;
+	s_playersettings.color3.generic.callback	= PlayerSettings_MenuEvent;
 	s_playersettings.color3.generic.x			= 192;
 	s_playersettings.color3.generic.y			= y;
 	s_playersettings.color3.generic.left		= 192 - 8;
