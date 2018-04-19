@@ -1192,17 +1192,13 @@ void UI_PlayerInfo_SetModel( playerInfo_t *pi, const char *model ) {
 
 /*
 ===============
-UI_PlayerInfo_SetInfo
+UI_PlayerInfo_SetColors
 ===============
 */
-void UI_PlayerInfo_SetInfo( playerInfo_t *pi, int legsAnim, int torsoAnim, vec3_t viewAngles, vec3_t moveAngles, weapon_t weaponNumber, qboolean chat ) {
-	int			currentAnim;
-	weapon_t	weaponNum;
+void UI_PlayerInfo_SetColors( playerInfo_t *pi, int color1, int color2, int color3 ) {
 	int			c;
 
-	pi->chat = chat;
-
-	c = (int)trap_Cvar_VariableValue( "color1" ) & 15;
+	c = color1 & 15;
 	pi->c1 = c;
 	VectorClear( pi->color1 );
 	pi->color1[0] = setColorTable[c].red;
@@ -1213,27 +1209,46 @@ void UI_PlayerInfo_SetInfo( playerInfo_t *pi, int legsAnim, int torsoAnim, vec3_
 	pi->c1RGBA[2] = 255 * pi->color1[2];
 	pi->c1RGBA[3] = 255;
 
-	c = (int)trap_Cvar_VariableValue( "color2" ) & 15;
+	c = color2 & 15;
 	pi->c2 = c;
 	VectorClear( pi->color2 );
 	pi->color2[0] = setColorTable[c].red;
 	pi->color2[1] = setColorTable[c].green;
 	pi->color2[2] = setColorTable[c].blue;
+#if 0
 	pi->c1RGBA[0] = 255 * pi->color2[0];
 	pi->c1RGBA[1] = 255 * pi->color2[1];
 	pi->c1RGBA[2] = 255 * pi->color2[2];
 	pi->c1RGBA[3] = 255;
+#endif
 
-	c = (int)trap_Cvar_VariableValue( "color3" ) & 15;
+	c = color3 & 15;
 	pi->c3 = c;
 	VectorClear( pi->color3 );
 	pi->color3[0] = setColorTable[c].red;
 	pi->color3[1] = setColorTable[c].green;
 	pi->color3[2] = setColorTable[c].blue;
+#if 0
 	pi->c1RGBA[0] = 255 * pi->color3[0];
 	pi->c1RGBA[1] = 255 * pi->color3[1];
 	pi->c1RGBA[2] = 255 * pi->color3[2];
 	pi->c1RGBA[3] = 255;
+#endif
+}
+
+/*
+===============
+UI_PlayerInfo_SetInfo
+===============
+*/
+void UI_PlayerInfo_SetInfo( playerInfo_t *pi, int legsAnim, int torsoAnim, vec3_t viewAngles, vec3_t moveAngles, weapon_t weaponNumber, qboolean chat ) {
+	int			currentAnim;
+	weapon_t	weaponNum;
+
+	pi->chat = chat;
+
+	UI_PlayerInfo_SetColors( pi, trap_Cvar_VariableValue( "color1" ),
+		trap_Cvar_VariableValue( "color2" ), trap_Cvar_VariableValue( "color3" ) );
 
 	// view angles
 	VectorCopy( viewAngles, pi->viewAngles );
