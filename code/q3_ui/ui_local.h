@@ -336,6 +336,12 @@ extern void UI_UpdateCvars( void );
 // ui_mftest.c
 //
 extern void Test_Cache( void );
+extern void UI_TestMenu( void );
+
+//
+// ui_customrules.c
+//
+extern void UI_CustomRulesMenu( void );
 
 // mmp menus end
 

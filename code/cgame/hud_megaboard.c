@@ -776,7 +776,7 @@ qboolean HUD_MegaDrawScoreBoard( int posCenter, int ty ) {
 		}
 
 		y = 60;
-		UI_DrawCustomProportionalString( posCenter, y, s, UI_DROPSHADOW | UI_CENTER, 1.0, colorWht, colorYel, qfalse );*/
+		UI_DrawCustomProportionalString( posCenter, y, s, UI_DROPSHADOW | UI_CENTER, 1.0, colorWht, qfalse );*/
 
 		colorCus[0] = colorCus[1] = colorCus[2] = 0.5;
 		colorCus[3] = 1.0;
@@ -864,7 +864,7 @@ qboolean HUD_MegaDrawScoreBoard( int posCenter, int ty ) {
 			} else {
 				s = "SCORE";
 			}
-			UI_DrawCustomProportionalString( posCenter, y + 8, s, UI_CENTER, 0.75, colorBlk, colorYel, qfalse );
+			UI_DrawCustomProportionalString( posCenter, y + 8, s, UI_CENTER, 0.75, colorBlk, qfalse );
 
 			s = va("%i",cg.teamScores[0]);
 			UI_DrawBigNumString( posCenter - 84, y + 27, 32, s, colorCus, UI_CENTER, qtrue );

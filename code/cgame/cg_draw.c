@@ -3020,8 +3020,7 @@ vvvvvvvvvvvvvvvvvvvvv
 				HUD_MegaDrawVote( hud_voteStatus_xPos.integer, alignTable[hud_voteStatus_xAlign.integer & 3],
 							hud_voteStatus_yPos.integer, hud_voteStatus_posLock.integer,
 							hud_voteStatus_align.integer, hud_voteStatus_style.integer,
-							hud_voteStatus_xScale.value, hud_voteStatus_yScale.value,
-							team );
+							hud_voteStatus_xScale.value, hud_voteStatus_yScale.value );
 
 				/*
 				HUD_MegaDrawHUDInfo(4, 476 - 72, 240, CHAT_HEIGHT, 1, 0, UI_DROPSHADOW, 0.50, color);

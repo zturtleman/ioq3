@@ -80,7 +80,7 @@ CG_AddToFragInfo
 
 =======================
 */
-static void CG_AddToFragInfo( const char *killer, qhandle_t deathIcon, const char *victom ) {
+void CG_AddToFragInfo( const char *killer, qhandle_t deathIcon, const char *victom ) {
 	int len;
 	char *p, *ls;
 	int lastcolor;

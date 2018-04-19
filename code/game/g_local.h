@@ -792,6 +792,7 @@ char *G_NewString( const char *string );
 // g_cmds.c
 //
 void Cmd_Score_f (gentity_t *ent);
+void SendReadymask( int clientnum, int quiet );
 void StopFollowing( gentity_t *ent );
 void BroadcastTeamChange( gclient_t *client, int oldTeam );
 void SetTeam( gentity_t *ent, char *s );
@@ -863,6 +864,7 @@ const char *BuildShaderStateConfig( void );
 qboolean CanDamage (gentity_t *targ, vec3_t origin);
 void G_Damage (gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t point, int damage, int dflags, int mod);
 qboolean G_RadiusDamage (vec3_t origin, gentity_t *attacker, float damage, float radius, gentity_t *ignore, int mod);
+qboolean G_WaterRadiusDamage (vec3_t origin, gentity_t *attacker, float damage, float radius, gentity_t *ignore, int mod);
 int G_InvulnerabilityEffect( gentity_t *targ, vec3_t dir, vec3_t point, vec3_t impactpoint, vec3_t bouncedir );
 void body_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath );
 void TossClientItems( gentity_t *self );
@@ -995,14 +997,21 @@ void DeathmatchScoreboardMessage( gentity_t *ent );
 // g_main.c
 //
 //void G_RegisterCvars( void );
+void G_TeamCount ( void );
+void G_ClientCount ( void );
+void G_TeamSizeRuleSet ( void );
+void G_RuleSetUpdate ( void );
+void G_SpamCheck ( gentity_t *ent );
 void MoveClientToIntermission( gentity_t *ent );
 void FindIntermissionPoint( void );
 void SetLeader(int team, int client);
 void CheckTeamLeader( int team );
 void G_RunThink (gentity_t *ent);
 void AddTournamentQueue(gclient_t *client);
+void UpdateDemerits( gentity_t *ent , int adjustment );
+qboolean MapRotation( const char *qpath );
 void QDECL G_LogPrintf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
-void QDECL G_VerboseLogPrintf( int vlevel, const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
+void QDECL G_VerboseLogPrintf( int vlevel, const char *fmt, ... ) __attribute__ ((format (printf, 2, 3)));
 void G_BookkeepingLog( void );
 void SendScoreboardMessageToAllClients( void );
 void QDECL G_Printf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));

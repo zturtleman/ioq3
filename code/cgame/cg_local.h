@@ -2059,26 +2059,94 @@ void CG_TileClear( void );
 void CG_ColorForHealth( vec4_t hcolor );
 void CG_GetColorForHealth( int health, int armor, vec4_t hcolor );
 
+int UI_ReturnStringWidth( const char* str, qboolean digitChar );
+int UI_ReturnStringLimit( const char* str, qboolean digitChar, int widthLimit, float scale, qboolean incCStr );
+void UI_DrawString( int x, int y, const char* str, int style, float scaleX, float scaleY, vec4_t color, qboolean dcolor );
+int UI_ProportionalColorStringWidth( const char* str );
+void UI_DrawProportionalStringColor( int x, int y, const char* str, vec4_t startColor,
+						float sizeScale, qhandle_t charset, int dshadow, qboolean dcolor );
 void UI_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color );
+void UI_DrawCustomProportionalString( int x, int y, const char* str, int style, float sizeScale, vec4_t color, qboolean dcolor );
+void UI_DrawNumCharInteger( int x, int y, int size, int n, int c, qboolean leftAlign );
+int UI_DrawBigNum( int x, int y, int size, int ch, vec4_t color, int noDraw, qboolean shadow );
+int UI_DrawBigNumString( int x, int y, int size, const char* str, vec4_t color, int align, qboolean shadow );
+
 void CG_DrawRect( float x, float y, float width, float height, float size, const float *color );
 void CG_DrawSides(float x, float y, float w, float h, float size);
 void CG_DrawTopBottom(float x, float y, float w, float h, float size);
 
 //
-// cg_megadraw.c
+// hud_megadraw.c
 //
-/*void CG_DrawTest( int xpos, int ypos, int style, float scale, vec4_t color );
-static CG_MegaDrawFPS( int xpos, int ypos, int style, float scale, vec4_t color );
-static CG_MegaDrawTimer( int xpos, int ypos, int style, float scale, vec4_t color );
-static CG_MegaDrawDigitTimer( int xpos, int ypos, int style, float scale, vec4_t color );
-static CG_MegaDrawUPS( int xpos, int ypos, int style, float scale, vec4_t color );
-static CG_MegaDrawBriefScore( int xpos, int ypos, int layout, int style, float scale, vec4_t color, vec4_t color1, vec4_t color2 );
-static void CG_MegaDrawHUDInfo( int xpos, int ypos, int xsize, int ysize, int ydir, int hudBox, int style, float scale, vec4_t hcolor );
-static void CG_MegaDrawChat( int xpos, int ypos, int xsize, int ysize, int ydir, int style, float scale, vec4_t hcolor );
-static void CG_MegaDrawCrosshair( float xpos, float ypos, float xsize, float ysize, int typeA, int typeB, vec4_t colorA, vec4_t colorB );
-static void CG_MegaDrawHudPart( float xpos, float ypos, float xsize, float ysize, qhandle_t hShader, int fcol, int frow, int fcol2, int frow2, vec4_t color);
-static void CG_MegaDrawBorder( float xpos, float ypos, float xsize, float ysize, int ptype, vec4_t color);*/
+void HUD_FuncPosLock( const char* str, int posLock, int xpos, int xoff, int ypos, int sizeY, int style,
+							float scaleX, float scaleY, vec4_t color, qboolean dcolor );
+void HUD_DrawTest( int xpos, int ypos, int style, float scale, vec4_t color );
+void HUD_DrawPrototypeNotice( int xpos, int ypos, int mtype, int style, vec4_t color );
+void HUD_MegaMiniMap( int xpos, int xoff, int ypos, int posLock, int align, float scaleX, float scaleY );
+void HUD_MegaDrawFPS( int xpos, int xoff, int ypos, int posLock, int align, int style,
+						float scaleX, float scaleY, const char* colorStr );
+int HUD_MegaDrawTimer( int xpos, int ypos, int style, float scale, vec4_t color );
+void HUD_MegaDrawDigitTimer( int xpos, int xoff, int ypos, int posLock, int align, int style,
+						float scaleX, float scaleY, const char* colorStr );
+void HUD_MegaDrawUPS( int xpos, int xoff, int ypos, int posLock, int align, int style,
+						float scaleX, float scaleY, const char* colorStr );
+void HUD_MegaDrawBriefScoreGrad( int xpos, int xoff, int ypos, int posLock, int align, int style,
+						float scaleX, float scaleY, int spos, vec4_t color );
+void HUD_MegaDrawMatchInfo( int xpos, int xoff, int ypos, int posLock, int align, int style,
+						float scaleX, float scaleY, const char* colorStr );
+void HUD_MegaDrawBriefScore( int xpos, int xoff, int ypos, int posLock, int align, int style,
+						float scaleX, float scaleY, vec4_t color );
+void HUD_MegaDrawFragInfo( int xpos, int ypos, int xsize, int ysize, int ydir, int align, int style, float scale );
+void HUD_MegaDrawHUDInfo( int xpos, int ypos, int xsize, int ysize, int ydir, int hudBox, int style, float scale );
+void HUD_MegaDrawChat( int xpos, int ypos, int xsize, int ysize, int ydir, int style, float scale, vec4_t hcolor );
+void HUD_MegaDrawCrosshair( float xpos, float ypos, float xsize, float ysize );
+void HUD_MegaDrawHudPart( float xpos, float ypos, float xsize, float ysize, qhandle_t hShader, int fcol, int frow, int fcol2, int frow2, vec4_t color);
+void HUD_MegaDrawBorder( float xpos, float ypos, float xsize, float ysize, int ptype, vec4_t color);
+void HUD_MegaDrawWeaponBarVert(int xPos, int xoff, int yPos, int align, int cPos, int bits);
+void HUD_MegaDrawAmmoBarVert(int xPos, int xoff, int yPos, int align, int cPos, int bits);
+void HUD_MegaDrawWeaponBarHor(int xPos, int yPos, int cPos, int count, int bits, float *color);
+void HUD_MegaDrawTestStat( int xpos, int ypos, int team, int style, float scale, vec4_t color );
+void HUD_MegaDrawWarmup( int xpos, int ypos, float scale);
+void HUD_MegaDrawShowKeys( int xpos, int xoff, int ypos, int align, float scale );
+void HUD_MegaDrawClientNum( int xpos, int ypos );
+void HUD_MegaDrawFollow( int xpos, int xoff, int ypos, int posLock, int align, int style,
+						float scaleX, float scaleY );
+void HUD_AddLagometerFrameInfo( void );
+void HUD_AddLagometerSnapshotInfo( snapshot_t *snap );
+void HUD_DrawDisconnect( void );
+void HUD_DrawLagometer( int x, int y, int w, int h, int align, vec4_t bgColor1, vec4_t bgColor2 );
+void HUD_MegaDrawTeamOverlay ( int xpos, int xoff, int ypos, int align, float scale );
+void HUD_MegaDrawStatusHealth( int xpos, int xoff, int ypos, int posLock, int align, int style,
+									float scaleX, float scaleY, int team );
+void HUD_MegaDrawStatusHealthIcon( int xpos, int xoff, int ypos, int posLock, int align, int style,
+									float scaleX, float scaleY, int team );
+void HUD_MegaDrawStatusArmor( int xpos, int xoff, int ypos, int posLock, int align, int style,
+									float scaleX, float scaleY, int team );
+void HUD_MegaDrawStatusArmorIcon( int xpos, int xoff, int ypos, int posLock, int align, int style,
+									float scaleX, float scaleY, int team );
+void HUD_MegaDrawStatusArmorTier( int xpos, int xoff, int ypos, int posLock, int align, int style,
+									float scaleX, float scaleY, int team );
+void HUD_MegaDrawStatusLevel( int xpos, int xoff, int ypos, int posLock, int align, int style,
+									float scaleX, float scaleY, int team );
+void HUD_MegaDrawStatusPhysics( int xpos, int xoff, int ypos, int posLock, int align, int style,
+									float scaleX, float scaleY, int team );
+void HUD_MegaDrawStatusKeycards( int xpos, int xoff, int ypos, int posLock, int align, int style,
+									float scaleX, float scaleY, int team );
+void HUD_MegaDrawStatusHoldable( int xpos, int xoff, int ypos, int posLock, int align, int style,
+									float scaleX, float scaleY, int team );
+void HUD_MegaDrawStatusItem( int xpos, int xoff, int ypos, int posLock, int align, int style,
+									float scaleX, float scaleY, int team );
+void HUD_MegaDrawVote( int xpos, int xoff, int ypos, int posLock, int align, int style,
+									float scaleX, float scaleY );
+void HUD_MegaRuleSet( int xpos, int ypos, float scale );
+void HUD_MegaObjective( int xpos, int ypos, float scale, int team );
+void HUD_DrawMetalHUD ( int posRight );
+void HUD_DrawPickupInfo( int xpos, int ypos, int align, int style, float scale );
 
+//
+// hud_megaboard.c
+//
+qboolean HUD_MegaDrawScoreBoard( int posCenter, int ty );
 
 //
 // cg_draw.c, cg_newDraw.c
@@ -2147,7 +2215,7 @@ void CG_LoadDeferredPlayers( void );
 //
 void CG_CheckEvents( centity_t *cent );
 const char	*CG_PlaceString( int rank );
-//static void CG_AddToFragInfo( int hudBox, const char *str );
+void CG_AddToFragInfo( const char *killer, qhandle_t deathIcon, const char *victom );
 void CG_EntityEvent( centity_t *cent, vec3_t position );
 void CG_PainEvent( centity_t *cent, int health );
 
@@ -2179,9 +2247,12 @@ void CG_RegisterItemVisuals( int itemNum );
 
 void CG_FireWeapon( centity_t *cent );
 void CG_RemoveWeapon( void );
+void CG_RemoveAmmo( void );
 void CG_MissileHitWall( int weapon, int clientNum, vec3_t origin, vec3_t dir, impactSound_t soundType );
 void CG_MissileHitPlayer( int weapon, vec3_t origin, vec3_t dir, int entityNum );
+void CG_ShotgunPattern( vec3_t origin, vec3_t origin2, int seed, int otherEntNum );
 void CG_ShotgunFire( entityState_t *es );
+void CG_SuperShotgunPattern( vec3_t origin, vec3_t origin2, int seed, int otherEntNum );
 void CG_SuperShotgunFire( entityState_t *es );
 void CG_Bullet( vec3_t origin, int sourceEntityNum, vec3_t normal, qboolean flesh, int fleshEntityNum );
 
@@ -2252,7 +2323,7 @@ void CG_Lightning_Discharge (vec3_t origin, int msec);  // The SARACEN's Lightni
 //
 void CG_ProcessSnapshots( void );
 //unlagged - early transitioning
-//void CG_TransitionEntity( centity_t *cent );
+void CG_TransitionEntity( centity_t *cent );
 //unlagged - early transitioning
 
 //
