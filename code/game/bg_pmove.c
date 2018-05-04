@@ -1994,13 +1994,13 @@ static void PM_Weapon( void ) {
 		break;
 	case WP_CHAINGUN:
 		if ( pm->waterlevel > 2 ) {
-			addTime = 60; // slow chaingun down while in water
+			addTime = 100; // slow chaingun down while in water (was 60)
 		} else {
-			addTime = 30; // don't bother with multiplier math;
+			addTime = 50; // don't bother with multiplier math (was 30)
 		}
 		break;
 	case WP_FLAMETHROWER:
-		addTime = 40;// / GAME_SPEED_MULTIPLIER;
+		addTime = 50;// / GAME_SPEED_MULTIPLIER (was 40);
 		break;
 	}
 

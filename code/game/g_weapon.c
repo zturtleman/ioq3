@@ -198,7 +198,7 @@ void SnapVectorTowards( vec3_t v, vec3_t to ) {
 }
 
 #define CHAINGUN_SPREAD		600
-#define CHAINGUN_DAMAGE		7
+#define CHAINGUN_DAMAGE		12 // was 7
 
 /*
 #define MACHINEGUN_SPREAD	200
