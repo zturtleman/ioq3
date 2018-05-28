@@ -1295,7 +1295,7 @@ void FinishSpawningItem( gentity_t *ent ) {
 			ent->r.contents = 0;
 			return;
 		}
-		if ( level.rs_matchMode == MM_ALLWEAPONS_MAXAMMO || level.rs_matchMode == MM_ROCKET_MANIAX ) {
+		if ( level.rs_matchMode == MM_ALLWEAPONS_MAXAMMO || level.rs_matchMode == MM_ROCKET_MANIAX || level.rs_matchMode == MM_RANDOM_LOADOUTS ) {
 			if (ent->item->giType == IT_AMMO) {
 				ent->s.eFlags |= EF_NODRAW;
 				ent->r.contents = 0;

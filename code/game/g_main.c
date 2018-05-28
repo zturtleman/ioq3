@@ -1389,7 +1389,7 @@ void G_RuleSetUpdate ( void ) {
 	}
 
 	switch ( g_ruleset.integer ) {
-		case 1:
+		case RSET_STANDARD:
 			/*level.rs_speed = 400;
 			level.rs_gravity = 1000;
 			level.rs_knockback = 1250;
@@ -1472,7 +1472,7 @@ void G_RuleSetUpdate ( void ) {
 
 			break;
 
-		case 2:
+		case RSET_HARDCORE:
 
 			level.rs_teamLocOverlay = 0;
 			level.rs_hitSound = 0;
@@ -1551,7 +1551,7 @@ void G_RuleSetUpdate ( void ) {
 
 			break;
 
-		case 3:
+		case RSET_NIGHTMARE:
 
 			level.rs_teamLocOverlay = 0;
 			level.rs_hitSound = 0;
@@ -1630,7 +1630,7 @@ void G_RuleSetUpdate ( void ) {
 
 			break;
 
-		case 4:
+		case RSET_ARENA:
 
 			level.rs_teamLocOverlay = 1;
 			level.rs_hitSound = 0;
@@ -1709,7 +1709,7 @@ void G_RuleSetUpdate ( void ) {
 
 			break;
 
-		case 5:
+		case RSET_ROCKETS:
 
 			level.rs_teamLocOverlay = 0;
 			level.rs_hitSound = 0;
@@ -1728,6 +1728,85 @@ void G_RuleSetUpdate ( void ) {
 			level.rs_enemyAttackLevel = 0.5;
 
 			level.rs_matchMode = MM_ROCKET_MANIAX;
+
+			if ( g_gametype.integer == GT_TOURNAMENT ) {
+				level.rs_timelimit = 10;
+				level.rs_mercylimit = 0; //20;
+				level.rs_overtime = 2;
+				level.rs_scorelimit = 0;
+				level.rs_friendlyFire = 1;
+				level.rs_weaponRespawn = 30;
+				level.rs_forceRespawn = 5;
+				level.rs_powerUps = 0;
+
+				level.rs_warmup = 10;
+			} else if ( g_gametype.integer == GT_AA1 ) {
+				level.rs_timelimit = 10;
+				level.rs_mercylimit = 0;
+				level.rs_overtime = 0;
+				level.rs_scorelimit = 0;
+				level.rs_friendlyFire = 1;
+				level.rs_weaponRespawn = 0;
+				level.rs_forceRespawn = 10;
+				level.rs_powerUps = 1;
+
+				level.rs_warmup = 10;
+			} else if ( g_gametype.integer == GT_TEAM ) {
+				G_TeamSizeRuleSet();
+
+				level.rs_mercylimit = 0; //50;
+				level.rs_overtime = 2;
+				level.rs_scorelimit = 0;
+				level.rs_friendlyFire = 1;
+				level.rs_weaponRespawn = 30;
+				level.rs_forceRespawn = 5;
+
+				level.rs_warmup = 10;
+			} else if ( g_gametype.integer == GT_CTF ) {
+				G_TeamSizeRuleSet();
+
+				level.rs_mercylimit = 0; //1000;
+				level.rs_overtime = 2;
+				level.rs_scorelimit = 0;
+				level.rs_friendlyFire = 1;
+				level.rs_weaponRespawn = 15;
+				level.rs_forceRespawn = 10;
+
+				level.rs_warmup = 10;
+			} else { /* GT_FFA... */
+				level.rs_timelimit = 10;
+				level.rs_mercylimit = 0;
+				level.rs_overtime = 0;
+				level.rs_scorelimit = 666; // was 35
+				level.rs_friendlyFire = 1;
+				level.rs_weaponRespawn = 10;
+				level.rs_forceRespawn = 10;
+				level.rs_powerUps = 1;
+
+				level.rs_warmup = 0;
+			}
+
+			break;
+
+		case RSET_RANDOM:
+
+			level.rs_teamLocOverlay = 0;
+			level.rs_hitSound = 0;
+			level.rs_randomSpawn = 1;
+			level.rs_scoreBalance = 1;
+
+			level.rs_quadMode = 0;
+			level.rs_selfDamage = 1;
+
+			level.rs_doubleAmmo = 0;
+			level.rs_keycardRespawn = 30;
+			level.rs_keycardDropable = 1;
+
+			level.rs_noArenaGrenades = 0;
+			level.rs_noArenaLightningGun = 0;
+			level.rs_enemyAttackLevel = 0.5;
+
+			level.rs_matchMode = MM_RANDOM_LOADOUTS;
 
 			if ( g_gametype.integer == GT_TOURNAMENT ) {
 				level.rs_timelimit = 10;
@@ -2086,7 +2165,7 @@ G_InitGame
 ============
 */
 void G_InitGame( int levelTime, int randomSeed, int restart ) {
-	int		i;
+	int		i, j, l, r;
 	qtime_t		timeStamp;
 
 	G_Printf ("------- Game Initialization -------\n");
@@ -2188,6 +2267,30 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	G_RuleSetUpdate();
 	level.rulesetViolated = qfalse;
 	level.c_extraDamage = 1.0f;
+
+	// random weapon loadouts
+	if ( level.rs_matchMode == MM_RANDOM_LOADOUTS ) {
+		/*j = 0;
+		level.randomLoadOuts = 0; // clear loadouts
+		l = (random() * 3) + 1;
+		if (l > 3)
+			l = 3;
+		for ( i=0 ; i<l ; i++ ) {
+			r = random() * 2;
+			j += (r & 1) + 2;
+			level.randomLoadOuts |= 1 << j;
+		}*/
+
+		level.randomLoadOuts = 0; // clear loadouts
+		l = (random() * 3) + 1;
+		if (l > 3)
+			l = 3;
+		for ( i=0 ; i<l ; i++ ) {
+			r = random() * 8;
+			r = (r & 7) + 2;
+			level.randomLoadOuts |= 1 << r;
+		}
+	}
 
 	// parse the key/value pairs and spawn gentities
 	G_SpawnEntitiesFromString();

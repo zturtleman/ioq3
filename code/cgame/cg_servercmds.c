@@ -1851,6 +1851,9 @@ static void CG_Stats ( int endGame ) {
 		case 5:
 			Com_Printf( "RULE SET: Rockets\n\n" );
 			break;
+		case 6:
+			Com_Printf( "RULE SET: Random\n\n" );
+			break;
 		default:
 			Com_Printf( "RULE SET: Custom\n\n" );
 	}
@@ -1878,6 +1881,9 @@ static void CG_Stats ( int endGame ) {
 			break;
 		case MM_ROCKET_MANIAX:
 			Com_Printf( "  MATCH MODE: Rocket-maniax\n" );
+			break;
+		case MM_RANDOM_LOADOUTS:
+			Com_Printf( "  MATCH MODE: Random Loadouts\n" );
 			break;
 		default:
 			Com_Printf( "  MATCH MODE: WTF???\n" );

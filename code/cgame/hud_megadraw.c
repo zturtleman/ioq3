@@ -4183,6 +4183,9 @@ void HUD_MegaRuleSet( int xpos, int ypos, float scale ) {
 		case 5:
 			s = "(Rockets)";
 			break;
+		case 6:
+			s = "(Random)";
+			break;
 		default:
 			s = "(Custom)";
 			break;
@@ -4232,6 +4235,9 @@ void HUD_MegaRuleSet( int xpos, int ypos, float scale ) {
 		break;
 	case MM_ROCKET_MANIAX:
 		s = "Rocket-maniax";
+		break;
+	case MM_RANDOM_LOADOUTS:
+		s = "Random Loadouts";
 		break;
 	default:
 		s = "WTF???";

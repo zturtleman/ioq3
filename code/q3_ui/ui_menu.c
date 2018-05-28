@@ -270,7 +270,7 @@ static void Main_MenuDraw( void ) {
 	y2 -= 18;
 	UI_DrawProportionalString( 320, y2, "Quake III Arena(c) 1999-2000, Id Software, Inc.", UI_CENTER|UI_SMALLFONT, color );
 	y2 -= 18;
-	UI_DrawProportionalString( 320, y2, "M.F.Arena(c) 2013-2017, MMP-Games.", UI_CENTER|UI_SMALLFONT, color );
+	UI_DrawProportionalString( 320, y2, "M.F.Arena(c) 2013-2018, MMP-Games.", UI_CENTER|UI_SMALLFONT, color );
 	y2 -= 24;
 	UI_DrawProportionalString( 320, y2, "DEMO      FOR MATURE AUDIENCES      DEMO", UI_CENTER, color );
 	y2 -= 72;

@@ -664,6 +664,8 @@ typedef struct {
 	int				rs_warmup;
 	int				rs_doWarmup; // no longer used
 
+	int				randomLoadOuts;
+
 	// mmp - time compulsion enforcement
 	float			c_extraDamage;
 	int				c_flagReturnDecrease;

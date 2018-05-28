@@ -1054,7 +1054,7 @@ void ClientUserinfoChanged( int clientNum ) {
 	// print scoreboards, display models, and play custom sounds
 	if (ent->r.svFlags & SVF_BOT)
 	{
-		if ( g_demonstrationMode.integer ) {
+		if ( g_demonstrationMode.integer & 1 ) {
 			s = va("n\\%s\\t\\%i\\model\\%s\\hmodel\\%s\\hc\\666\\w\\%i\\l\\%i\\skill\\%s\\tt\\%d\\tl\\%d\\c1\\%i\\c2\\%i\\c3\\%i",
 				client->pers.netname, team, model, headModel,
 				client->sess.wins, client->sess.losses,
@@ -1429,7 +1429,7 @@ void ClientSpawn(gentity_t *ent) {
 	int				index;
 	vec3_t			spawn_origin, spawn_angles;
 	gclient_t		*client;
-	int				i;
+	int				i, r;
 	int				healthSet;
 	int				rnd;
 	clientPersistant_t	saved;
@@ -1717,9 +1717,46 @@ void ClientSpawn(gentity_t *ent) {
 				client->ps.stats[STAT_ARMORTIER] = 1; // armor_body protection
 
 				client->disallowItemPickUp = 1; // meant to delay pickup on items when spawning on them
+			} else if ( level.rs_matchMode == MM_RANDOM_LOADOUTS ) {
+				// start health at 100
+				ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH];
+
+				if ( level.warmupTime ) {
+					// TODO: code the following better
+					client->ps.stats[STAT_WEAPONS] = ( 1 << WP_SHOTGUN );
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SUPER_SHOTGUN );
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_GRENADE_LAUNCHER );
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_ROCKET_LAUNCHER );
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_LIGHTNING );
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_PLASMAGUN );
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_CHAINGUN );
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_FLAMETHROWER );
+				} else {
+					client->ps.stats[STAT_WEAPONS] = level.randomLoadOuts; // give random loadouts
+				}
+
+				// give infinite ammo for a flashier demonstration
+				client->ps.ammo[AT_SHELLS] = -1;
+				client->ps.ammo[AT_ROCKETS] = -1;
+				client->ps.ammo[AT_CELLS] = -1;
+				client->ps.ammo[AT_BULLETS] = -1;
+				client->ps.ammo[AT_GAS] = -1;
 			} else {
 				// start health at 100
 				ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH];
+
+				// demostration mode, not used in normal play
+				if ( g_demonstrationMode.integer & 2 ) {
+					r = (random() * 7) + 2;
+					client->ps.stats[STAT_WEAPONS] = 1 << r; // give random starting weapon
+
+					// give infinite ammo for a flashier demonstration
+					client->ps.ammo[AT_SHELLS] = -1;
+					client->ps.ammo[AT_ROCKETS] = -1;
+					client->ps.ammo[AT_CELLS] = -1;
+					client->ps.ammo[AT_BULLETS] = -1;
+					client->ps.ammo[AT_GAS] = -1;
+				}
 			}
 		}
 	} else {
