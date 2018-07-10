@@ -54,6 +54,7 @@ extern void (APIENTRYP qglUnlockArraysEXT) (void);
 	GLE(void, Clear, GLbitfield mask) \
 	GLE(void, ClearStencil, GLint s) \
 	GLE(void, Color4f, GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha) \
+	GLE(void, Color4ub, GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha) \
 	GLE(void, ColorMask, GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) \
 	GLE(void, ColorPointer, GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) \
 	GLE(void, CopyTexSubImage2D, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height) \
@@ -97,14 +98,16 @@ extern void (APIENTRYP qglUnlockArraysEXT) (void);
 	GLE(void, VertexPointer, GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) \
 	GLE(void, Viewport, GLint x, GLint y, GLsizei width, GLsizei height) \
 
+// OpenGL ES 1.1 doesn't have these so implement them using the common functions.
+#define qglColor3f( r, g, b ) qglColor4f( r, g, b, 1.0f )
+#define qglColor4ubv( pointer ) qglColor4ub( (pointer)[0], (pointer)[1], (pointer)[2], (pointer)[3] )
+
 // OpenGL 1.0/1.1 but not OpenGL ES 1.x
 #define QGL_DESKTOP_1_1_PROCS \
 	GLE(void, ArrayElement, GLint i) \
 	GLE(void, Begin, GLenum mode) \
 	GLE(void, ClearDepth, GLclampd depth) \
 	GLE(void, ClipPlane, GLenum plane, const GLdouble *equation) \
-	GLE(void, Color3f, GLfloat red, GLfloat green, GLfloat blue) \
-	GLE(void, Color4ubv, const GLubyte *v) \
 	GLE(void, DepthRange, GLclampd near_val, GLclampd far_val) \
 	GLE(void, DrawBuffer, GLenum mode) \
 	GLE(void, End, void) \

@@ -222,6 +222,44 @@ static void GLimp_DetectAvailableModes(void)
 
 /*
 ===============
+OpenGL ES 1.1 compatibility
+===============
+*/
+static void GLimp_GLES_ClearDepth( GLclampd depth ) {
+	qglClearDepthf( depth );
+}
+
+static void GLimp_GLES_ClipPlane( GLenum plane, const GLdouble *equation ) {
+	GLfloat values[4];
+	values[0] = equation[0];
+	values[1] = equation[1];
+	values[2] = equation[2];
+	values[3] = equation[3];
+	qglClipPlanef( plane, values );
+}
+
+static void GLimp_GLES_DepthRange( GLclampd near_val, GLclampd far_val ) {
+	qglDepthRangef( near_val, far_val );
+}
+
+static void GLimp_GLES_DrawBuffer( GLenum mode ) {
+	// unsupported
+}
+
+static void GLimp_GLES_Frustum( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val, GLdouble far_val ) {
+	qglFrustumf( left, right, bottom, top, near_val, far_val );
+}
+
+static void GLimp_GLES_Ortho( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val, GLdouble far_val ) {
+	qglOrthof( left, right, bottom, top, near_val, far_val );
+}
+
+static void GLimp_GLES_PolygonMode( GLenum face, GLenum mode ) {
+	// unsupported
+}
+
+/*
+===============
 GLimp_GetProcAddresses
 
 Get addresses for OpenGL functions.
@@ -271,10 +309,16 @@ static qboolean GLimp_GetProcAddresses( void ) {
 		QGL_DESKTOP_1_1_PROCS;
 	} else if ( qglesMajorVersion == 1 && qglesMinorVersion >= 1 ) {
 		// OpenGL ES 1.1 (2.0 is not backward compatible)
+		// qglBegin() and related functions will be NULL.
 		QGL_1_1_PROCS;
 		QGL_ES_1_1_PROCS;
-		// error so this doesn't segfault due to NULL desktop GL functions being used
-		Com_Error( ERR_FATAL, "Unsupported OpenGL Version: %s\n", version );
+		qglClearDepth = GLimp_GLES_ClearDepth;
+		qglClipPlane = GLimp_GLES_ClipPlane;
+		qglDepthRange = GLimp_GLES_DepthRange;
+		qglDrawBuffer = GLimp_GLES_DrawBuffer;
+		qglFrustum = GLimp_GLES_Frustum;
+		qglOrtho = GLimp_GLES_Ortho;
+		qglPolygonMode = GLimp_GLES_PolygonMode;
 	} else {
 		Com_Error( ERR_FATAL, "Unsupported OpenGL Version: %s\n", version );
 	}
@@ -633,6 +677,16 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder, qbool
 		}
 		else
 		{
+			int profileMask;
+
+			// Only OpenGL ES 1.1 is supported by the opengl1 renderer
+			SDL_GL_GetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, &profileMask );
+			if ( profileMask == SDL_GL_CONTEXT_PROFILE_ES )
+			{
+				SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 1 );
+				SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
+			}
+
 			SDL_glContext = NULL;
 		}
 
@@ -764,8 +818,8 @@ static void GLimp_InitExtensions( void )
 	glConfig.textureCompression = TC_NONE;
 
 	// GL_EXT_texture_compression_s3tc
-	if ( SDL_GL_ExtensionSupported( "GL_ARB_texture_compression" ) &&
-	     SDL_GL_ExtensionSupported( "GL_EXT_texture_compression_s3tc" ) )
+	if ( ( QGLES_VERSION_ATLEAST( 2, 0 ) || SDL_GL_ExtensionSupported( "GL_ARB_texture_compression" ) )
+	     && SDL_GL_ExtensionSupported( "GL_EXT_texture_compression_s3tc" ) )
 	{
 		if ( r_ext_compressed_textures->value )
 		{
@@ -783,6 +837,7 @@ static void GLimp_InitExtensions( void )
 	}
 
 	// GL_S3_s3tc ... legacy extension before GL_EXT_texture_compression_s3tc.
+	// (not in OpenGL ES)
 	if (glConfig.textureCompression == TC_NONE)
 	{
 		if ( SDL_GL_ExtensionSupported( "GL_S3_s3tc" ) )
@@ -806,7 +861,7 @@ static void GLimp_InitExtensions( void )
 
 	// GL_EXT_texture_env_add
 	glConfig.textureEnvAddAvailable = qfalse;
-	if ( SDL_GL_ExtensionSupported( "GL_EXT_texture_env_add" ) )
+	if ( QGLES_VERSION_ATLEAST( 1, 0 ) || SDL_GL_ExtensionSupported( "GL_EXT_texture_env_add" ) )
 	{
 		if ( r_ext_texture_env_add->integer )
 		{
@@ -828,13 +883,22 @@ static void GLimp_InitExtensions( void )
 	qglMultiTexCoord2fARB = NULL;
 	qglActiveTextureARB = NULL;
 	qglClientActiveTextureARB = NULL;
-	if ( SDL_GL_ExtensionSupported( "GL_ARB_multitexture" ) )
+	if ( QGLES_VERSION_ATLEAST( 1, 0 ) || SDL_GL_ExtensionSupported( "GL_ARB_multitexture" ) )
 	{
 		if ( r_ext_multitexture->value )
 		{
-			qglMultiTexCoord2fARB = SDL_GL_GetProcAddress( "glMultiTexCoord2fARB" );
-			qglActiveTextureARB = SDL_GL_GetProcAddress( "glActiveTextureARB" );
-			qglClientActiveTextureARB = SDL_GL_GetProcAddress( "glClientActiveTextureARB" );
+			if ( QGLES_VERSION_ATLEAST( 1, 0 ) )
+			{
+				qglMultiTexCoord2fARB = NULL;
+				qglActiveTextureARB = SDL_GL_GetProcAddress( "glActiveTexture" );
+				qglClientActiveTextureARB = SDL_GL_GetProcAddress( "glClientActiveTexture" );
+			}
+			else
+			{
+				qglMultiTexCoord2fARB = SDL_GL_GetProcAddress( "glMultiTexCoord2fARB" );
+				qglActiveTextureARB = SDL_GL_GetProcAddress( "glActiveTextureARB" );
+				qglClientActiveTextureARB = SDL_GL_GetProcAddress( "glClientActiveTextureARB" );
+			}
 
 			if ( qglActiveTextureARB )
 			{
@@ -865,6 +929,7 @@ static void GLimp_InitExtensions( void )
 	}
 
 	// GL_EXT_compiled_vertex_array
+	// (not in OpenGL ES)
 	if ( SDL_GL_ExtensionSupported( "GL_EXT_compiled_vertex_array" ) )
 	{
 		if ( r_ext_compiled_vertex_array->value )

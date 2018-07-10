@@ -744,6 +744,11 @@ static void Upload32( unsigned *data,
 		}
 	}
 
+	// FIXME: OpenGL ES 1/2 doesn't convert between formats.
+	if ( qglesMajorVersion == 1 || qglesMajorVersion == 2 ) {
+		internalFormat = GL_RGBA;
+	}
+
 	// copy or resample data as appropriate for first MIP level
 	if ( ( scaled_width == width ) && 
 		( scaled_height == height ) ) {

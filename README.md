@@ -124,6 +124,24 @@ Makefile.local:
 The defaults for these variables differ depending on the target platform.
 
 
+# OpenGL ES support
+
+ioquake3's default renderer (cl_renderer opengl2) does not support OpenGL ES.
+
+If you build ioquake3 on a platform that uses OpenGL ES (such as Raspberry Pi),
+run the game using `./build/release-*/ioquake3.* +set cl_renderer opengl1`.
+
+ioquake3's opengl1 renderer supports OpenGL 1.2+ and OpenGL ES 1.1 with a few limitations.
+When using OpenGL ES 1.1 the opengl1 renderer does not support r_flares[1],
+r_anaglyphMode[2], r_stereoEnabled[2], r_drawBuffer GL_FRONT[2], r_measureOverdraw[3],
+and r_primitives 1/3[4].
+
+* [1] Requires glReadPixels GL_DEPTH_COMPONENT
+* [2] Requires glDrawBuffer with buffer other than GL_BACK
+* [3] Requires glReadPixels GL_STENCIL_INDEX
+* [4] Requires glBegin
+
+
 # Console
 
 ## New cvars
