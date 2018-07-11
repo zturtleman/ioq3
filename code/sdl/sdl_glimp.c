@@ -225,11 +225,11 @@ static void GLimp_DetectAvailableModes(void)
 OpenGL ES 1.1 compatibility
 ===============
 */
-static void GLimp_GLES_ClearDepth( GLclampd depth ) {
+static void GLAPIENTRY GLimp_GLES_ClearDepth( GLclampd depth ) {
 	qglClearDepthf( depth );
 }
 
-static void GLimp_GLES_ClipPlane( GLenum plane, const GLdouble *equation ) {
+static void GLAPIENTRY GLimp_GLES_ClipPlane( GLenum plane, const GLdouble *equation ) {
 	GLfloat values[4];
 	values[0] = equation[0];
 	values[1] = equation[1];
@@ -238,23 +238,23 @@ static void GLimp_GLES_ClipPlane( GLenum plane, const GLdouble *equation ) {
 	qglClipPlanef( plane, values );
 }
 
-static void GLimp_GLES_DepthRange( GLclampd near_val, GLclampd far_val ) {
+static void GLAPIENTRY GLimp_GLES_DepthRange( GLclampd near_val, GLclampd far_val ) {
 	qglDepthRangef( near_val, far_val );
 }
 
-static void GLimp_GLES_DrawBuffer( GLenum mode ) {
+static void GLAPIENTRY GLimp_GLES_DrawBuffer( GLenum mode ) {
 	// unsupported
 }
 
-static void GLimp_GLES_Frustum( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val, GLdouble far_val ) {
+static void GLAPIENTRY GLimp_GLES_Frustum( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val, GLdouble far_val ) {
 	qglFrustumf( left, right, bottom, top, near_val, far_val );
 }
 
-static void GLimp_GLES_Ortho( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val, GLdouble far_val ) {
+static void GLAPIENTRY GLimp_GLES_Ortho( GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val, GLdouble far_val ) {
 	qglOrthof( left, right, bottom, top, near_val, far_val );
 }
 
-static void GLimp_GLES_PolygonMode( GLenum face, GLenum mode ) {
+static void GLAPIENTRY GLimp_GLES_PolygonMode( GLenum face, GLenum mode ) {
 	// unsupported
 }
 
