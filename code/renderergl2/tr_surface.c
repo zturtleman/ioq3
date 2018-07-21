@@ -403,46 +403,35 @@ static void RB_SurfaceVertsAndIndexes( int numVerts, srfVert_t *verts, int numIn
 	tess.numVertexes += numVerts;
 }
 
-static qboolean RB_SurfaceVaoCached(int numVerts, srfVert_t *verts, int numIndexes, glIndex_t *indexes, int dlightBits, int pshadowBits)
+static qboolean RB_SurfaceVao(vao_t *vao, int numVerts, int numIndexes, int firstIndex, int dlightBits, int pshadowBits, qboolean shaderCheck)
 {
-	qboolean recycleVertexBuffer = qfalse;
-	qboolean recycleIndexBuffer = qfalse;
-	qboolean endSurface = qfalse;
+	if (!vao)
+		return qfalse;
 
-	if (!(!ShaderRequiresCPUDeforms(tess.shader) && !tess.shader->isSky && !tess.shader->isPortal))
+	if (shaderCheck && !(!ShaderRequiresCPUDeforms(tess.shader) && !tess.shader->isSky && !tess.shader->isPortal))
 		return qfalse;
 
 	if (!numIndexes || !numVerts)
 		return qfalse;
 
-	VaoCache_BindVao();
+	//RB_CheckVao(vao);
+
+	RB_EndSurface();
+	RB_BeginSurface(tess.shader, tess.fogNum, tess.cubemapIndex);
+
+	R_BindVao(vao);
+
+	tess.firstIndex = firstIndex;
+
+	// ZTM: FIXME: I added this but it errors, maybe it's fine if it's just affecting drawing VBO?
+	//RB_CHECKOVERFLOW( numVerts, numIndexes );
 
 	tess.dlightBits |= dlightBits;
 	tess.pshadowBits |= pshadowBits;
 
-	VaoCache_CheckAdd(&endSurface, &recycleVertexBuffer, &recycleIndexBuffer, numVerts, numIndexes);
-
-	if (endSurface)
-	{
-		RB_EndSurface();
-		RB_BeginSurface(tess.shader, tess.fogNum, tess.cubemapIndex);
-	}
-
-	if (recycleVertexBuffer)
-		VaoCache_RecycleVertexBuffer();
-
-	if (recycleIndexBuffer)
-		VaoCache_RecycleIndexBuffer();
-
-	if (!tess.numVertexes)
-		VaoCache_InitQueue();
-
-	VaoCache_AddSurface(verts, numVerts, indexes, numIndexes);
-
 	tess.numIndexes += numIndexes;
 	tess.numVertexes += numVerts;
 	tess.useInternalVao = qfalse;
-	tess.useCacheVao = qtrue;
 
 	return qtrue;
 }
@@ -454,8 +443,8 @@ RB_SurfaceTriangles
 =============
 */
 static void RB_SurfaceTriangles( srfBspSurface_t *srf ) {
-	if (RB_SurfaceVaoCached(srf->numVerts, srf->verts, srf->numIndexes,
-		srf->indexes, srf->dlightBits, srf->pshadowBits))
+	if( RB_SurfaceVao (srf->vao, srf->numVerts, srf->numIndexes,
+				srf->firstIndex, srf->dlightBits, srf->pshadowBits, qtrue ) )
 	{
 		return;
 	}
@@ -889,8 +878,8 @@ RB_SurfaceFace
 ==============
 */
 static void RB_SurfaceFace( srfBspSurface_t *srf ) {
-	if (RB_SurfaceVaoCached(srf->numVerts, srf->verts, srf->numIndexes,
-		srf->indexes, srf->dlightBits, srf->pshadowBits))
+	if( RB_SurfaceVao (srf->vao, srf->numVerts, srf->numIndexes,
+				srf->firstIndex, srf->dlightBits, srf->pshadowBits, qtrue ) )
 	{
 		return;
 	}
@@ -957,8 +946,8 @@ static void RB_SurfaceGrid( srfBspSurface_t *srf ) {
 	int     pshadowBits;
 	//int		*vDlightBits;
 
-	if (RB_SurfaceVaoCached(srf->numVerts, srf->verts, srf->numIndexes,
-		srf->indexes, srf->dlightBits, srf->pshadowBits))
+	if( RB_SurfaceVao (srf->vao, srf->numVerts, srf->numIndexes,
+				srf->firstIndex, srf->dlightBits, srf->pshadowBits, qtrue ) )
 	{
 		return;
 	}
@@ -1206,6 +1195,12 @@ static void RB_SurfaceFlare(srfFlare_t *surf)
 		RB_AddFlare(surf, tess.fogNum, surf->origin, surf->color, surf->normal);
 }
 
+static void RB_SurfaceVaoMesh(srfBspSurface_t * srf)
+{
+	RB_SurfaceVao (srf->vao, srf->numVerts, srf->numIndexes, srf->firstIndex,
+			srf->dlightBits, srf->pshadowBits, qfalse );
+}
+
 void RB_SurfaceVaoMdvMesh(srfVaoMdvMesh_t * surface)
 {
 	//mdvModel_t     *mdvModel;
@@ -1312,6 +1307,7 @@ void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {
 	(void(*)(void*))RB_IQMSurfaceAnim,		// SF_IQM,
 	(void(*)(void*))RB_SurfaceFlare,		// SF_FLARE,
 	(void(*)(void*))RB_SurfaceEntity,		// SF_ENTITY
+	(void(*)(void*))RB_SurfaceVaoMesh,	    // SF_VAO_MESH,
 	(void(*)(void*))RB_SurfaceVaoMdvMesh,   // SF_VAO_MDVMESH
 	(void(*)(void*))RB_IQMSurfaceAnimVao,   // SF_VAO_IQM
 };

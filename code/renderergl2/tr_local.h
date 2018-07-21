@@ -864,6 +864,7 @@ typedef enum {
 	SF_IQM,
 	SF_FLARE,
 	SF_ENTITY,				// beams, rails, lightning, etc that can be determined by entity
+	SF_VAO_MESH,
 	SF_VAO_MDVMESH,
 	SF_VAO_IQM,
 
@@ -917,7 +918,7 @@ typedef struct
 
 #define srfVert_t_cleared(x) srfVert_t (x) = {{0, 0, 0}, {0, 0}, {0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
 
-// srfBspSurface_t covers SF_GRID, SF_TRIANGLES, and SF_POLY
+// srfBspSurface_t covers SF_GRID, SF_TRIANGLES, SF_POLY, and SF_VAO_MESH
 typedef struct srfBspSurface_s
 {
 	surfaceType_t   surfaceType;
@@ -939,6 +940,13 @@ typedef struct srfBspSurface_s
 	// vertexes
 	int             numVerts;
 	srfVert_t      *verts;
+
+	// BSP VBO offsets
+	int             firstVert;
+	int             firstIndex;
+
+	// static render data
+	vao_t          *vao;
 	
 	// SF_GRID specific variables after here
 
@@ -1169,8 +1177,15 @@ typedef struct {
 	int         *surfacesDlightBits;
 	int			*surfacesPshadowBits;
 
+	int			numMergedSurfaces;
+	msurface_t	*mergedSurfaces;
+	int         *mergedSurfacesViewCount;
+	int         *mergedSurfacesDlightBits;
+	int			*mergedSurfacesPshadowBits;
+
 	int			nummarksurfaces;
 	int         *marksurfaces;
+	int         *viewSurfaces;
 
 	int			numfogs;
 	fog_t		*fogs;
@@ -1768,6 +1783,8 @@ extern	cvar_t	*r_skipBackEnd;
 
 extern	cvar_t	*r_anaglyphMode;
 
+extern  cvar_t  *r_mergeLeafSurfaces;
+
 extern  cvar_t  *r_externalGLSL;
 
 extern  cvar_t  *r_hdr;
@@ -2053,7 +2070,6 @@ typedef struct shaderCommands_s
 	void *attribPointers[ATTR_INDEX_COUNT];
 	vao_t       *vao;
 	qboolean    useInternalVao;
-	qboolean    useCacheVao;
 
 	stageVars_t	svars QALIGN(16);
 
@@ -2223,15 +2239,6 @@ void            R_VaoList_f(void);
 
 void            RB_UpdateTessVao(unsigned int attribBits);
 
-void VaoCache_Commit(void);
-void VaoCache_DrawElements(int numIndexes, int firstIndex);
-void VaoCache_Init(void);
-void VaoCache_BindVao(void);
-void VaoCache_CheckAdd(qboolean *endSurface, qboolean *recycleVertexBuffer, qboolean *recycleIndexBuffer, int numVerts, int numIndexes);
-void VaoCache_RecycleVertexBuffer(void);
-void VaoCache_RecycleIndexBuffer(void);
-void VaoCache_InitQueue(void);
-void VaoCache_AddSurface(srfVert_t *verts, int numVerts, glIndex_t *indexes, int numIndexes);
 
 /*
 ============================================================

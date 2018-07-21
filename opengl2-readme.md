@@ -307,6 +307,11 @@ Cvars for the sunlight and cascaded shadow maps:
 
 Cvars that you probably don't care about or shouldn't mess with:
 
+*  `r_mergeLeafSurfaces`            - Merge surfaces that share common materials
+                                   and a common leaf.  Speeds up rendering.
+                                     0 - Don't.
+                                     1 - Do. (default)
+
 *  `r_depthPrepass`                 - Do a depth-only pass before rendering.
                                    Speeds up rendering in cases where advanced
                                    features are used.  Required for

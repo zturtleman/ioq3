@@ -40,14 +40,9 @@ R_DrawElements
 
 void R_DrawElements( int numIndexes, int firstIndex )
 {
-	if (tess.useCacheVao)
-	{
-		VaoCache_DrawElements(numIndexes, firstIndex);
-	}
-	else
-	{
-		qglDrawElements(GL_TRIANGLES, numIndexes, GL_INDEX_TYPE, BUFFER_OFFSET(firstIndex * sizeof(glIndex_t)));
-	}
+	//Com_Printf("DEBUG: R_DrawElements: vao %s, %d numIndexes, %d firstIndex\n", glState.currentVao ? glState.currentVao->name : "NULL", numIndexes, firstIndex );
+
+	qglDrawElements(GL_TRIANGLES, numIndexes, GL_INDEX_TYPE, BUFFER_OFFSET(firstIndex * sizeof(glIndex_t)));
 }
 
 
@@ -169,7 +164,6 @@ void RB_BeginSurface( shader_t *shader, int fogNum, int cubemapIndex ) {
 	tess.numPasses = state->numUnfoggedPasses;
 	tess.currentStageIteratorFunc = state->optimalStageIteratorFunc;
 	tess.useInternalVao = qtrue;
-	tess.useCacheVao = qfalse;
 
 	tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
 	if (tess.shader->clampTime && tess.shaderTime >= tess.shader->clampTime) {
@@ -1649,12 +1643,6 @@ void RB_EndSurface( void ) {
 		return;
 	}
 
-	if (tess.useCacheVao)
-	{
-		// upload indexes now
-		VaoCache_Commit();
-	}
-
 	//
 	// update performance counters
 	//
@@ -1681,7 +1669,6 @@ void RB_EndSurface( void ) {
 	tess.numIndexes = 0;
 	tess.numVertexes = 0;
 	tess.firstIndex = 0;
-	tess.useCacheVao = qfalse;
 	tess.useInternalVao = qfalse;
 
 	GLimp_LogComment( "----------\n" );

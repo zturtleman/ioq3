@@ -213,6 +213,7 @@ static int R_DlightSurface( msurface_t *surf, int dlightBits ) {
 		case SF_FACE:
 		case SF_GRID:
 		case SF_TRIANGLES:
+		case SF_VAO_MESH:
 			((srfBspSurface_t *)surf->data)->dlightBits = dlightBits;
 			break;
 
@@ -298,6 +299,7 @@ static int R_PshadowSurface( msurface_t *surf, int pshadowBits ) {
 		case SF_FACE:
 		case SF_GRID:
 		case SF_TRIANGLES:
+		case SF_VAO_MESH:
 			((srfBspSurface_t *)surf->data)->pshadowBits = pshadowBits;
 			break;
 
@@ -559,23 +561,43 @@ static void R_RecursiveWorldNode( mnode_t *node, uint32_t planeBits, uint32_t dl
 			tr.viewParms.visBounds[1][2] = node->maxs[2];
 		}
 
-		// add surfaces
-		view = tr.world->marksurfaces + node->firstmarksurface;
+		// add merged and unmerged surfaces
+		if (tr.world->viewSurfaces && !r_nocurves->integer)
+			view = tr.world->viewSurfaces + node->firstmarksurface;
+		else
+			view = tr.world->marksurfaces + node->firstmarksurface;
 
 		c = node->nummarksurfaces;
 		while (c--) {
 			// just mark it as visible, so we don't jump out of the cache derefencing the surface
 			surf = *view;
-			if (tr.world->surfacesViewCount[surf] != tr.viewCount)
+			if (surf < 0)
 			{
-				tr.world->surfacesViewCount[surf] = tr.viewCount;
-				tr.world->surfacesDlightBits[surf] = dlightBits;
-				tr.world->surfacesPshadowBits[surf] = pshadowBits;
+				if (tr.world->mergedSurfacesViewCount[-surf - 1] != tr.viewCount)
+				{
+					tr.world->mergedSurfacesViewCount[-surf - 1]  = tr.viewCount;
+					tr.world->mergedSurfacesDlightBits[-surf - 1] = dlightBits;
+					tr.world->mergedSurfacesPshadowBits[-surf - 1] = pshadowBits;
+				}
+				else
+				{
+					tr.world->mergedSurfacesDlightBits[-surf - 1] |= dlightBits;
+					tr.world->mergedSurfacesPshadowBits[-surf - 1] |= pshadowBits;
+				}
 			}
 			else
 			{
-				tr.world->surfacesDlightBits[surf] |= dlightBits;
-				tr.world->surfacesPshadowBits[surf] |= pshadowBits;
+				if (tr.world->surfacesViewCount[surf] != tr.viewCount)
+				{
+					tr.world->surfacesViewCount[surf] = tr.viewCount;
+					tr.world->surfacesDlightBits[surf] = dlightBits;
+					tr.world->surfacesPshadowBits[surf] = pshadowBits;
+				}
+				else
+				{
+					tr.world->surfacesDlightBits[surf] |= dlightBits;
+					tr.world->surfacesPshadowBits[surf] |= pshadowBits;
+				}
 			}
 			view++;
 		}
@@ -802,6 +824,14 @@ void R_AddWorldSurfaces (void) {
 
 			R_AddWorldSurface( tr.world->surfaces + i, tr.world->surfacesDlightBits[i], tr.world->surfacesPshadowBits[i] );
 			tr.refdef.dlightMask |= tr.world->surfacesDlightBits[i];
+		}
+		for (i = 0; i < tr.world->numMergedSurfaces; i++)
+		{
+			if (tr.world->mergedSurfacesViewCount[i] != tr.viewCount)
+				continue;
+
+			R_AddWorldSurface( tr.world->mergedSurfaces + i, tr.world->mergedSurfacesDlightBits[i], tr.world->mergedSurfacesPshadowBits[i] );
+			tr.refdef.dlightMask |= tr.world->mergedSurfacesDlightBits[i];
 		}
 
 		tr.refdef.dlightMask = ~tr.refdef.dlightMask;
