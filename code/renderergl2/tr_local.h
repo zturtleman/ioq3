@@ -1423,6 +1423,9 @@ typedef struct {
 
 	qboolean vertexArrayObject;
 	qboolean directStateAccess;
+
+	int maxVertexAttribs;
+	qboolean gpuVertexAnimation;
 } glRefConfig_t;
 
 
