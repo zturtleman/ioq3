@@ -126,11 +126,6 @@ The defaults for these variables differ depending on the target platform.
 
 # OpenGL ES support
 
-ioquake3's default renderer (cl_renderer opengl2) does not support OpenGL ES.
-
-If you build ioquake3 on a platform that uses OpenGL ES (such as Raspberry Pi),
-run the game using `./build/release-*/ioquake3.* +set cl_renderer opengl1`.
-
 The `r_useOpenGLES` cvar controls whether to use OpenGL or OpenGL ES API.
 Set to -1 for auto (default), 0 for OpenGL, and 1 for OpenGL ES. It should be
 set using command line arguments, `ioquake3 +set r_useOpenGLES 0`.
@@ -139,6 +134,11 @@ ioquake3's opengl1 renderer supports OpenGL 1.1+ and OpenGL ES 1.1 with a few li
 When using OpenGL ES the opengl1 renderer does not support `r_flares`[1],
 `r_measureOverdraw`[2], `r_anaglyphMode`[3], `r_stereoEnabled`[3], `r_drawBuffer GL_FRONT`[3],
 and `r_primitives 1/3`[4].
+
+ioquake3's opengl2 renderer supports OpenGL 2.0+ and OpenGL ES 2.0+ with a few limitations.
+When using OpenGL ES the opengl2 renderer requires `GL_NV_read_depth` and `GL_NV_read_stencil`
+to support `r_flares`[1] and `r_measureOverdraw`[2] respectively. It does not support `r_anaglyphMode`[3],
+`r_stereoEnabled`[3], and `r_drawBuffer GL_FRONT`[3].
 
 * [1] Requires glReadPixels GL_DEPTH_COMPONENT
 * [2] Requires glReadPixels GL_STENCIL_INDEX

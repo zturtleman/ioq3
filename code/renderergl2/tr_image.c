@@ -1946,7 +1946,7 @@ static void RawImage_UploadTexture(GLuint texture, byte *data, int x, int y, int
 {
 	GLenum dataFormat, dataType;
 	qboolean rgtc = internalFormat == GL_COMPRESSED_RG_RGTC2;
-	qboolean rgba8 = picFormat == GL_RGBA8 || picFormat == GL_SRGB8_ALPHA8_EXT;
+	qboolean rgba8 = picFormat == GL_RGBA || picFormat == GL_RGBA8 || picFormat == GL_SRGB8_ALPHA8_EXT;
 	qboolean rgba = rgba8 || picFormat == GL_RGBA16;
 	qboolean mipmap = !!(flags & IMGFLAG_MIPMAP);
 	int size, miplevel;
@@ -2022,7 +2022,7 @@ static void Upload32(byte *data, int x, int y, int width, int height, GLenum pic
 	imgType_t type = image->type;
 	imgFlags_t flags = image->flags;
 	GLenum internalFormat = image->internalFormat;
-	qboolean rgba8 = picFormat == GL_RGBA8 || picFormat == GL_SRGB8_ALPHA8_EXT;
+	qboolean rgba8 = picFormat == GL_RGBA || picFormat == GL_RGBA8 || picFormat == GL_SRGB8_ALPHA8_EXT;
 	qboolean mipmap = !!(flags & IMGFLAG_MIPMAP) && (rgba8 || numMips > 1);
 	qboolean cubemap = !!(flags & IMGFLAG_CUBEMAP);
 
@@ -2135,7 +2135,16 @@ image_t *R_CreateImage2( const char *name, byte *pic, int width, int height, GLe
 	else
 		glWrapClampMode = GL_REPEAT;
 
-	if (!internalFormat)
+	// FIXME: OpenGL ES doesn't convert between formats.
+	// OpenGL ES 2.0 uses GL_RGBA instead of GL_RGBA8, other formats need to be converted like in opengl1 renderer
+	if (qglesMajorVersion)
+	{
+		if ( internalFormat && internalFormat != GL_RGBA8 )
+			Com_Printf( "WARNING: Tried to create image '%s' with internal format 0x%X (need to convert format for OpenGL ES)\n", name, internalFormat );
+
+		internalFormat = GL_RGBA;
+	}
+	else if (!internalFormat)
 		internalFormat = RawImage_GetFormat(pic, width * height, picFormat, isLightmap, image->type, image->flags);
 
 	image->internalFormat = internalFormat;

@@ -747,9 +747,20 @@ void RE_UploadCinematic (int w, int h, int cols, int rows, const byte *data, int
 
 	// if the scratchImage isn't in the format we want, specify it as a new texture
 	if ( cols != tr.scratchImage[client]->width || rows != tr.scratchImage[client]->height ) {
+		int internalFormat;
+
 		tr.scratchImage[client]->width = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
-		qglTextureImage2DEXT(texture, GL_TEXTURE_2D, 0, GL_RGB8, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+		// FIXME: OpenGL ES 1/2/3 doesn't convert RGBA to RGB.
+		if ( qglesMajorVersion >= 1 ) {
+			internalFormat = GL_RGBA;
+		} else {
+			internalFormat = GL_RGB8;
+		}
+
+		qglTextureImage2DEXT(texture, GL_TEXTURE_2D, 0, internalFormat, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
 		qglTextureParameterfEXT(texture, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTextureParameterfEXT(texture, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		qglTextureParameterfEXT(texture, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -1144,14 +1155,14 @@ const void	*RB_DrawSurfs( const void *data ) {
 			if (glRefConfig.occlusionQuery)
 			{
 				tr.sunFlareQueryActive[tr.sunFlareQueryIndex] = qtrue;
-				qglBeginQuery(GL_SAMPLES_PASSED, tr.sunFlareQuery[tr.sunFlareQueryIndex]);
+				qglBeginQuery(glRefConfig.occlusionQueryTarget, tr.sunFlareQuery[tr.sunFlareQueryIndex]);
 			}
 
 			RB_DrawSun(0.3, tr.sunFlareShader);
 
 			if (glRefConfig.occlusionQuery)
 			{
-				qglEndQuery(GL_SAMPLES_PASSED);
+				qglEndQuery(glRefConfig.occlusionQueryTarget);
 			}
 
 			FBO_Bind(oldFbo);
