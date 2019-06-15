@@ -1333,6 +1333,7 @@ static	void R_LoadSubmodels( lump_t *l ) {
 			out->bounds[1][j] = LittleFloat (in->maxs[j]);
 		}
 
+		// FIXME: range check
 		out->firstSurface = s_worldData.surfaces + LittleLong( in->firstSurface );
 		out->numSurfaces = LittleLong( in->numSurfaces );
 	}
@@ -1359,6 +1360,8 @@ static	void R_SetParent (mnode_t *node, mnode_t *parent)
 /*
 =================
 R_LoadNodesAndLeafs
+
+FIXME: Add range checks
 =================
 */
 static	void R_LoadNodesAndLeafs (lump_t *nodeLump, lump_t *leafLump) {
@@ -1484,6 +1487,9 @@ static	void R_LoadMarksurfaces (lump_t *l)
 	for ( i=0 ; i<count ; i++)
 	{
 		j = LittleLong(in[i]);
+		if ( j < 0 || j >= s_worldData.numsurfaces ) {
+			ri.Error (ERR_DROP, "R_LoadMarksurfaces: Invalid surface %d >= %d", j, s_worldData.numsurfaces);
+		}
 		out[i] = s_worldData.surfaces + j;
 	}
 }
@@ -1581,7 +1587,7 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump ) {
 
 		firstSide = LittleLong( brush->firstSide );
 
-			if ( (unsigned)firstSide > sidesCount - 6 ) {
+		if ( (unsigned)firstSide > sidesCount - 6 ) {
 			ri.Error( ERR_DROP, "fog brush sideNumber out of range" );
 		}
 
@@ -1702,13 +1708,14 @@ void R_LoadEntities( lump_t *l ) {
 	w->lightGridSize[1] = 64;
 	w->lightGridSize[2] = 128;
 
-	p = (char *)(fileBase + l->fileofs);
-
 	// store for reference by the cgame
+	// this should already be NUL terminated
 	w->entityString = ri.Hunk_Alloc( l->filelen + 1, h_low );
-	strcpy( w->entityString, p );
+	Com_Memcpy( w->entityString, fileBase + l->fileofs, l->filelen );
+	w->entityString[l->filelen] = 0;
 	w->entityParsePoint = w->entityString;
 
+	p = w->entityString;
 	token = COM_ParseExt( &p, qtrue );
 	if (!*token || *token != '{') {
 		return;
@@ -1794,6 +1801,7 @@ Called directly from cgame
 void RE_LoadWorldMap( const char *name ) {
 	int			i;
 	dheader_t	*header;
+	int			length;
 	union {
 		byte *b;
 		void *v;
@@ -1815,9 +1823,13 @@ void RE_LoadWorldMap( const char *name ) {
 	tr.worldMapLoaded = qtrue;
 
 	// load it
-    ri.FS_ReadFile( name, &buffer.v );
+	length = ri.FS_ReadFile( name, &buffer.v );
 	if ( !buffer.b ) {
 		ri.Error (ERR_DROP, "RE_LoadWorldMap: %s not found", name);
+	}
+
+	if ( length < (int)sizeof(dheader_t) ) {
+		ri.Error (ERR_DROP, "RE_LoadWorldMap: %s is too small", name);
 	}
 
 	// clear tr.world so if the level fails to load, the next
@@ -1845,6 +1857,16 @@ void RE_LoadWorldMap( const char *name ) {
 	// swap all the lumps
 	for (i=0 ; i<sizeof(dheader_t)/4 ; i++) {
 		((int *)header)[i] = LittleLong ( ((int *)header)[i]);
+	}
+
+	for (i=0 ; i<HEADER_LUMPS ; i++) {
+		if ( header->lumps[i].fileofs < 0
+			|| header->lumps[i].filelen < 0
+			|| header->lumps[i].fileofs >= length
+			|| header->lumps[i].filelen > length - header->lumps[i].fileofs ) {
+			ri.Error (ERR_DROP, "RE_LoadWorldMap: %s has an invalid lump (ofs %i, len %i) > BSP length %i",
+					name, header->lumps[i].fileofs, header->lumps[i].filelen, length );
+		}
 	}
 
 	// load into heap

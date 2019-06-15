@@ -123,6 +123,7 @@ void CMod_LoadSubmodels( lump_t *l ) {
 	cmodel_t	*out;
 	int			i, j, count;
 	int			*indexes;
+	int			firstBrush, firstSurface;
 
 	in = (void *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -154,17 +155,25 @@ void CMod_LoadSubmodels( lump_t *l ) {
 
 		// make a "leaf" just to hold the model's brushes and surfaces
 		out->leaf.numLeafBrushes = LittleLong( in->numBrushes );
+		firstBrush = LittleLong( in->firstBrush );
+		if ( out->leaf.numLeafBrushes < 1 || firstBrush < 0 || firstBrush + out->leaf.numLeafBrushes > cm.numBrushes ) {
+			Com_Error (ERR_DROP, "CMod_LoadSubmodels: Invalid leaf brushes %i + %i > %i", firstSurface, out->leaf.numLeafSurfaces, cm.numBrushes);
+		}
 		indexes = Hunk_Alloc( out->leaf.numLeafBrushes * 4, h_high );
-		out->leaf.firstLeafBrush = indexes - cm.leafbrushes;
+		out->leaf.firstLeafBrush = indexes - cm.leafbrushes; // FIXME: bad hack
 		for ( j = 0 ; j < out->leaf.numLeafBrushes ; j++ ) {
-			indexes[j] = LittleLong( in->firstBrush ) + j;
+			indexes[j] = firstBrush + j;
 		}
 
 		out->leaf.numLeafSurfaces = LittleLong( in->numSurfaces );
+		firstSurface = LittleLong( in->firstSurface );
+		if ( out->leaf.numLeafSurfaces < 1 || firstSurface < 0 || firstSurface + out->leaf.numLeafSurfaces > cm.numSurfaces ) {
+			Com_Error (ERR_DROP, "CMod_LoadSubmodels: Invalid leaf surfaces %i + %i > %i", firstSurface, out->leaf.numLeafSurfaces, cm.numSurfaces);
+		}
 		indexes = Hunk_Alloc( out->leaf.numLeafSurfaces * 4, h_high );
-		out->leaf.firstLeafSurface = indexes - cm.leafsurfaces;
+		out->leaf.firstLeafSurface = indexes - cm.leafsurfaces; // FIXME: bad hack
 		for ( j = 0 ; j < out->leaf.numLeafSurfaces ; j++ ) {
-			indexes[j] = LittleLong( in->firstSurface ) + j;
+			indexes[j] = firstSurface + j;
 		}
 	}
 }
@@ -180,7 +189,7 @@ void CMod_LoadNodes( lump_t *l ) {
 	dnode_t		*in;
 	int			child;
 	cNode_t		*out;
-	int			i, j, count;
+	int			i, j, count, num;
 	
 	in = (void *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -196,10 +205,17 @@ void CMod_LoadNodes( lump_t *l ) {
 
 	for (i=0 ; i<count ; i++, out++, in++)
 	{
-		out->plane = cm.planes + LittleLong( in->planeNum );
+		num = LittleLong( in->planeNum );
+		if ( num < 0 || num >= cm.numPlanes ) {
+			Com_Error( ERR_DROP, "CMod_LoadNodes: bad plane: %i", num );
+		}
+		out->plane = cm.planes + num;
 		for (j=0 ; j<2 ; j++)
 		{
 			child = LittleLong (in->children[j]);
+			if ( child < -1 - cm.numLeafs || child >= cm.numNodes ) {
+				Com_Error( ERR_DROP, "CMod_LoadNodes: bad child: %i", child );
+			}
 			out->children[j] = child;
 		}
 	}
@@ -234,6 +250,7 @@ void CMod_LoadBrushes( lump_t *l ) {
 	dbrush_t	*in;
 	cbrush_t	*out;
 	int			i, count;
+	int			firstSide, numSides;
 
 	in = (void *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in)) {
@@ -247,8 +264,14 @@ void CMod_LoadBrushes( lump_t *l ) {
 	out = cm.brushes;
 
 	for ( i=0 ; i<count ; i++, out++, in++ ) {
-		out->sides = cm.brushsides + LittleLong(in->firstSide);
-		out->numsides = LittleLong(in->numSides);
+		firstSide = LittleLong(in->firstSide);
+		numSides = LittleLong(in->numSides);
+		if ( firstSide < 0 || numSides < 1 || firstSide + numSides > cm.numBrushSides ) {
+			Com_Error( ERR_DROP, "CMod_LoadBrushes: bad brush sides: %i + %i > %i", firstSide, numSides, cm.numBrushSides );
+		}
+
+		out->sides = cm.brushsides + firstSide;
+		out->numsides = numSides;
 
 		out->shaderNum = LittleLong( in->shaderNum );
 		if ( out->shaderNum < 0 || out->shaderNum >= cm.numShaders ) {
@@ -293,6 +316,14 @@ void CMod_LoadLeafs (lump_t *l)
 		out->numLeafBrushes = LittleLong (in->numLeafBrushes);
 		out->firstLeafSurface = LittleLong (in->firstLeafSurface);
 		out->numLeafSurfaces = LittleLong (in->numLeafSurfaces);
+
+		if ( out->firstLeafBrush < 0 || out->numLeafBrushes < 0 || out->firstLeafBrush + out->numLeafBrushes > cm.numLeafBrushes ) {
+			Com_Error( ERR_DROP, "CMod_LoadLeafs: bad leaf brushes: %i + %i > %i", out->firstLeafBrush, out->numLeafBrushes, cm.numLeafBrushes );
+		}
+
+		if ( out->firstLeafSurface < 0 || out->numLeafSurfaces < 0 || out->firstLeafSurface + out->numLeafSurfaces > cm.numLeafSurfaces ) {
+			Com_Error( ERR_DROP, "CMod_LoadLeafs: bad leaf surfaces: %i + %i > %i", out->firstLeafSurface, out->numLeafSurfaces, cm.numLeafSurfaces );
+		}
 
 		if (out->cluster >= cm.numClusters)
 			cm.numClusters = out->cluster + 1;
@@ -369,6 +400,9 @@ void CMod_LoadLeafBrushes (lump_t *l)
 
 	for ( i=0 ; i<count ; i++, in++, out++) {
 		*out = LittleLong (*in);
+		if ( *out < 0 || *out >= cm.numBrushes ) {
+			Com_Error (ERR_DROP, "CMod_LoadLeafBrushes: Invalid brush %d >= %d", *out, cm.numBrushes);
+		}
 	}
 }
 
@@ -396,6 +430,9 @@ void CMod_LoadLeafSurfaces( lump_t *l )
 
 	for ( i=0 ; i<count ; i++, in++, out++) {
 		*out = LittleLong (*in);
+		if ( *out < 0 || *out >= cm.numSurfaces ) {
+			Com_Error (ERR_DROP, "CMod_LoadLeafSurfaces: Invalid surface %d >= %d", *out, cm.numSurfaces);
+		}
 	}
 }
 
@@ -425,6 +462,9 @@ void CMod_LoadBrushSides (lump_t *l)
 
 	for ( i=0 ; i<count ; i++, in++, out++) {
 		num = LittleLong( in->planeNum );
+		if ( num < 0 || num >= cm.numPlanes ) {
+			Com_Error( ERR_DROP, "CMod_LoadBrushSides: bad plane: %i", num );
+		}
 		out->plane = &cm.planes[num];
 		out->shaderNum = LittleLong( in->shaderNum );
 		if ( out->shaderNum < 0 || out->shaderNum >= cm.numShaders ) {
@@ -441,9 +481,11 @@ CMod_LoadEntityString
 =================
 */
 void CMod_LoadEntityString( lump_t *l ) {
-	cm.entityString = Hunk_Alloc( l->filelen, h_high );
+	// this should already be NUL terminated
+	cm.entityString = Hunk_Alloc( l->filelen+1, h_high );
 	cm.numEntityChars = l->filelen;
 	Com_Memcpy (cm.entityString, cmod_base + l->fileofs, l->filelen);
+	cm.entityString[l->filelen] = 0;
 }
 
 /*
@@ -457,7 +499,7 @@ void CMod_LoadVisibility( lump_t *l ) {
 	byte	*buf;
 
     len = l->filelen;
-	if ( !len ) {
+	if ( len <= VIS_HEADER ) {
 		cm.clusterBytes = ( cm.numClusters + 31 ) & ~31;
 		cm.visibility = Hunk_Alloc( cm.clusterBytes, h_high );
 		Com_Memset( cm.visibility, 255, cm.clusterBytes );
@@ -491,6 +533,7 @@ void CMod_LoadPatches( lump_t *surfs, lump_t *verts ) {
 	vec3_t		points[MAX_PATCH_VERTS];
 	int			width, height;
 	int			shaderNum;
+	int			firstVert, numVertexes;
 
 	in = (void *)(cmod_base + surfs->fileofs);
 	if (surfs->filelen % sizeof(*in))
@@ -501,6 +544,7 @@ void CMod_LoadPatches( lump_t *surfs, lump_t *verts ) {
 	dv = (void *)(cmod_base + verts->fileofs);
 	if (verts->filelen % sizeof(*dv))
 		Com_Error (ERR_DROP, "MOD_LoadBmodel: funny lump size");
+	numVertexes = verts->filelen / sizeof(*dv);
 
 	// scan through all the surfaces, but only load patches,
 	// not planar faces
@@ -520,7 +564,12 @@ void CMod_LoadPatches( lump_t *surfs, lump_t *verts ) {
 			Com_Error( ERR_DROP, "ParseMesh: MAX_PATCH_VERTS" );
 		}
 
-		dv_p = dv + LittleLong( in->firstVert );
+		firstVert = LittleLong( in->firstVert );
+		if ( firstVert < 0 || c < 1 || firstVert + c > numVertexes ) {
+			Com_Error( ERR_DROP, "CMod_LoadPatches: bad vertexes: %i + %i > %i", firstVert, c, numVertexes );
+		}
+
+		dv_p = dv + firstVert;
 		for ( j = 0 ; j < c ; j++, dv_p++ ) {
 			points[j][0] = LittleFloat( dv_p->xyz[0] );
 			points[j][1] = LittleFloat( dv_p->xyz[1] );
@@ -528,6 +577,9 @@ void CMod_LoadPatches( lump_t *surfs, lump_t *verts ) {
 		}
 
 		shaderNum = LittleLong( in->shaderNum );
+		if ( shaderNum < 0 || shaderNum >= cm.numShaders ) {
+			Com_Error( ERR_DROP, "CMod_LoadPatches: bad shaderNum: %i", shaderNum );
+		}
 		patch->contents = cm.shaders[shaderNum].contentFlags;
 		patch->surfaceFlags = cm.shaders[shaderNum].surfaceFlags;
 
@@ -618,6 +670,10 @@ void CM_LoadMap( const char *name, qboolean clientload, int *checksum ) {
 		Com_Error (ERR_DROP, "Couldn't load %s", name);
 	}
 
+	if ( length < (int)sizeof(dheader_t) ) {
+		Com_Error (ERR_DROP, "CM_LoadMap: %s is too small", name);
+	}
+
 	last_checksum = LittleLong (Com_BlockChecksum (buf.i, length));
 	*checksum = last_checksum;
 
@@ -631,21 +687,31 @@ void CM_LoadMap( const char *name, qboolean clientload, int *checksum ) {
 		, name, header.version, BSP_VERSION );
 	}
 
+	for (i=0 ; i<HEADER_LUMPS ; i++) {
+		if ( header.lumps[i].fileofs < 0
+			|| header.lumps[i].filelen < 0
+			|| header.lumps[i].fileofs >= length
+			|| header.lumps[i].filelen > length - header.lumps[i].fileofs ) {
+			Com_Error (ERR_DROP, "CM_LoadMap: %s has an invalid lump (ofs %i, len %i) > BSP length %i",
+					name, header.lumps[i].fileofs, header.lumps[i].filelen, length );
+		}
+	}
+
 	cmod_base = (byte *)buf.i;
 
 	// load into heap
 	CMod_LoadShaders( &header.lumps[LUMP_SHADERS] );
-	CMod_LoadLeafs (&header.lumps[LUMP_LEAFS]);
-	CMod_LoadLeafBrushes (&header.lumps[LUMP_LEAFBRUSHES]);
-	CMod_LoadLeafSurfaces (&header.lumps[LUMP_LEAFSURFACES]);
 	CMod_LoadPlanes (&header.lumps[LUMP_PLANES]);
 	CMod_LoadBrushSides (&header.lumps[LUMP_BRUSHSIDES]);
 	CMod_LoadBrushes (&header.lumps[LUMP_BRUSHES]);
+	CMod_LoadPatches( &header.lumps[LUMP_SURFACES], &header.lumps[LUMP_DRAWVERTS] );
+	CMod_LoadLeafBrushes (&header.lumps[LUMP_LEAFBRUSHES]);
+	CMod_LoadLeafSurfaces (&header.lumps[LUMP_LEAFSURFACES]);
+	CMod_LoadLeafs (&header.lumps[LUMP_LEAFS]);
 	CMod_LoadSubmodels (&header.lumps[LUMP_MODELS]);
 	CMod_LoadNodes (&header.lumps[LUMP_NODES]);
 	CMod_LoadEntityString (&header.lumps[LUMP_ENTITIES]);
 	CMod_LoadVisibility( &header.lumps[LUMP_VISIBILITY] );
-	CMod_LoadPatches( &header.lumps[LUMP_SURFACES], &header.lumps[LUMP_DRAWVERTS] );
 
 	// we are NOT freeing the file, because it is cached for the ref
 	FS_FreeFile (buf.v);
