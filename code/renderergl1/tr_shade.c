@@ -165,8 +165,19 @@ void R_DrawElements( int numIndexes, const glIndex_t *indexes ) {
 
 	primitives = r_primitives->integer;
 
+	if ( qglesMajorVersion >= 1 ) {
+		if ( primitives == 0 ) {
+			primitives = 2;
+		}
+
+		if ( primitives == 1 || primitives == 3 ) {
+			ri.Printf( PRINT_WARNING, "OpenGL ES does not support glBegin() required for r_primitives %d\n", primitives );
+			ri.Cvar_Set( "r_primitives", "0" );
+			primitives = 2;
+		}
+	}
 	// default is to use triangles if compiled vertex arrays are present
-	if ( primitives == 0 ) {
+	else if ( primitives == 0 ) {
 		if ( qglLockArraysEXT ) {
 			primitives = 2;
 		} else {

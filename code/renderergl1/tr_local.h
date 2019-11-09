@@ -40,8 +40,8 @@ QGL_DESKTOP_1_1_FIXED_FUNCTION_PROCS;
 QGL_3_0_PROCS;
 #undef GLE
 
-#define GL_INDEX_TYPE		GL_UNSIGNED_INT
-typedef unsigned int glIndex_t;
+#define GL_INDEX_TYPE		GL_UNSIGNED_SHORT
+typedef unsigned short glIndex_t;
 
 // 14 bits
 // can't be increased without changing bit packing for drawsurfs
@@ -1610,6 +1610,8 @@ void RE_TakeVideoFrame( int width, int height,
 
 void R_DrawElements( int numIndexes, const glIndex_t *indexes );
 void VectorArrayNormalize( vec4_t *normals, unsigned int count );
+
+void R_ConvertTextureFormat( const byte *in, int width, int height, GLenum format, GLenum type, byte *out );
 
 #ifdef idppc_altivec
 void LerpMeshVertexes_altivec( md3Surface_t *surf, float backlerp );
