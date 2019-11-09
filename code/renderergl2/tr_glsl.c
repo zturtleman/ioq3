@@ -250,6 +250,12 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLchar *extra, char *
 		else
 			Q_strcat(dest, size, "#version 130\n");
 
+		// `extra' may contain #extension which must be directly after #version
+		if (extra)
+		{
+			Q_strcat(dest, size, extra);
+		}
+
 		if (qglesMajorVersion >= 2)
 			Q_strcat(dest, size, "precision mediump float;\n");
 
@@ -274,6 +280,12 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLchar *extra, char *
 		if (qglesMajorVersion >= 2)
 		{
 			Q_strcat(dest, size, "#version 100\n");
+
+			if (extra)
+			{
+				Q_strcat(dest, size, extra);
+			}
+
 			Q_strcat(dest, size, "precision mediump float;\n");
 
 			if (glRefConfig.shadowSamplers)
@@ -282,6 +294,12 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLchar *extra, char *
 		else
 		{
 			Q_strcat(dest, size, "#version 120\n");
+
+			if (extra)
+			{
+				Q_strcat(dest, size, extra);
+			}
+
 			Q_strcat(dest, size, "#define shadow2D(a,b) shadow2D(a,b).r\n");
 		}
 	}
@@ -369,11 +387,6 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLchar *extra, char *
 		}
 		numRoughnessMips = MAX(1, numRoughnessMips - 2);
 		Q_strcat(dest, size, va("#define ROUGHNESS_MIPS float(%d)\n", numRoughnessMips));
-	}
-
-	if (extra)
-	{
-		Q_strcat(dest, size, extra);
 	}
 
 	// OK we added a lot of stuff but if we do something bad in the GLSL shaders then we want the proper line
