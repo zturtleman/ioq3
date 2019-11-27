@@ -735,6 +735,7 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 }
 
 void RE_UploadCinematic (int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty) {
+	byte *buffer;
 	GLuint texture;
 
 	if (!tr.scratchImage[client])
@@ -747,19 +748,20 @@ void RE_UploadCinematic (int w, int h, int cols, int rows, const byte *data, int
 
 	// if the scratchImage isn't in the format we want, specify it as a new texture
 	if ( cols != tr.scratchImage[client]->width || rows != tr.scratchImage[client]->height ) {
-		int internalFormat;
-
 		tr.scratchImage[client]->width = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
 
-		// FIXME: OpenGL ES 1/2/3 doesn't convert RGBA to RGB.
+		// manually convert RGBA to RGB for OpenGL ES
 		if ( qglesMajorVersion >= 1 ) {
-			internalFormat = GL_RGBA;
-		} else {
-			internalFormat = GL_RGB8;
-		}
+			buffer = ri.Hunk_AllocateTempMemory( 3 * cols * rows );
 
-		qglTextureImage2DEXT(texture, GL_TEXTURE_2D, 0, internalFormat, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			R_ConvertTextureFormat( data, cols, rows, GL_RGB, GL_UNSIGNED_BYTE, buffer );
+			qglTextureImage2DEXT(texture, GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+
+			ri.Hunk_FreeTempMemory( buffer );
+		} else {
+			qglTextureImage2DEXT(texture, GL_TEXTURE_2D, 0, GL_RGB8, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		}
 
 		qglTextureParameterfEXT(texture, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTextureParameterfEXT(texture, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
@@ -769,7 +771,16 @@ void RE_UploadCinematic (int w, int h, int cols, int rows, const byte *data, int
 		if (dirty) {
 			// otherwise, just subimage upload it so that drivers can tell we are going to be changing
 			// it and don't try and do a texture compression
-			qglTextureSubImage2DEXT(texture, GL_TEXTURE_2D, 0, 0, 0, cols, rows, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			if ( qglesMajorVersion >= 1 ) {
+				buffer = ri.Hunk_AllocateTempMemory( 3 * cols * rows );
+
+				R_ConvertTextureFormat( data, cols, rows, GL_RGB, GL_UNSIGNED_BYTE, buffer );
+				qglTextureSubImage2DEXT(texture, GL_TEXTURE_2D, 0, 0, 0, cols, rows, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+
+				ri.Hunk_FreeTempMemory( buffer );
+			} else {
+				qglTextureSubImage2DEXT(texture, GL_TEXTURE_2D, 0, 0, 0, cols, rows, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			}
 		}
 	}
 }

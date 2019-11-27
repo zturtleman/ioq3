@@ -2521,5 +2521,7 @@ size_t RE_SaveJPGToBuffer(byte *buffer, size_t bufSize, int quality,
 void RE_TakeVideoFrame( int width, int height,
 		byte *captureBuffer, byte *encodeBuffer, qboolean motionJpeg );
 
+void R_ConvertTextureFormat( const byte *in, int width, int height, GLenum format, GLenum type, byte *out );
+
 
 #endif //TR_LOCAL_H
