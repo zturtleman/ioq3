@@ -2045,7 +2045,7 @@ static GLenum PixelDataFormatFromInternalFormat(GLenum internalFormat)
 static void RawImage_UploadTexture(GLuint texture, byte *data, int x, int y, int width, int height, GLenum target, GLenum picFormat, GLenum dataFormat, GLenum dataType, int numMips, GLenum internalFormat, imgType_t type, imgFlags_t flags, qboolean subtexture )
 {
 	qboolean rgtc = internalFormat == GL_COMPRESSED_RG_RGTC2;
-	qboolean rgba8 = picFormat == GL_RGBA || picFormat == GL_RGBA8 || picFormat == GL_SRGB8_ALPHA8_EXT;
+	qboolean rgba8 = picFormat == GL_RGBA8 || picFormat == GL_SRGB8_ALPHA8_EXT;
 	qboolean rgba = rgba8 || picFormat == GL_RGBA16;
 	qboolean mipmap = !!(flags & IMGFLAG_MIPMAP);
 	int size, miplevel;
@@ -2132,7 +2132,7 @@ static void Upload32(byte *data, int x, int y, int width, int height, GLenum pic
 	imgType_t type = image->type;
 	imgFlags_t flags = image->flags;
 	GLenum internalFormat = image->internalFormat;
-	qboolean rgba8 = picFormat == GL_RGBA || picFormat == GL_RGBA8 || picFormat == GL_SRGB8_ALPHA8_EXT;
+	qboolean rgba8 = picFormat == GL_RGBA8 || picFormat == GL_SRGB8_ALPHA8_EXT;
 	qboolean mipmap = !!(flags & IMGFLAG_MIPMAP) && (rgba8 || numMips > 1);
 	qboolean cubemap = !!(flags & IMGFLAG_CUBEMAP);
 
@@ -2407,13 +2407,9 @@ void R_UpdateSubImage( image_t *image, byte *pic, int x, int y, int width, int h
 {
 	GLenum dataFormat, dataType;
 
+	// TODO: This is fine for lightmaps but (unused) general RGBA images need to store dataFormat / dataType in image_t for OpenGL ES?
 	dataFormat = PixelDataFormatFromInternalFormat(image->internalFormat);
 	dataType = picFormat == GL_RGBA16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE;
-
-	// FIXME: This is fine for lightmaps but (unused) general RGBA images need to store dataFormat / dataType in image_t for OpenGL ES?
-	if ( qglesMajorVersion && picFormat == GL_RGBA8 ) {
-		picFormat = GL_RGBA;
-	}
 
 	Upload32(pic, x, y, width, height, picFormat, dataFormat, dataType, 0, image, qfalse);
 }
