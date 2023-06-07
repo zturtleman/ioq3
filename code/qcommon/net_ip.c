@@ -73,6 +73,7 @@ static qboolean	winsockInitialized = qfalse;
 #	include <sys/types.h>
 #	include <sys/time.h>
 #	include <unistd.h>
+#	include <poll.h>
 #	if !defined(__sun) && !defined(__sgi)
 #		include <ifaddrs.h>
 #	endif
@@ -131,6 +132,13 @@ static struct sockaddr_in6 boundto;
 #define NET_MULTICAST_IP6 "ff04::696f:7175:616b:6533"
 
 #define	MAX_IPS		32
+
+// sockets ready to read
+typedef struct {
+	qboolean ip;
+	qboolean ip6;
+	qboolean multicast6;
+} netsocks_t;
 
 typedef struct
 {
@@ -520,14 +528,14 @@ NET_GetPacket
 Receive one packet
 ==================
 */
-qboolean NET_GetPacket(netadr_t *net_from, msg_t *net_message, fd_set *fdr)
+qboolean NET_GetPacket(netadr_t *net_from, msg_t *net_message, netsocks_t *readsocks)
 {
 	int 	ret;
 	struct sockaddr_storage from;
 	socklen_t	fromlen;
 	int		err;
 	
-	if(ip_socket != INVALID_SOCKET && FD_ISSET(ip_socket, fdr))
+	if(ip_socket != INVALID_SOCKET && readsocks->ip)
 	{
 		fromlen = sizeof(from);
 		ret = recvfrom( ip_socket, (void *)net_message->data, net_message->maxsize, 0, (struct sockaddr *) &from, &fromlen );
@@ -571,7 +579,7 @@ qboolean NET_GetPacket(netadr_t *net_from, msg_t *net_message, fd_set *fdr)
 		}
 	}
 	
-	if(ip6_socket != INVALID_SOCKET && FD_ISSET(ip6_socket, fdr))
+	if(ip6_socket != INVALID_SOCKET && readsocks->ip6)
 	{
 		fromlen = sizeof(from);
 		ret = recvfrom(ip6_socket, (void *)net_message->data, net_message->maxsize, 0, (struct sockaddr *) &from, &fromlen);
@@ -599,7 +607,7 @@ qboolean NET_GetPacket(netadr_t *net_from, msg_t *net_message, fd_set *fdr)
 		}
 	}
 
-	if(multicast6_socket != INVALID_SOCKET && multicast6_socket != ip6_socket && FD_ISSET(multicast6_socket, fdr))
+	if(multicast6_socket != INVALID_SOCKET && multicast6_socket != ip6_socket && readsocks->multicast6)
 	{
 		fromlen = sizeof(from);
 		ret = recvfrom(multicast6_socket, (void *)net_message->data, net_message->maxsize, 0, (struct sockaddr *) &from, &fromlen);
@@ -1616,7 +1624,7 @@ Called from NET_Sleep which uses select() to determine which sockets have seen a
 ====================
 */
 
-void NET_Event(fd_set *fdr)
+void NET_Event(netsocks_t *readsocks)
 {
 	byte bufData[MAX_MSGLEN + 1];
 	netadr_t from = {0};
@@ -1626,7 +1634,7 @@ void NET_Event(fd_set *fdr)
 	{
 		MSG_Init(&netmsg, bufData, sizeof(bufData));
 
-		if(NET_GetPacket(&from, &netmsg, fdr))
+		if(NET_GetPacket(&from, &netmsg, readsocks))
 		{
 			if(net_dropsim->value > 0.0f && net_dropsim->value <= 100.0f)
 			{
@@ -1654,6 +1662,7 @@ Sleeps msec or until something happens on the network
 */
 void NET_Sleep(int msec)
 {
+#ifdef _WIN32
 	struct timeval timeout;
 	fd_set fdr;
 	int retval;
@@ -1699,10 +1708,79 @@ void NET_Sleep(int msec)
 
 	retval = select(highestfd + 1, &fdr, NULL, NULL, &timeout);
 
-	if(retval == SOCKET_ERROR)
+	if(retval == SOCKET_ERROR) {
 		Com_Printf("Warning: select() syscall failed: %s\n", NET_ErrorString());
-	else if(retval > 0)
-		NET_Event(&fdr);
+	} else if(retval > 0) {
+		netsocks_t readsocks;
+
+		memset(&readsocks, 0, sizeof(readsocks));
+
+		if (ip_socket != INVALID_SOCKET) {
+			readsocks.ip = FD_ISSET(ip_socket, &fdr);
+		}
+		if (ip6_socket != INVALID_SOCKET) {
+			readsocks.ip6 = FD_ISSET(ip6_socket, &fdr);
+		}
+		if (multicast6_socket != INVALID_SOCKET && multicast6_socket != ip6_socket) {
+			readsocks.multicast6 = FD_ISSET(multicast6_socket, &fdr);
+		}
+
+		NET_Event(&readsocks);
+	}
+#else
+	struct pollfd fds[3];
+	int count = 0;
+	int i;
+	int retval;
+
+	if(msec < 0)
+		msec = 0;
+
+	if(ip_socket != INVALID_SOCKET)
+	{
+		fds[count].fd = ip_socket;
+		fds[count].events = POLLIN;
+		count++;
+	}
+	if(ip6_socket != INVALID_SOCKET)
+	{
+		fds[count].fd = ip6_socket;
+		fds[count].events = POLLIN;
+		count++;
+	}
+	if(multicast6_socket != INVALID_SOCKET && multicast6_socket != ip6_socket)
+	{
+		fds[count].fd = multicast6_socket;
+		fds[count].events = POLLIN;
+		count++;
+	}
+
+	retval = poll(fds, count, msec);
+
+	if(retval == SOCKET_ERROR) {
+		Com_Printf("Warning: poll() syscall failed: %s\n", NET_ErrorString());
+	} else if(retval > 0) {
+		netsocks_t readsocks;
+
+		memset(&readsocks, 0, sizeof(readsocks));
+
+		for(i = 0; i < count; i++) {
+			if(!(fds[i].revents & POLLIN)) {
+				continue;
+			}
+
+			if(fds[i].fd == ip_socket) {
+				readsocks.ip = qtrue;
+			} else if(fds[i].fd == ip6_socket) {
+				readsocks.ip6 = qtrue;
+			} else if(fds[i].fd == multicast6_socket) {
+				readsocks.multicast6 = qtrue;
+			}
+		}
+
+		NET_Event(&readsocks);
+	}
+#endif
 }
 
 /*
