@@ -38,6 +38,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <fcntl.h>
 #include <fenv.h>
 #include <sys/wait.h>
+#include <sys/resource.h>
 
 qboolean stdinIsATTY;
 
@@ -868,6 +869,7 @@ Unix specific initialisation
 void Sys_PlatformInit( void )
 {
 	const char* term = getenv( "TERM" );
+	struct rlimit nofile;
 
 	signal( SIGHUP, Sys_SigHandler );
 	signal( SIGQUIT, Sys_SigHandler );
@@ -879,6 +881,13 @@ void Sys_PlatformInit( void )
 
 	stdinIsATTY = isatty( STDIN_FILENO ) &&
 		!( term && ( !strcmp( term, "raw" ) || !strcmp( term, "dumb" ) ) );
+
+	// Increase max open files
+	if ( getrlimit( RLIMIT_NOFILE, &nofile ) == 0 && nofile.rlim_cur < 2048 ) {
+		nofile.rlim_cur = MIN( 2048, nofile.rlim_max );
+
+		setrlimit( RLIMIT_NOFILE, &nofile );
+	}
 }
 
 /*

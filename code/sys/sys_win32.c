@@ -831,6 +831,11 @@ void Sys_PlatformInit( void )
 	else
 		timerResolution = 0;
 #endif
+
+	// Increase max open files
+	if ( _getmaxstdio() < 2048 ) {
+		_setmaxstdio( 2048 );
+	}
 }
 
 /*
